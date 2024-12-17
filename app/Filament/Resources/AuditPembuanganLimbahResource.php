@@ -204,56 +204,146 @@ class AuditPembuanganLimbahResource extends Resource
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('pemisahan_limbah_oleh_penghasil_limbah', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('pemisahan_limbah_oleh_penghasil_limbah', 'Tidak')),
-                        Summarizer::make()->label('Rata-rata')->using(fn(Builder $query) => $query->where('pemisahan_limbah_oleh_penghasil_limbah', 'Ya')->count() == 0 ? 0 : ($query->where('pemisahan_limbah_oleh_penghasil_limbah', 'Ya')->count() / $query->count()) * 100),
+                        Summarizer::make()->using(function(Builder $query){
+                            $total = $query->count();
+                            $ya = $query->where('pemisahan_limbah_oleh_penghasil_limbah', 'Ya')->count();
+                            return $total == 0 ? 0 : ($ya / $total) * 100;
+                        })
+                        ->label('Rata-rata')
+                        ->suffix('%'),
                     ]),
                 Tables\Columns\TextColumn::make('limbah_infeksius_dimasukkan_kantong_kuning')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('limbah_infeksius_dimasukkan_kantong_kuning', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('limbah_infeksius_dimasukkan_kantong_kuning', 'Tidak')),
-                        Summarizer::make()->label('Rata-rata')->using(fn(Builder $query) => $query->where('limbah_infeksius_dimasukkan_kantong_kuning', 'Ya')->count() == 0 ? 0 : ($query->where('limbah_infeksius_dimasukkan_kantong_kuning', 'Ya')->count() / $query->count()) * 100),
+                        Summarizer::make()->using(function(Builder $query){
+                            $total = $query->count();
+                            $ya = $query->where('limbah_infeksius_dimasukkan_kantong_kuning', 'Ya')->count();
+                            return $total == 0 ? 0 : ($ya / $total) * 100;
+                        })
+                        ->label('Rata-rata')
+                        ->suffix('%'),
                     ]),
                 Tables\Columns\TextColumn::make('limbah_noninfeksius_dimasukkan_kantong_hitam')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('limbah_noninfeksius_dimasukkan_kantong_hitam', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('limbah_noninfeksius_dimasukkan_kantong_hitam', 'Tidak')),
-                        Summarizer::make()->label('Rata-rata')->using(fn(Builder $query) => $query->where('limbah_noninfeksius_dimasukkan_kantong_hitam', 'Ya')->count() == 0 ? 0 : ($query->where('limbah_noninfeksius_dimasukkan_kantong_hitam', 'Ya')->count() / $query->count()) * 100),
+                        Summarizer::make()->using(function(Builder $query){
+                            $total = $query->count();
+                            $ya = $query->where('limbah_noninfeksius_dimasukkan_kantong_hitam', 'Ya')->count();
+                            return $total == 0 ? 0 : ($ya / $total) * 100;
+                        })
+                        ->label('Rata-rata')
+                        ->suffix('%'),
                     ]),
                 Tables\Columns\TextColumn::make('limbah_tigaperempat_diikat')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('limbah_tigaperempat_diikat', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('limbah_tigaperempat_diikat', 'Tidak')),
-                        Summarizer::make()->label('Rata-rata')->using(fn(Builder $query) => $query->where('limbah_tigaperempat_diikat', 'Ya')->count() == 0 ? 0 : ($query->where('limbah_tigaperempat_diikat', 'Ya')->count() / $query->count()) * 100),
+                        Summarizer::make()->using(function(Builder $query){
+                            $total = $query->count();
+                            $ya = $query->where('limbah_tigaperempat_diikat', 'Ya')->count();
+                            return $total == 0 ? 0 : ($ya / $total) * 100;
+                        })
+                        ->label('Rata-rata')
+                        ->suffix('%'),
                     ]),
                 Tables\Columns\TextColumn::make('limbah_segera_dibawa_kepembuangan_sementara')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('limbah_segera_dibawa_kepembuangan_sementara', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('limbah_segera_dibawa_kepembuangan_sementara', 'Tidak')),
-                        Summarizer::make()->label('Rata-rata')->using(fn(Builder $query) => $query->where('limbah_segera_dibawa_kepembuangan_sementara', 'Ya')->count() == 0 ? 0 : ($query->where('limbah_segera_dibawa_kepembuangan_sementara', 'Ya')->count() / $query->count()) * 100),
+                        Summarizer::make()->using(function(Builder $query){
+                            $total = $query->count();
+                            $ya = $query->where('limbah_segera_dibawa_kepembuangan_sementara', 'Ya')->count();
+                            return $total == 0 ? 0 : ($ya / $total) * 100;
+                        })
+                        ->label('Rata-rata')
+                        ->suffix('%'),
                     ]),
                 Tables\Columns\TextColumn::make('kotak_sampah_dalam_kondisi_bersih')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('kotak_sampah_dalam_kondisi_bersih', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('kotak_sampah_dalam_kondisi_bersih', 'Tidak')),
-                        Summarizer::make()->label('Rata-rata')->using(fn(Builder $query) => $query->where('kotak_sampah_dalam_kondisi_bersih', 'Ya')->count() == 0 ? 0 : ($query->where('kotak_sampah_dalam_kondisi_bersih', 'Ya')->count() / $query->count()) * 100),
+                        Summarizer::make()->using(function(Builder $query){
+                            $total = $query->count();
+                            $ya = $query->where('kotak_sampah_dalam_kondisi_bersih', 'Ya')->count();
+                            return $total == 0 ? 0 : ($ya / $total) * 100;
+                        })
+                        ->label('Rata-rata')
+                        ->suffix('%'),
                     ]),
                 Tables\Columns\TextColumn::make('pembersihan_tempat_sampah_dengan_desinfekten')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('pembersihan_tempat_sampah_dengan_desinfekten', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('pembersihan_tempat_sampah_dengan_desinfekten', 'Tidak')),
-                        Summarizer::make()->label('Rata-rata')->using(fn(Builder $query) => $query->where('pembersihan_tempat_sampah_dengan_desinfekten', 'Ya')->count() == 0 ? 0 : ($query->where('pembersihan_tempat_sampah_dengan_desinfekten', 'Ya')->count() / $query->count()) * 100),
+                        Summarizer::make()->using(function(Builder $query){
+                            $total = $query->count();
+                            $ya = $query->where('pembersihan_tempat_sampah_dengan_desinfekten', 'Ya')->count();
+                            return $total == 0 ? 0 : ($ya / $total) * 100;
+                        })
+                        ->label('Rata-rata')
+                        ->suffix('%'),
                     ]),
                 Tables\Columns\TextColumn::make('pembersihan_penampungan_sementara_dengan_desinfekten')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('pembersihan_penampungan_sementara_dengan_desinfekten', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('pembersihan_penampungan_sementara_dengan_desinfekten', 'Tidak')),
-                        Summarizer::make()->label('Rata-rata')->using(fn(Builder $query) => $query->where('pembersihan_penampungan_sementara_dengan_desinfekten', 'Ya')->count() == 0 ? 0 : ($query->where('pembersihan_penampungan_sementara_dengan_desinfekten', 'Ya')->count() / $query->count()) * 100),
+                        Summarizer::make()->using(function(Builder $query){
+                            $total = $query->count();
+                            $ya = $query->where('pembersihan_penampungan_sementara_dengan_desinfekten', 'Ya')->count();
+                            return $total == 0 ? 0 : ($ya / $total) * 100;
+                        })
+                        ->label('Rata-rata')
+                        ->suffix('%'),
                     ]),
-                // Tables\Columns\TextColumn::make('ttl')
-                //     ->summarize([
-                //         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('ttl', '100.00')),
-                //         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('ttl', '<', '100')),
-                //         Summarizer::make()->label('Rata-rata')->using(fn(Builder $query) => $query->where('ttl', '100.00')->count() == 0 ? 0 : ($query->where('ttl', '100.00%')->count() / $query->count()) * 100),
-                //     ]),
+                Tables\Columns\TextColumn::make('ttl')
+                    ->summarize([
+                        Summarizer::make()->label('Ya')->using(function(Builder $query){
+                            $ttl = 0;
+                            foreach ($query->get() as $item) {
+                                if($item->pemisahan_limbah_oleh_penghasil_limbah == 'Ya') $ttl++;
+                                if($item->limbah_infeksius_dimasukkan_kantong_kuning == 'Ya') $ttl++;
+                                if($item->limbah_noninfeksius_dimasukkan_kantong_hitam == 'Ya') $ttl++;
+                                if($item->limbah_tigaperempat_diikat == 'Ya') $ttl++;
+                                if($item->limbah_segera_dibawa_kepembuangan_sementara == 'Ya') $ttl++;
+                                if($item->kotak_sampah_dalam_kondisi_bersih == 'Ya') $ttl++;
+                                if($item->pembersihan_tempat_sampah_dengan_desinfekten == 'Ya') $ttl++;
+                                if($item->pembersihan_penampungan_sementara_dengan_desinfekten == 'Ya') $ttl++;
+                            }
+                            return $ttl;
+                        }),
+                        Summarizer::make()->label('Tidak')->using(function(Builder $query){
+                            $ttl = 0;
+                            foreach ($query->get() as $item) {
+                                if($item->pemisahan_limbah_oleh_penghasil_limbah == 'Tidak') $ttl++;
+                                if($item->limbah_infeksius_dimasukkan_kantong_kuning == 'Tidak') $ttl++;
+                                if($item->limbah_noninfeksius_dimasukkan_kantong_hitam == 'Tidak') $ttl++;
+                                if($item->limbah_tigaperempat_diikat == 'Tidak') $ttl++;
+                                if($item->limbah_segera_dibawa_kepembuangan_sementara == 'Tidak') $ttl++;
+                                if($item->kotak_sampah_dalam_kondisi_bersih == 'Tidak') $ttl++;
+                                if($item->pembersihan_tempat_sampah_dengan_desinfekten == 'Tidak') $ttl++;
+                                if($item->pembersihan_penampungan_sementara_dengan_desinfekten == 'Tidak') $ttl++;
+                            }
+                            return $ttl;
+                        }),
+                        Summarizer::make()->label('Rata-rata')->using(function(Builder $query){
+                            $total = $query->count() * 8;
+                            $ttl = 0;
+                            foreach ($query->get() as $item) {
+                                if($item->pemisahan_limbah_oleh_penghasil_limbah == 'Ya') $ttl++;
+                                if($item->pemisahan_limbah_oleh_penghasil_limbah == 'Ya') $ttl++;
+                                if($item->limbah_infeksius_dimasukkan_kantong_kuning == 'Ya') $ttl++;
+                                if($item->limbah_noninfeksius_dimasukkan_kantong_hitam == 'Ya') $ttl++;
+                                if($item->limbah_tigaperempat_diikat == 'Ya') $ttl++;
+                                if($item->limbah_segera_dibawa_kepembuangan_sementara == 'Ya') $ttl++;
+                                if($item->kotak_sampah_dalam_kondisi_bersih == 'Ya') $ttl++;
+                                if($item->pembersihan_tempat_sampah_dengan_desinfekten == 'Ya') $ttl++;
+                                if($item->pembersihan_penampungan_sementara_dengan_desinfekten == 'Ya') $ttl++;
+                            }
+                            return ($ttl / $total) * 100;
+                        })
+                        ->suffix('%'),
+                    ]),
             ])
             ->filters([
                 //
