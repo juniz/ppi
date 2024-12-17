@@ -10,6 +10,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -60,11 +61,11 @@ class PegawaiResource extends Resource
                     ->default('-')
                     ->required(),
                 Forms\Components\Select::make('departemen')
-                    ->relationship('departemen', 'nama')
+                    ->relationship('getDepartemen', 'nama')
                     ->default('-')
                     ->required(),
                 Forms\Components\Select::make('bidang')
-                    ->relationship('bidang', 'nama')
+                    ->relationship('getBidang', 'nama')
                     ->default('-')
                     ->required(),
                 Forms\Components\Select::make('stts_wp')
@@ -78,15 +79,16 @@ class PegawaiResource extends Resource
                     ->default('-')
                     ->required(),
                 Forms\Components\TextInput::make('npwp')
+                    ->label('NPWP')
                     ->required()
                     ->maxLength(15),
                 Forms\Components\Select::make('pendidikan')
-                    ->relationship('pendidikan', 'tingkat')
+                    ->relationship('getPendidikan', 'tingkat')
                     ->default('-')
                     ->required(),
-                Forms\Components\TextInput::make('gapok')
-                    ->required()
-                    ->numeric(),
+                // Forms\Components\TextInput::make('gapok')
+                //     ->required()
+                //     ->numeric(),
                 Forms\Components\TextInput::make('tmp_lahir')
                     ->label('Tempat Lahir')
                     ->required()
@@ -114,7 +116,7 @@ class PegawaiResource extends Resource
                     ->required(),
                 Forms\Components\Select::make('indexins')
                     ->label('Kode Index')
-                    ->relationship('indexIns', 'dep_id')
+                    ->options(\App\Models\Indexins::select('dep_id', DB::raw('CONCAT(dep_id, " ", persen, "%") as persen'))->get()->pluck('persen', 'dep_id'))
                     ->required(),
                 Forms\Components\Select::make('bpd')
                     ->label('Bank')
@@ -134,24 +136,27 @@ class PegawaiResource extends Resource
                     ->default('AKTIF')
                     ->required(),
                 Forms\Components\TextInput::make('wajibmasuk')
+                ->label('Wajib Masuk')
                     ->required()
+                    ->default(0)
                     ->numeric(),
-                Forms\Components\TextInput::make('pengurang')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('indek')
-                    ->required()
-                    ->numeric(),
+                // Forms\Components\TextInput::make('pengurang')
+                //     ->required()
+                //     ->numeric(),
+                // Forms\Components\TextInput::make('indek')
+                //     ->required()
+                //     ->numeric(),
                 Forms\Components\DatePicker::make('mulai_kontrak'),
-                Forms\Components\TextInput::make('cuti_diambil')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('dankes')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('photo')
-                    ->maxLength(500),
+                // Forms\Components\TextInput::make('cuti_diambil')
+                //     ->required()
+                //     ->numeric(),
+                // Forms\Components\TextInput::make('dankes')
+                //     ->required()
+                //     ->numeric(),
+                // Forms\Components\TextInput::make('photo')
+                //     ->maxLength(500),
                 Forms\Components\TextInput::make('no_ktp')
+                    ->label('No. KTP')
                     ->required()
                     ->maxLength(20),
             ]);
@@ -160,37 +165,61 @@ class PegawaiResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->query(
+                Pegawai::with([
+                    'jnjJabatan',
+                    'kelompokJabatan',
+                    'resikoKerja',
+                    'emergencyIndex',
+                    'getDepartemen',
+                    'getBidang',
+                    'sttsWp',
+                    'sttsKerja',
+                    'getPendidikan',
+                    'bank',
+                    'indexIns',
+                ])
+                ->orderBy('nik', 'asc')
+            )
             ->columns([
                 Tables\Columns\TextColumn::make('nik')
+                    ->label('NIK')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nama')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('jk'),
                 Tables\Columns\TextColumn::make('jbtn')
+                    ->label('Jabatan')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('jnj_jabatan')
+                Tables\Columns\TextColumn::make('jnjJabatan.nama')
+                    ->label('Jenjang Jabatan')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('kode_kelompok')
+                Tables\Columns\TextColumn::make('kelompokJabatan.nama_kelompok')
+                    ->label('Kelompok Jabatan')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('kode_resiko')
+                Tables\Columns\TextColumn::make('resikoKerja.nama_resiko')
+                    ->label('Resiko Kerja')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('kode_emergency')
+                Tables\Columns\TextColumn::make('emergencyIndex.nama_emergency')
+                    ->label('Tingkat Emergency')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('departemen')
+                Tables\Columns\TextColumn::make('getDepartemen.nama')
+                    ->label('Departemen')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('bidang')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('stts_wp')
+                Tables\Columns\TextColumn::make('sttsWp.ktg')
+                    ->label('Status WP')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('stts_kerja')
+                Tables\Columns\TextColumn::make('sttsKerja.ktg')
+                    ->label('Status Kerja')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('npwp')
+                    ->label('NPWP')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('pendidikan')
+                Tables\Columns\TextColumn::make('getPendidikan.tingkat')
+                    ->label('Pendidikan')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('gapok')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('tmp_lahir')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('tgl_lahir')
@@ -204,33 +233,19 @@ class PegawaiResource extends Resource
                     ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('ms_kerja'),
-                Tables\Columns\TextColumn::make('indexins')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('bpd')
+                Tables\Columns\TextColumn::make('bank.namabank')
+                    ->label('Bank')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('rekening')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('stts_aktif'),
                 Tables\Columns\TextColumn::make('wajibmasuk')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('pengurang')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('indek')
+                    ->label('Wajib Masuk')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('mulai_kontrak')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('cuti_diambil')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('dankes')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('photo')
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('no_ktp')
                     ->searchable(),
             ])

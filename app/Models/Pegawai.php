@@ -69,12 +69,12 @@ class Pegawai extends Model
         return $this->belongsTo(EmergencyIndex::class, 'kode_emergency', 'kode_emergency');
     }
 
-    public function departemen()
+    public function getDepartemen()
     {
         return $this->belongsTo(Departemen::class, 'departemen', 'dep_id');
     }
 
-    public function bidang()
+    public function getBidang()
     {
         return $this->belongsTo(Bidang::class, 'bidang', 'nama');
     }
@@ -89,14 +89,14 @@ class Pegawai extends Model
         return $this->belongsTo(SttsKerja::class, 'stts_kerja', 'stts');
     }
 
-    public function pendidikan()
+    public function getPendidikan()
     {
         return $this->belongsTo(Pendidikan::class, 'pendidikan', 'tingkat');
     }
 
     public function indexIns()
     {
-        return $this->belongsTo(Departemen::class, 'indexins', 'dep_id');
+        return $this->belongsTo(Indexins::class, 'indexins', 'dep_id');
     }
 
     public function bank()
