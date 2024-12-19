@@ -282,7 +282,7 @@ class ManagePasiens extends ManageRecords
                             ->label('Alamat')
                             ->description('Alamat Pasien dan Keluarga')
                             ->schema([
-                                Textarea::make('alamat')
+                                TextArea::make('alamat')
                                     ->label('Alamat Pasien')
                                     ->rows(4)
                                     ->maxLength(200)
