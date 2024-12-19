@@ -9,7 +9,7 @@ use Filament\Resources\Pages\ManageRecords;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\TextArea;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Wizard\Step;
@@ -282,7 +282,7 @@ class ManagePasiens extends ManageRecords
                             ->label('Alamat')
                             ->description('Alamat Pasien dan Keluarga')
                             ->schema([
-                                TextArea::make('alamat')
+                                Textarea::make('alamat')
                                     ->label('Alamat Pasien')
                                     ->rows(4)
                                     ->maxLength(200)
@@ -332,7 +332,7 @@ class ManagePasiens extends ManageRecords
                                         'required' => 'Kelurahan tidak boleh kosong',
                                     ])
                                     ->default('-'),
-                                TextArea::make('alamatpj')
+                                Textarea::make('alamatpj')
                                     ->label('Alamat Penanggung Jawab')
                                     ->rows(4)
                                     ->maxLength(200)
