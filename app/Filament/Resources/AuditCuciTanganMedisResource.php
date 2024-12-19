@@ -21,7 +21,7 @@ class AuditCuciTanganMedisResource extends Resource
     protected static ?string $model = AuditCuciTanganMedis::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $group = 'Audit';
+    protected static ?string $navigationGroup = 'Audit';
 
     public static function form(Form $form): Form
     {

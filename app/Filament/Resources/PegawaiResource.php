@@ -19,6 +19,7 @@ class PegawaiResource extends Resource
     protected static ?string $model = Pegawai::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'Master Data';
 
     public static function form(Form $form): Form
     {
@@ -136,7 +137,7 @@ class PegawaiResource extends Resource
                     ->default('AKTIF')
                     ->required(),
                 Forms\Components\TextInput::make('wajibmasuk')
-                ->label('Wajib Masuk')
+                    ->label('Wajib Masuk')
                     ->required()
                     ->default(0)
                     ->numeric(),
@@ -179,7 +180,7 @@ class PegawaiResource extends Resource
                     'bank',
                     'indexIns',
                 ])
-                ->orderBy('nik', 'asc')
+                    ->orderBy('nik', 'asc')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('nik')

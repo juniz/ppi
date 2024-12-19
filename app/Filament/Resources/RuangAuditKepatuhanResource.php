@@ -18,6 +18,7 @@ class RuangAuditKepatuhanResource extends Resource
     protected static ?string $model = RuangAuditKepatuhan::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $group = 'Master Data';
 
     public static function form(Form $form): Form
     {

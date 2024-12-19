@@ -23,6 +23,7 @@ class AuditPengelolaanLinenKotorResource extends Resource
     protected static ?string $model = AuditPengelolaanLinenKotor::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'Audit';
 
     public static function form(Form $form): Form
     {
@@ -104,8 +105,8 @@ class AuditPengelolaanLinenKotorResource extends Resource
         return $table
             ->query(
                 AuditPengelolaanLinenKotor::with('ruangAuditKepatuhan')
-                ->orderBy('tanggal', 'desc')
-                ->select('audit_pengelolaan_linen_kotor.*', DB::raw('CONCAT(ROUND(((audit1 = "Ya") + (audit2 = "Ya") + (audit3 = "Ya") + (audit4 = "Ya") + (audit5 = "Ya") + (audit6 = "Ya") + (audit7 = "Ya") + (audit8 = "Ya")) / 8 * 100, 2)) as ttl'))
+                    ->orderBy('tanggal', 'desc')
+                    ->select('audit_pengelolaan_linen_kotor.*', DB::raw('CONCAT(ROUND(((audit1 = "Ya") + (audit2 = "Ya") + (audit3 = "Ya") + (audit4 = "Ya") + (audit5 = "Ya") + (audit6 = "Ya") + (audit7 = "Ya") + (audit8 = "Ya")) / 8 * 100, 2)) as ttl'))
             )
             ->columns([
                 Tables\Columns\TextColumn::make('tanggal')

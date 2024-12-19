@@ -20,7 +20,7 @@ class AuditPenangananDarahResource extends Resource
     protected static ?string $model = AuditPenangananDarah::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $group = 'Audit';
+    protected static ?string $navigationGroup = 'Audit';
 
     public static function form(Form $form): Form
     {

@@ -30,6 +30,7 @@ class Ranap extends Page implements HasTable
 {
     use InteractsWithTable;
     protected static ?string $navigationIcon = 'heroicon-m-building-office';
+    protected static ?string $navigationGroup = 'Data Pasien';
 
     protected static string $view = 'filament.pages.ranap';
 
