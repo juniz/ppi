@@ -22,6 +22,7 @@ class AuditBundleIadpResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationGroup = 'Audit';
+    protected static ?string $navigationLabel = 'Bundle IADP';
 
     public static function form(Form $form): Form
     {
@@ -40,6 +41,7 @@ class AuditBundleIadpResource extends Resource
                     ->default('Ya')
                     ->required(),
                 Forms\Components\Select::make('apd')
+                    ->label('ALAT PELINDUNG DIRI')
                     ->options([
                         'Ya' => 'Ya',
                         'Tidak' => 'Tidak'
@@ -47,6 +49,7 @@ class AuditBundleIadpResource extends Resource
                     ->default('Ya')
                     ->required(),
                 Forms\Components\Select::make('skin_antiseptik')
+                    ->label('SKIN ANTISEPTIK')
                     ->options([
                         'Ya' => 'Ya',
                         'Tidak' => 'Tidak'
