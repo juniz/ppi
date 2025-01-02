@@ -9,7 +9,7 @@ use Filament\Resources\Pages\ManageRecords;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\TextArea;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\Wizard\Step;
@@ -108,7 +108,7 @@ class ManagePasiens extends ManageRecords
                         ->label('Umur')
                         ->required()
                         ->maxLength(30),
-                    TextArea::make('alamat')
+                    Textarea::make('alamat')
                         ->label('Alamat')
                         ->maxLength(100)
                         ->required(),
