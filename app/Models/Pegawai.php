@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class Pegawai extends Model
 {
     use HasFactory;
 
     protected $table = 'pegawai';
-    protected $primaryKey = 'nik';
+    protected $primaryKey = 'id';
     public $incrementing = false;
     public $timestamps = false;
 
@@ -48,6 +49,43 @@ class Pegawai extends Model
         'photo',
         'no_ktp',
     ];
+
+    public function __construct(array $attributes = [])
+    {
+        $this->setRawAttributes([
+            'jk' => 'Pria',
+            'jbtn' => '-',
+            'jnj_jabatan' => '-',
+            'kode_kelompok' => '-',
+            'kode_resiko' => '-',
+            'kode_emergency' => '-',
+            'departemen' => '-',
+            'bidang' => '-',
+            'stts_wp' => '-',
+            'stts_kerja' => '-',
+            'npwp' => '',
+            'pendidikan' => '-',
+            'gapok' => '',
+            'tmp_lahir' => '',
+            'tgl_lahir' => '0000-00-00',
+            'alamat' => '',
+            'kota' => '',
+            'mulai_kerja' => Carbon::now()->format('Y-m-d'),
+            'ms_kerja' => '<1',
+            'indexins' => '-',
+            'bpd' => 'BPD',
+            'rekening' => '',
+            'stts_aktif' => 'AKTIF',
+            'wajibmasuk' => '0',
+            'pengurang' => '0',
+            'indek' => '0',
+            'mulai_kontrak' => Carbon::now()->format('Y-m-d'),
+            'cuti_diambil' => '0',
+            'dankes' => '0',
+            'photo' => '',
+        ], true);
+        parent::__construct($attributes);
+    }
 
     public function jnjJabatan()
     {

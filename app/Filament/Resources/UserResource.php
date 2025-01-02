@@ -37,6 +37,12 @@ class UserResource extends Resource
                         $petugas = Petugas::where('nip', $state)->first();
                         $set('name', $petugas->nama ?? '');
                     }),
+                Forms\Components\Select::make('kamar')
+                    ->label('kamar')
+                    ->options(
+                        \App\Models\Bangsal::where('status', '1')->pluck('nm_bangsal', 'kd_bangsal')->toArray()
+                    )
+                    ->required(),
                 Forms\Components\TextInput::make('name')
                     ->reactive()
                     ->required()
@@ -56,6 +62,12 @@ class UserResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->query(
+                User::query()
+                    // ->with('petugas')
+                    ->with('bangsal')
+                    ->orderBy('created_at', 'desc')
+            )
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
@@ -63,17 +75,19 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nip')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('email_verified_at')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('bangsal.nm_bangsal')
+                    ->searchable(),
+                // Tables\Columns\TextColumn::make('email_verified_at')
+                //     ->dateTime()
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('created_at')
+                //     ->dateTime()
+                //     ->sortable()
+                //     ->toggleable(isToggledHiddenByDefault: true),
+                // Tables\Columns\TextColumn::make('updated_at')
+                //     ->dateTime()
+                //     ->sortable()
+                //     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //

@@ -23,6 +23,7 @@ class AuditBundleIadp extends Model
         'skin_antiseptik',
         'lokasi_iv',
         'perawatan_rutin',
+        'no_rawat',
     ];
 
     public function __construct(array $attributes = [])

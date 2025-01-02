@@ -28,6 +28,7 @@ class AuditBundlePlabsi extends Model
         'spoit_yang_digunakan_disposible',
         'memberi_tanggal_dan_jam_pemasangan_infus',
         'set_infus_setiap_72jam',
+        'no_rawat',
     ];
 
     public function __construct(array $attributes = [])

@@ -22,6 +22,7 @@ class AuditBundleIdo extends Model
         'antibiotik',
         'temperature',
         'sugar',
+        'no_rawat',
     ];
 
     public function __construct(array $attributes = [])

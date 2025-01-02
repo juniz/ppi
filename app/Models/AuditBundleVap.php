@@ -26,6 +26,7 @@ class AuditBundleVap extends Model
         'profilaksis_peptic_ulcer',
         'dvt_profiklasisi',
         'penggunaan_apd_sesuai',
+        'no_rawat',
     ];
 
     public function __construct(array $attributes = [])

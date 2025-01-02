@@ -125,82 +125,85 @@ class PasienResource extends Resource
             ->defaultSort('no_rkm_medis', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('no_rkm_medis')
+                    ->label('No Rekam Medis')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nm_pasien')
+                    ->label('Nama Pasien')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('no_ktp')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('jk'),
+                // Tables\Columns\TextColumn::make('no_ktp')
+                //     ->searchable(),
+                Tables\Columns\TextColumn::make('jk')
+                    ->label('Jenis Kelamin'),
                 Tables\Columns\TextColumn::make('tmp_lahir')
-                    ->searchable(),
+                    ->label('Tempat Lahir'),
                 Tables\Columns\TextColumn::make('tgl_lahir')
                     ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('nm_ibu')
-                    ->searchable(),
+                    ->label('Tanggal Lahir'),
+                // Tables\Columns\TextColumn::make('nm_ibu')
+                //     ->searchable(),
                 Tables\Columns\TextColumn::make('alamat')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('gol_darah'),
-                Tables\Columns\TextColumn::make('pekerjaan')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('stts_nikah'),
-                Tables\Columns\TextColumn::make('agama')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('tgl_daftar')
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('no_tlp')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('umur')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('pnd'),
-                Tables\Columns\TextColumn::make('keluarga'),
-                Tables\Columns\TextColumn::make('namakeluarga')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('kd_pj')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('no_peserta')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('kelurahan.nm_kel')
-                    ->label('Kelurahan')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('kd_kec')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('kd_kab')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('pekerjaanpj')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('alamatpj')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('kelurahanpj')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('kecamatanpj')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('kabupatenpj')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('perusahaan_pasien')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('suku_bangsa')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('bahasa_pasien')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('cacat_fisik')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('email')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('nip')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('kd_prop')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('propinsipj')
-                    ->searchable(),
+                // Tables\Columns\TextColumn::make('gol_darah'),
+                // Tables\Columns\TextColumn::make('pekerjaan')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('stts_nikah'),
+                // Tables\Columns\TextColumn::make('agama')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('tgl_daftar')
+                //     ->date()
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('no_tlp')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('umur')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('pnd'),
+                // Tables\Columns\TextColumn::make('keluarga'),
+                // Tables\Columns\TextColumn::make('namakeluarga')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('kd_pj')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('no_peserta')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('kelurahan.nm_kel')
+                //     ->label('Kelurahan')
+                //     ->numeric()
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('kd_kec')
+                //     ->numeric()
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('kd_kab')
+                //     ->numeric()
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('pekerjaanpj')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('alamatpj')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('kelurahanpj')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('kecamatanpj')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('kabupatenpj')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('perusahaan_pasien')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('suku_bangsa')
+                //     ->numeric()
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('bahasa_pasien')
+                //     ->numeric()
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('cacat_fisik')
+                //     ->numeric()
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('email')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('nip')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('kd_prop')
+                //     ->numeric()
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('propinsipj')
+                //     ->searchable(),
             ])
             ->filters([
                 //

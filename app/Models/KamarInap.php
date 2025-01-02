@@ -10,6 +10,7 @@ class KamarInap extends Model
     use HasFactory;
 
     protected $table = 'kamar_inap';
+    protected $primaryKey = 'tgl_masuk';
     public $incrementing = false;
     public $timestamps = false;
 
@@ -27,4 +28,9 @@ class KamarInap extends Model
         'ttl_biaya',
         'stts_pulang',
     ];
+
+    public function kamar()
+    {
+        return $this->belongsTo(Kamar::class, 'kd_kamar', 'kd_kamar');
+    }
 }

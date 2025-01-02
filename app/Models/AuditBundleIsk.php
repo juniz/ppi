@@ -26,6 +26,7 @@ class AuditBundleIsk extends Model
         'pengisian_balon_sesuai_petunjuk',
         'fiksasi_kateter_dengan_plester',
         'urinebag_menggantung_tidak_menyentuh_lantai',
+        'no_rawat',
     ];
 
     public function __construct(array $attributes = [])

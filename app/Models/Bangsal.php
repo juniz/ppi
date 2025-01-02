@@ -12,6 +12,7 @@ class Bangsal extends Model
     protected $table = 'bangsal';
     protected $primaryKey = 'kd_bangsal';
     public $timestamps = false;
+    public $incrementing = false;
 
     protected $fillable = [
         'kd_bangsal',

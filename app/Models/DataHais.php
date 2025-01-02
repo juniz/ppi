@@ -10,7 +10,7 @@ class DataHais extends Model
     use HasFactory;
 
     protected $table = 'data_HAIs';
-    public $primaryKey = 'no_rawat';
+    public $primaryKey = 'tanggal';
     public $incrementing = false;
     public $timestamps = false;
 
@@ -29,7 +29,7 @@ class DataHais extends Model
         'HAP',
         'Tinea',
         'Scabies',
-        'Deku',
+        'DEKU',
         'SPUTUM',
         'DARAH',
         'URINE',
@@ -39,7 +39,7 @@ class DataHais extends Model
 
     public function kamar()
     {
-        return $this->belongsTo(Kamar::class, 'no_rawat', 'no_rawat');
+        return $this->belongsTo(Kamar::class, 'kd_kamar', 'kd_kamar');
     }
 
     public function regPeriksa()
