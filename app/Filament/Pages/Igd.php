@@ -15,6 +15,7 @@ use Filament\Forms\Components\Select;
 use App\Models\Penjab;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Actions;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Support\Facades\DB;
 use Filament\Notifications\Notification;
@@ -156,83 +157,85 @@ class Igd extends Page implements HasTable
                     ->placeholder('Pilih Jenis Bayar')
             ])
             ->actions([
-                Tables\Actions\CreateAction::make('kamar_inap')
-                    ->label('Kamar Inap')
-                    ->icon('heroicon-o-plus-circle')
-                    ->modalHeading('Kamar Inap')
-                    ->action(function (array $data, RegPeriksa $regPeriksa): void {
-                        try {
-                            $kamar = \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->first();
-                            $kamar->status = 'ISI';
-                            $kamar->save();
-                            $regPeriksa->status_lanjut = 'Ranap';
-                            $regPeriksa->save();
-                            $data['no_rawat'] = $regPeriksa->no_rawat;
-                            $data['tgl_masuk'] = date('Y-m-d');
-                            $data['jam_masuk'] = date('H:i:s');
-                            $data['tgl_keluar'] = '0000-00-00';
-                            $data['jam_keluar'] = '00:00:00';
-                            $data['lama'] = 1;
-                            $data['diagnosa_akhir'] = '-';
-                            $data['trf_kamar'] = $kamar->trf_kamar;
-                            $data['ttl_biaya'] = $kamar->trf_kamar;
-                            \App\Models\KamarInap::create($data);
-                            Notification::make()
-                                ->title('Pasien Berhasil Diinapkan')
-                                ->success()
-                                ->icon('heroicon-o-document-text')
-                                ->iconColor('success')
-                                ->send();
-                        } catch (\Exception $e) {
-                            Notification::make()
-                                ->title('Gagal Menginapkan Pasien')
-                                ->body($e->getMessage())
-                                ->danger()
-                                // ->icon('heroicon-o-exclamation')
-                                // ->iconColor('error')
-                                ->send();
-                        }
-                    })
-                    ->form([
-                        Select::make('kd_kamar')
-                            ->label('Kamar')
-                            ->options(\App\Models\Kamar::where('status', 'KOSONG')->pluck('kd_kamar', 'kd_kamar'))
-                            ->searchable()
-                            ->reactive()
-                            ->afterStateUpdated(function ($state, callable $set) {
-                                $kamar = \App\Models\Kamar::where('kd_kamar', $state)->first();
-                                // dd($kamar->trf_kamar);
-                                $set('ttl_biaya', $kamar->trf_kamar ?? 0);
-                            })
-                            ->required(),
-                        TextInput::make('diagnosa_awal')
-                            ->label('Diagnosa Awal')
-                            ->required(),
-                        TextInput::make('ttl_biaya')
-                            ->label('Total Biaya')
-                            ->reactive()
-                            ->required(),
-                    ]),
-                Tables\Actions\EditAction::make()
-                    ->label('Edit')
-                    ->modalHeading('Edit Pendafataran')
-                    ->form([
-                        Select::make('kd_pj')
-                            ->label('Jenis Bayar')
-                            ->options(Penjab::where('status', '1')->pluck('png_jawab', 'kd_pj'))
-                            ->searchable()
-                            ->required(),
-                        Select::make('kd_poli')
-                            ->label('Poliklinik')
-                            ->options(Poliklinik::where('status', '1')->pluck('nm_poli', 'kd_poli'))
-                            ->searchable()
-                            ->required(),
-                        Select::make('kd_dokter')
-                            ->label('Dokter')
-                            ->options(Dokter::where('status', '1')->pluck('nm_dokter', 'kd_dokter'))
-                            ->searchable()
-                            ->required(),
-                    ])
+                ActionGroup::make([
+                    Tables\Actions\CreateAction::make('kamar_inap')
+                        ->label('Kamar Inap')
+                        ->icon('heroicon-o-plus-circle')
+                        ->modalHeading('Kamar Inap')
+                        ->action(function (array $data, RegPeriksa $regPeriksa): void {
+                            try {
+                                $kamar = \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->first();
+                                $kamar->status = 'ISI';
+                                $kamar->save();
+                                $regPeriksa->status_lanjut = 'Ranap';
+                                $regPeriksa->save();
+                                $data['no_rawat'] = $regPeriksa->no_rawat;
+                                $data['tgl_masuk'] = date('Y-m-d');
+                                $data['jam_masuk'] = date('H:i:s');
+                                $data['tgl_keluar'] = '0000-00-00';
+                                $data['jam_keluar'] = '00:00:00';
+                                $data['lama'] = 1;
+                                $data['diagnosa_akhir'] = '-';
+                                $data['trf_kamar'] = $kamar->trf_kamar;
+                                $data['ttl_biaya'] = $kamar->trf_kamar;
+                                \App\Models\KamarInap::create($data);
+                                Notification::make()
+                                    ->title('Pasien Berhasil Diinapkan')
+                                    ->success()
+                                    ->icon('heroicon-o-document-text')
+                                    ->iconColor('success')
+                                    ->send();
+                            } catch (\Exception $e) {
+                                Notification::make()
+                                    ->title('Gagal Menginapkan Pasien')
+                                    ->body($e->getMessage())
+                                    ->danger()
+                                    // ->icon('heroicon-o-exclamation')
+                                    // ->iconColor('error')
+                                    ->send();
+                            }
+                        })
+                        ->form([
+                            Select::make('kd_kamar')
+                                ->label('Kamar')
+                                ->options(\App\Models\Kamar::where('status', 'KOSONG')->pluck('kd_kamar', 'kd_kamar'))
+                                ->searchable()
+                                ->reactive()
+                                ->afterStateUpdated(function ($state, callable $set) {
+                                    $kamar = \App\Models\Kamar::where('kd_kamar', $state)->first();
+                                    // dd($kamar->trf_kamar);
+                                    $set('ttl_biaya', $kamar->trf_kamar ?? 0);
+                                })
+                                ->required(),
+                            TextInput::make('diagnosa_awal')
+                                ->label('Diagnosa Awal')
+                                ->required(),
+                            TextInput::make('ttl_biaya')
+                                ->label('Total Biaya')
+                                ->reactive()
+                                ->required(),
+                        ]),
+                    Tables\Actions\EditAction::make()
+                        ->label('Edit')
+                        ->modalHeading('Edit Pendafataran')
+                        ->form([
+                            Select::make('kd_pj')
+                                ->label('Jenis Bayar')
+                                ->options(Penjab::where('status', '1')->pluck('png_jawab', 'kd_pj'))
+                                ->searchable()
+                                ->required(),
+                            Select::make('kd_poli')
+                                ->label('Poliklinik')
+                                ->options(Poliklinik::where('status', '1')->pluck('nm_poli', 'kd_poli'))
+                                ->searchable()
+                                ->required(),
+                            Select::make('kd_dokter')
+                                ->label('Dokter')
+                                ->options(Dokter::where('status', '1')->pluck('nm_dokter', 'kd_dokter'))
+                                ->searchable()
+                                ->required(),
+                        ])
+                ])
             ], position: ActionsPosition::BeforeColumns)
             ->columns([
                 TextColumn::make('no_reg')

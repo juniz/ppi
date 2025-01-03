@@ -30,6 +30,10 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('')
             ->login()
+            // ->renderHook(
+            //     'panels::auth.login.form.after',
+            //     fn() => view('auth.socialite.google')
+            // )
             ->plugins([
                 FilamentScaffoldPlugin::make(),
                 FilamentBackgroundsPlugin::make()
