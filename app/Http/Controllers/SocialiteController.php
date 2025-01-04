@@ -23,6 +23,8 @@ class SocialiteController extends Controller
 
         $user = User::firstWhere(['email' => $response->getEmail()]);
 
+        // dd($response);
+
         if ($user) {
             $user->update([$provider . '_id' => $response->getId()]);
         } else {
@@ -32,9 +34,7 @@ class SocialiteController extends Controller
             //     'email'           => $response->getEmail(),
             //     'password'        => '',
             // ]);
-            return redirect()->route('login')->with('error', 'Email belum terdaftar');
         }
-
         auth()->login($user);
 
         return redirect()->intended(route('filament.admin.pages.dashboard'));
