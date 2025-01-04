@@ -27,6 +27,7 @@ class SocialiteController extends Controller
 
         if ($user) {
             $user->update([$provider . '_id' => $response->getId()]);
+            auth()->login($user);
         } else {
             // $user = User::create([
             //     $provider . '_id' => $response->getId(),
@@ -35,7 +36,7 @@ class SocialiteController extends Controller
             //     'password'        => '',
             // ]);
         }
-        auth()->login($user);
+
 
         return redirect()->intended(route('filament.admin.pages.dashboard'));
     }
