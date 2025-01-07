@@ -34,6 +34,15 @@ class AuditBundleIadp extends Model
         parent::__construct($attributes);
     }
 
+    static function rataTtlNilai(string $month, string $year)
+    {
+        $data = self::whereMonth('tanggal', $month)
+            ->whereYear('tanggal', $year)
+            ->selectRaw('CONCAT(ROUND(((handhygiene = "Ya") + (apd = "Ya") + (skin_antiseptik = "Ya") + (lokasi_iv = "Ya") + (perawatan_rutin = "Ya")) / 5 * 100, 2)) as ttl')
+            ->get();
+        return $data->avg('ttl');
+    }
+
     public function pegawai()
     {
         return $this->belongsTo(Pegawai::class, 'nik', 'nik');

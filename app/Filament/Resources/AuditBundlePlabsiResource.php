@@ -12,7 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Columns\Summarizers\Count;
 use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
 
@@ -139,7 +139,7 @@ class AuditBundlePlabsiResource extends Resource
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('sebelum_melakukan_hand_hygiene', 'Tidak')),
                         Summarizer::make()->label('Rata-rata')->using(function (Builder $query) {
                             $total = $query->count();
-                            $ya = $query->where('pemasangan_sesuai_indikasi', 'Ya')->count();
+                            $ya = $query->where('sebelum_melakukan_hand_hygiene', 'Ya')->count();
                             return round($total == 0 ? 0 : ($ya / $total) * 100, 2);
                         })
                     ]),
@@ -289,6 +289,9 @@ class AuditBundlePlabsiResource extends Resource
             ])
             ->filters([
                 //
+            ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
