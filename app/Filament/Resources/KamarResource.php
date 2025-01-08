@@ -27,6 +27,9 @@ class KamarResource extends Resource
                 Forms\Components\Select::make('kd_bangsal')
                     ->relationship('bangsal', 'nm_bangsal')
                     ->required(),
+                Forms\Components\TextInput::make('kd_kamar')
+                    ->label('Kode Kamar')
+                    ->required(),
                 Forms\Components\TextInput::make('trf_kamar')
                     ->label('Tarif Kamar')
                     ->required(),
