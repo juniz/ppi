@@ -42,23 +42,42 @@ class Ranap extends Page implements HasTable
         return $table
             ->query(
                 RegPeriksa::query()
+                    ->join('kamar_inap', 'reg_periksa.no_rawat', '=', 'kamar_inap.no_rawat')
                     ->with(['pasien', 'poliklinik', 'penjab', 'kamarInap.kamar'])
                     ->where('status_lanjut', 'Ranap')
             )
             ->defaultSort('tgl_registrasi', 'desc')
             ->filters([
-                SelectFilter::make('kd_poli')
-                    ->options(Poliklinik::where('status', '1')->pluck('nm_poli', 'kd_poli'))
-                    ->label('Poliklinik')
-                    ->placeholder('Pilih Poliklinik'),
-                SelectFilter::make('kd_dokter')
-                    ->options(Dokter::where('status', '1')->pluck('nm_dokter', 'kd_dokter'))
-                    ->label('Dokter')
-                    ->placeholder('Pilih Dokter'),
-                SelectFilter::make('kd_pj')
-                    ->options(Penjab::where('status', '1')->pluck('png_jawab', 'kd_pj'))
-                    ->label('Jenis Bayar')
-                    ->placeholder('Pilih Jenis Bayar')
+                SelectFilter::make('kd_kamar')
+                    ->label('Kamar')
+                    ->options(\App\Models\Kamar::join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')->pluck('nm_bangsal', 'kamar.kd_kamar'))
+                    ->placeholder('Pilih Kamar'),
+                SelectFilter::make('stts_pulang')
+                    ->label('Status Pulang')
+                    ->options([
+                        '-' => '-',
+                        'Sehat' => 'Sehat',
+                        'Rujuk' => 'Rujuk',
+                        'APS' => 'APS',
+                        '+' => '+',
+                        'Meninggal' => 'Meninggal',
+                        'Membaik' => 'Membaik',
+                        'Pulang Paksa' => 'Pulang Paksa',
+                        'Status Belum Lengkap' => 'Status Belum Lengkap',
+                        'Atas Persetujuan Dokter' => 'Atas Persetujuan Dokter',
+                        'Atas Permintaan Sendiri' => 'Atas Permintaan Sendiri',
+                        'Isoman' => 'Isoman',
+                        'Lain-lain' => 'Lain-lain'
+                    ])
+                    ->placeholder('Pilih Status Pulang'),
+                // SelectFilter::make('kd_dokter')
+                //     ->options(Dokter::where('status', '1')->pluck('nm_dokter', 'kd_dokter'))
+                //     ->label('Dokter')
+                //     ->placeholder('Pilih Dokter'),
+                // SelectFilter::make('kd_pj')
+                //     ->options(Penjab::where('status', '1')->pluck('png_jawab', 'kd_pj'))
+                //     ->label('Jenis Bayar')
+                //     ->placeholder('Pilih Jenis Bayar')
             ])
             ->columns([
                 TextColumn::make('no_rkm_medis')
