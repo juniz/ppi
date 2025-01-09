@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\AuditBundleIadpResource\Pages;
 
 use App\Filament\Resources\AuditBundleIadpResource;
+use App\Filament\Resources\AuditBundleIadpResource\Widgets\IadpChart;
 use Filament\Actions;
 use Filament\Resources\Pages\ManageRecords;
 
@@ -13,7 +14,19 @@ class ManageAuditBundleIadps extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
         ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            IadpChart::class,
+        ];
+    }
+
+    public function getHeaderWidgetsColumns(): int|string|array
+    {
+        return 1;
     }
 }

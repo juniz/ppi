@@ -12,6 +12,7 @@ class Kamar extends Model
     protected $table = 'kamar';
     protected $primaryKey = 'kd_kamar';
     public $timestamps = false;
+    public $incrementing = false;
 
     protected $fillable = [
         'kd_kamar',
@@ -19,7 +20,7 @@ class Kamar extends Model
         'trf_kamar',
         'status',
         'kelas',
-        'status_data',
+        'statusdata',
     ];
 
     public function bangsal()

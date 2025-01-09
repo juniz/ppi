@@ -22,6 +22,8 @@ class User extends Authenticatable
         'email',
         'password',
         'nip',
+        'kamar',
+        'google_id',
     ];
 
     /**
@@ -43,4 +45,9 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function bangsal()
+    {
+        return $this->belongsTo(Bangsal::class, 'kamar', 'kd_bangsal');
+    }
 }

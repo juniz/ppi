@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\DataHaisResource\Pages;
 use App\Filament\Resources\DataHaisResource\RelationManagers;
+use App\Filament\Resources\DataHaisResource\Widgets\HaisChart;
 use App\Models\DataHais;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -19,6 +20,13 @@ class DataHaisResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationGroup = 'Master Data';
+
+    public static function getWidgets(): array
+    {
+        return [
+            HaisChart::class,
+        ];
+    }
 
     public static function form(Form $form): Form
     {

@@ -22,6 +22,7 @@ class AuditBundleIdo extends Model
         'antibiotik',
         'temperature',
         'sugar',
+        'no_rawat',
     ];
 
     public function __construct(array $attributes = [])
@@ -30,6 +31,15 @@ class AuditBundleIdo extends Model
             'tanggal' => Carbon::now()->format('Y-m-d H:i:s'),
         ], true);
         parent::__construct($attributes);
+    }
+
+    static function rataTtlNilai(string $month, string $year)
+    {
+        $data = self::whereMonth('tanggal', $month)
+            ->whereYear('tanggal', $year)
+            ->selectRaw('CONCAT(ROUND(((pencukuran_rambut = "Ya") + (antibiotik = "Ya") + (temperature = "Ya") + (sugar = "Ya")) / 4 * 100, 2)) as ttl')
+            ->get();
+        return $data->avg('ttl');
     }
 
     public function ruangAuditKepatuhan()

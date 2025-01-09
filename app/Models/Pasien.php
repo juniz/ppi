@@ -55,6 +55,43 @@ class Pasien extends Model
         'propinsipj',
     ];
 
+    public function __construct(array $attributes = [])
+    {
+        $this->setRawAttributes([
+            'no_ktp' => '',
+            'tmp_lahir' => '',
+            'nm_ibu' => '',
+            'gol_darah' => '-',
+            'pekerjaan' => '',
+            'stts_nikah' => 'BELUM NIKAH',
+            'agama' => 'ISLAM',
+            'tgl_daftar' => Carbon::now()->format('Y-m-d'),
+            'no_tlp' => '',
+            'pnd' => '-',
+            'keluarga' => 'LAIN-LAIN',
+            'namakeluarga' => '',
+            'kd_pj' => '-',
+            'no_peserta' => '',
+            'kd_kel' => '1',
+            'kd_kec' => '1',
+            'kd_kab' => '1',
+            'pekerjaanpj' => '',
+            'alamatpj' => '',
+            'kelurahanpj' => '1',
+            'kecamatanpj' => '1',
+            'kabupatenpj' => '1',
+            'perusahaan_pasien' => '-',
+            'suku_bangsa' => '1',
+            'bahasa_pasien' => '1',
+            'cacat_fisik' => '1',
+            'email' => '',
+            'nip' => '',
+            'kd_prop' => '1',
+            'propinsipj' => '1',
+        ], true);
+        parent::__construct($attributes);
+    }
+
     public static function calculateAge($tgl_lahir)
     {
         $birthDate = \Carbon\Carbon::parse($tgl_lahir);

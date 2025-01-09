@@ -11,10 +11,15 @@
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
+        "laravel/socialite": "^5.16",
         "laravel/tinker": "^2.8",
+        "leandrocfe/filament-apex-charts": "^3.1",
         "livewire/livewire": "^3.5",
         "livewire/volt": "^1.6",
+        "malzariey/filament-daterangepicker-filter": "^3.1",
         "robsontenorio/mary": "^1.41",
+        "solution-forest/filament-scaffold": "^0.0.7",
+        "swisnl/filament-backgrounds": "^1.1",
         "thiagoprz/eloquent-composite-key": "^1.0"
     },
     "require-dev": {

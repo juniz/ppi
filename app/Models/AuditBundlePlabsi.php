@@ -28,6 +28,7 @@ class AuditBundlePlabsi extends Model
         'spoit_yang_digunakan_disposible',
         'memberi_tanggal_dan_jam_pemasangan_infus',
         'set_infus_setiap_72jam',
+        'no_rawat',
     ];
 
     public function __construct(array $attributes = [])
@@ -36,6 +37,15 @@ class AuditBundlePlabsi extends Model
             'tanggal' => Carbon::now()->format('Y-m-d H:i:s'),
         ], true);
         parent::__construct($attributes);
+    }
+
+    static function rataTtlNilai(string $month, string $year)
+    {
+        $data = self::whereMonth('tanggal', $month)
+            ->whereYear('tanggal', $year)
+            ->selectRaw('CONCAT(ROUND(((sebelum_melakukan_hand_hygiene = "Ya") + (menggunakan_apd_lengkap = "Ya") + (lokasi_pemasangan_sesuai = "Ya") + (alat_yang_digunakan_steril = "Ya") + (pembersihan_kulit = "Ya") + (setelah_melakukan_hand_hygiene = "Ya") + (perawatan_dressing_infus = "Ya") + (spoit_yang_digunakan_disposible = "Ya") + (memberi_tanggal_dan_jam_pemasangan_infus = "Ya") + (set_infus_setiap_72jam = "Ya")) / 10 * 100, 2)) as ttl')
+            ->get();
+        return $data->avg('ttl');
     }
 
     public function ruangAuditKepatuhan()

@@ -6,6 +6,7 @@ use App\Filament\Resources\AuditBundleVapResource\Pages;
 use App\Filament\Resources\AuditBundleVapResource\RelationManagers;
 use App\Models\AuditBundleVap;
 use Filament\Forms;
+use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -253,6 +254,9 @@ class AuditBundleVapResource extends Resource
             ])
             ->filters([
                 //
+            ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

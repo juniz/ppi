@@ -17,6 +17,10 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Solutionforest\FilamentScaffold\FilamentScaffoldPlugin;
+use Swis\Filament\Backgrounds\FilamentBackgroundsPlugin;
+use Swis\Filament\Backgrounds\ImageProviders\MyImages;
+use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -27,6 +31,20 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('')
             ->login()
+            ->renderHook(
+                'panels::auth.login.form.after',
+                fn() => view('auth.socialite.google')
+            )
+            ->plugins([
+                FilamentApexChartsPlugin::make(),
+                FilamentScaffoldPlugin::make(),
+                FilamentBackgroundsPlugin::make()
+                    ->imageProvider(
+                        MyImages::make()
+                            ->directory('assets/images/backgrounds')
+                    )
+                    ->remember(900)
+            ])
             ->colors([
                 'primary' => Color::Amber,
             ])
