@@ -28,6 +28,8 @@ use Filament\Actions;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
+use Illuminate\Support\Carbon;
 
 class Ranap extends Page implements HasTable
 {
@@ -48,6 +50,19 @@ class Ranap extends Page implements HasTable
             )
             ->defaultSort('tgl_registrasi', 'desc')
             ->filters([
+                DateRangeFilter::make('tgl_registrasi')
+                    ->label('Tanggal Registrasi')
+                    ->startDate(Carbon::now())
+                    ->endDate(Carbon::now())
+                    ->modifyQueryUsing(
+                        fn(Builder $query, ?Carbon $startDate, ?Carbon $endDate, $dateString) =>
+                        $query->when(
+                            !empty($dateString),
+                            fn(Builder $query, $date): Builder =>
+                            $query->whereBetween('tgl_registrasi', [$startDate, $endDate])
+                        )
+                    )
+                    ->autoApply(),
                 SelectFilter::make('kd_kamar')
                     ->label('Kamar')
                     ->options(\App\Models\Kamar::join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')->pluck('nm_bangsal', 'kamar.kd_kamar'))
