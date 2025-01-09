@@ -7,16 +7,18 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 use App\Models\RegPeriksa;
 use App\Models\KamarInap;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class StatsOverview extends BaseWidget
 {
     protected function getStats(): array
     {
         // Hitung pasien rawat inap saat ini
-        $rawatInap = RegPeriksa::where('status_lanjut', 'Ranap')
-            ->whereHas('kamarInap', function($q) {
-                $q->where('tgl_keluar', '0000-00-00');
-            })->count();
+        $rawatInap = RegPeriksa::select('reg_periksa.no_rawat')
+            ->join('kamar_inap', 'reg_periksa.no_rawat', '=', 'kamar_inap.no_rawat')
+            ->where('kamar_inap.stts_pulang', '-')
+            ->distinct()
+            ->count('reg_periksa.no_rawat');
 
         // Hitung pasien pulang hari ini
         $pasienPulang = KamarInap::whereDate('tgl_keluar', Carbon::today())
@@ -24,7 +26,8 @@ class StatsOverview extends BaseWidget
             ->count();
 
         // Hitung pasien masuk hari ini  
-        $pasienMasuk = KamarInap::whereDate('tgl_masuk', Carbon::today())->count();
+        $pasienMasuk = KamarInap::whereDate('tgl_masuk', Carbon::today())
+            ->count();
 
         return [
             Stat::make('Pasien Rawat Inap', $rawatInap)
