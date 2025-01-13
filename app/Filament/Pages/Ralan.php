@@ -207,7 +207,7 @@ class Ralan extends Page implements HasTable
                         ->form([
                             Select::make('kd_kamar')
                                 ->label('Kamar')
-                                ->options(\App\Models\Kamar::where('status', 'KOSONG')->pluck('kd_kamar', 'kd_kamar'))
+                                ->options(\App\Models\Kamar::get()->pluck('kd_kamar', 'kd_kamar'))
                                 ->searchable()
                                 ->reactive()
                                 ->afterStateUpdated(function ($state, callable $set) {
