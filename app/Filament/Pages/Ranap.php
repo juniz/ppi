@@ -50,7 +50,8 @@ class Ranap extends Page implements HasTable
             )
             ->defaultSort('tgl_registrasi', 'desc')
             ->filters([
-                DateRangeFilter::make('tgl_registrasi')
+                // Menonaktifkan filter tanggal registrasi dengan komentar
+                /*DateRangeFilter::make('tgl_registrasi')
                     ->label('Tanggal Registrasi')
                     ->startDate(Carbon::now())
                     ->endDate(Carbon::now())
@@ -62,11 +63,7 @@ class Ranap extends Page implements HasTable
                             $query->whereBetween('tgl_registrasi', [$startDate, $endDate])
                         )
                     )
-                    ->autoApply(),
-                SelectFilter::make('kd_kamar')
-                    ->label('Kamar')
-                    ->options(\App\Models\Kamar::join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')->pluck('nm_bangsal', 'kamar.kd_kamar'))
-                    ->placeholder('Pilih Kamar'),
+                    ->autoApply(),*/
                 SelectFilter::make('stts_pulang')
                     ->label('Status Pulang')
                     ->options([
@@ -84,15 +81,8 @@ class Ranap extends Page implements HasTable
                         'Isoman' => 'Isoman',
                         'Lain-lain' => 'Lain-lain'
                     ])
+                    ->default('-')
                     ->placeholder('Pilih Status Pulang'),
-                // SelectFilter::make('kd_dokter')
-                //     ->options(Dokter::where('status', '1')->pluck('nm_dokter', 'kd_dokter'))
-                //     ->label('Dokter')
-                //     ->placeholder('Pilih Dokter'),
-                // SelectFilter::make('kd_pj')
-                //     ->options(Penjab::where('status', '1')->pluck('png_jawab', 'kd_pj'))
-                //     ->label('Jenis Bayar')
-                //     ->placeholder('Pilih Jenis Bayar')
             ])
             ->columns([
                 TextColumn::make('no_rkm_medis')
