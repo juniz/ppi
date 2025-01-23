@@ -29,6 +29,14 @@ class KamarInap extends Model
         'stts_pulang',
     ];
 
+    public function __construct(array $attributes = [])
+    {
+        $this->setRawAttributes([
+            'stts_pulang' => '-',
+        ], true);
+        parent::__construct($attributes);
+    }
+
     public function kamar()
     {
         return $this->belongsTo(Kamar::class, 'kd_kamar', 'kd_kamar');
