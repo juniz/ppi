@@ -20,8 +20,9 @@ class AuditBundleIdoResource extends Resource
 {
     protected static ?string $model = AuditBundleIdo::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationGroup = 'Audit';
+    protected static ?string $navigationLabel = 'Bundle IDO';
 
     public static function form(Form $form): Form
     {

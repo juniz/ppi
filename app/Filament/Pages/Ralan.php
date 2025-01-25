@@ -33,6 +33,7 @@ class Ralan extends Page implements HasTable
     protected static ?string $model = RegPeriksa::class;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationGroup = 'Data Pasien';
+    protected static ?int $navigationSort = -2;
 
     protected static string $view = 'filament.pages.ralan';
 

@@ -22,7 +22,6 @@ use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ActionGroup;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Filament\Tables\Enums\ActionsPosition;
 
 class PasienResource extends Resource
 {
@@ -30,6 +29,7 @@ class PasienResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $navigationGroup = 'Data Pasien';
+    protected static ?int $navigationSort = -4;
 
     public static function form(Form $form): Form
     {
@@ -147,6 +147,67 @@ class PasienResource extends Resource
                 //     ->searchable(),
                 Tables\Columns\TextColumn::make('alamat')
                     ->searchable(),
+                // Tables\Columns\TextColumn::make('gol_darah'),
+                // Tables\Columns\TextColumn::make('pekerjaan')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('stts_nikah'),
+                // Tables\Columns\TextColumn::make('agama')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('tgl_daftar')
+                //     ->date()
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('no_tlp')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('umur')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('pnd'),
+                // Tables\Columns\TextColumn::make('keluarga'),
+                // Tables\Columns\TextColumn::make('namakeluarga')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('kd_pj')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('no_peserta')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('kelurahan.nm_kel')
+                //     ->label('Kelurahan')
+                //     ->numeric()
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('kd_kec')
+                //     ->numeric()
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('kd_kab')
+                //     ->numeric()
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('pekerjaanpj')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('alamatpj')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('kelurahanpj')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('kecamatanpj')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('kabupatenpj')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('perusahaan_pasien')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('suku_bangsa')
+                //     ->numeric()
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('bahasa_pasien')
+                //     ->numeric()
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('cacat_fisik')
+                //     ->numeric()
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('email')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('nip')
+                //     ->searchable(),
+                // Tables\Columns\TextColumn::make('kd_prop')
+                //     ->numeric()
+                //     ->sortable(),
+                // Tables\Columns\TextColumn::make('propinsipj')
+                //     ->searchable(),
             ])
             ->filters([
                 //
@@ -315,58 +376,27 @@ class PasienResource extends Resource
                                 ->searchable()
                                 ->required(),
                         ]),
-                    Tables\Actions\EditAction::make('kamar_inap')
+                    Tables\Actions\CreateAction::make('kamar_inap')
                         ->label('Rawat Inap')
                         ->icon('heroicon-o-plus-circle')
                         ->modalHeading('Kamar Inap')
-                        ->mountUsing(function (Form $form, Pasien $pasien) {
-                            $cekStatus = \App\Models\RegPeriksa::where('no_rkm_medis', $pasien->no_rkm_medis)->where('status_lanjut', 'Ralan')->first();
-                            $form->fill([
-                                'no_rkm_medis' => $pasien->no_rkm_medis,
-                                'p_jawab' => $pasien->namakeluarga ?? '',
-                                'hubunganpj' => $pasien->namakeluarga ?? '',
-                                'almt_pj' => $pasien->almt_pj ?? '',
-                                'status_poli' => $cekStatus ? 'Lama' : 'Baru',
-                            ]);
-                        })
                         ->action(function (array $data, Pasien $regPeriksa): void {
                             try {
-                                $pasien = \App\Models\Pasien::where('no_rkm_medis', $data['no_rkm_medis'])->first();
-                                $cekStatus = \App\Models\RegPeriksa::where('no_rkm_medis', $data['no_rkm_medis'])->where('status_lanjut', 'Ralan')->first();
-                                $tgl_lahir = Carbon::parse($pasien->tgl_lahir);
-                                $data['umurdaftar'] = $tgl_lahir->diff(Carbon::now())->format('%y Th %m Bl %d Hr');
-                                $data['no_reg'] = \App\Models\RegPeriksa::generateNoReg($data['kd_dokter'], $data['kd_poli']);
-                                $data['no_rawat'] = \App\Models\RegPeriksa::generateNoRawat();
-                                $data['tgl_registrasi'] = date('Y-m-d');
-                                $data['jam_reg'] = date('H:i:s');
-                                $data['status_lanjut'] = 'Ranap';
-                                $data['stts'] = 'Belum';
-                                $data['sttsumur'] = 'Th';
-                                $data['biaya_reg'] = \App\Models\Poliklinik::where('kd_poli', $data['kd_poli'])->first()->registrasi;
-                                $data['status_bayar'] = 'Belum Bayar';
-                                $data['stts_daftar'] = $cekStatus ? 'Lama' : 'Baru';
-
-                                DB::transaction(function () use ($data, $pasien) {
-                                    \App\Models\RegPeriksa::create($data);
-                                    $pasien->umur = $data['umurdaftar'];
-                                    $pasien->save();
-
-                                    $kamar = \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->first();
-                                    $kamar->status = 'ISI';
-                                    $kamar->save();
-                                    $item['no_rawat'] = $data['no_rawat'];
-                                    $item['tgl_masuk'] = date('Y-m-d');
-                                    $item['jam_masuk'] = date('H:i:s');
-                                    $item['tgl_keluar'] = '0000-00-00';
-                                    $item['jam_keluar'] = '00:00:00';
-                                    $item['lama'] = 1;
-                                    $item['diagnosa_akhir'] = '-';
-                                    $item['trf_kamar'] = $kamar->trf_kamar;
-                                    $item['ttl_biaya'] = $kamar->trf_kamar;
-                                    $item['kd_kamar'] = $data['kd_kamar'];
-                                    \App\Models\KamarInap::create($item);
-                                });
-
+                                $kamar = \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->first();
+                                $kamar->status = 'ISI';
+                                $kamar->save();
+                                $regPeriksa->status_lanjut = 'Ranap';
+                                $regPeriksa->save();
+                                $data['no_rawat'] = $regPeriksa->no_rawat;
+                                $data['tgl_masuk'] = date('Y-m-d');
+                                $data['jam_masuk'] = date('H:i:s');
+                                $data['tgl_keluar'] = '0000-00-00';
+                                $data['jam_keluar'] = '00:00:00';
+                                $data['lama'] = 1;
+                                $data['diagnosa_akhir'] = '-';
+                                $data['trf_kamar'] = $kamar->trf_kamar;
+                                $data['ttl_biaya'] = $kamar->trf_kamar;
+                                \App\Models\KamarInap::create($data);
                                 Notification::make()
                                     ->title('Pasien Berhasil Diinapkan')
                                     ->success()
@@ -374,8 +404,6 @@ class PasienResource extends Resource
                                     ->iconColor('success')
                                     ->send();
                             } catch (\Exception $e) {
-                                DB::rollBack();
-                                dd($e->getMessage());
                                 Notification::make()
                                     ->title('Gagal Menginapkan Pasien')
                                     ->body($e->getMessage())
@@ -386,31 +414,9 @@ class PasienResource extends Resource
                             }
                         })
                         ->form([
-                            TextInput::make('no_rkm_medis')
-                                ->label('No Rekam Medis')
-                                ->required(),
-                            TextInput::make('status_poli')
-                                ->label('Status Poli')
-                                ->reactive()
-                                ->required(),
-                            Select::make('kd_pj')
-                                ->label('Jenis Bayar')
-                                ->options(\App\Models\Penjab::where('status', '1')->pluck('png_jawab', 'kd_pj'))
-                                ->searchable()
-                                ->required(),
-                            Select::make('kd_poli')
-                                ->label('Poliklinik')
-                                ->options(\App\Models\Poliklinik::where('status', '1')->pluck('nm_poli', 'kd_poli'))
-                                ->searchable()
-                                ->required(),
-                            Select::make('kd_dokter')
-                                ->label('Dokter')
-                                ->options(\App\Models\Dokter::where('status', '1')->pluck('nm_dokter', 'kd_dokter'))
-                                ->searchable()
-                                ->required(),
                             Select::make('kd_kamar')
                                 ->label('Kamar')
-                                ->options(\App\Models\Kamar::get()->pluck('kd_kamar', 'kd_kamar'))
+                                ->options(\App\Models\Kamar::where('status', 'KOSONG')->pluck('kd_kamar', 'kd_kamar'))
                                 ->searchable()
                                 ->reactive()
                                 ->afterStateUpdated(function ($state, callable $set) {
@@ -422,9 +428,13 @@ class PasienResource extends Resource
                             TextInput::make('diagnosa_awal')
                                 ->label('Diagnosa Awal')
                                 ->required(),
+                            // TextInput::make('ttl_biaya')
+                            //     ->label('Total Biaya')
+                            //     ->reactive()
+                            //     ->required(),
                         ]),
                 ]),
-            ], position: ActionsPosition::BeforeColumns)
+            ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
