@@ -34,9 +34,10 @@ use Illuminate\Support\Carbon;
 class Ranap extends Page implements HasTable
 {
     use InteractsWithTable;
-    protected static ?string $navigationIcon = 'heroicon-m-building-office';
+    protected static ?string $navigationIcon = 'heroicon-o-home-modern';
     protected static ?string $navigationGroup = 'Data Pasien';
     protected static ?int $navigationSort = -1;
+    protected static ?string $navigationLabel = 'Rawat Inap';
 
     protected static string $view = 'filament.pages.ranap';
 

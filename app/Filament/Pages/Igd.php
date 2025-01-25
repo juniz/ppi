@@ -26,9 +26,10 @@ class Igd extends Page implements HasTable
 {
     use InteractsWithTable;
     protected static ?string $model = RegPeriksa::class;
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-o-bolt';
     protected static ?string $navigationGroup = 'Data Pasien';
     protected static ?int $navigationSort = -3;
+    protected static ?string $navigationLabel = 'IGD';
 
     protected static string $view = 'filament.pages.igd';
 
