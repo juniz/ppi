@@ -9,7 +9,7 @@ class DataHais extends Model
 {
     use HasFactory;
 
-    protected $table = 'data_HAIs';
+    protected $table = 'data_hais';
     public $primaryKey = 'tanggal';
     public $incrementing = false;
     public $timestamps = false;

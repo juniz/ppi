@@ -23,6 +23,8 @@ class HaisBulanan extends Page implements HasTable
 {
     use InteractsWithTable;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationGroup = 'Laporan';
+    protected static ?int $navigationSort = 1;
 
     protected static string $view = 'filament.pages.hais-bulanan';
 

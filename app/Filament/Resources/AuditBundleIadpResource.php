@@ -21,7 +21,7 @@ class AuditBundleIadpResource extends Resource
     protected static ?string $model = AuditBundleIadp::class;
     protected static ?string $title = 'Audit Bundle IADP';
     protected static ?string $heading = 'Audit Bundle IADP';
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationGroup = 'Audit';
     protected static ?string $navigationLabel = 'Bundle IADP';
 
