@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use App\Models\Petugas;
 use App\Models\Dokter;
+use App\Models\Pegawai;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -30,11 +31,13 @@ class UserResource extends Resource
                     ->label('nip')
                     ->searchable()
                     ->reactive()
-                    ->getSearchResultsUsing(fn(string $search): array => Petugas::where('nip', 'like', "%{$search}%")->orWhere('nama', 'like', "%{$search}%")->limit(50)->pluck('nama', 'nip')->toArray())
-                    ->getOptionLabelUsing(fn($value): ?string => Petugas::find($value)?->nama)
+                    ->options(
+                        Pegawai::pluck('nama', 'nik')->toArray()
+                    )
+                    ->getOptionLabelUsing(fn($value): ?string => Pegawai::find($value)?->nama)
                     ->afterStateUpdated(function ($state, callable $set) {
                         // dd($state);
-                        $petugas = Petugas::where('nip', $state)->first();
+                        $petugas = Pegawai::where('nik', $state)->first();
                         $set('name', $petugas->nama ?? '');
                     }),
                 Forms\Components\Select::make('kamar')
