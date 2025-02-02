@@ -124,14 +124,14 @@ class Ranap extends Page implements HasTable
                                 $kamar = \App\Models\KamarInap::where('no_rawat', $regPeriksa->no_rawat)->first();
                                 $kamar->update([
                                     'stts_pulang' => $data['stts_pulang'],
-                                    'tgl_keluar' => date('Y-m-d'),
+                                    // 'tgl_keluar' => date('Y-m-d'),
                                 ]);
                                 Notification::make()
                                     ->title('Data berhasil disimpan')
                                     ->success()
                                     ->send();
                             } catch (\Exception $e) {
-                                dd($e->getMessage());
+                                // dd($e->getMessage());
                                 Notification::make()
                                     ->title('Data gagal disimpan')
                                     ->body($e->getMessage())
