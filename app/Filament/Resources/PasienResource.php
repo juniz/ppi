@@ -461,6 +461,20 @@ class PasienResource extends Resource
                                 ->options(\App\Models\Dokter::where('status', '1')->pluck('nm_dokter', 'kd_dokter'))
                                 ->searchable()
                                 ->required(),
+                            Select::make('kd_kamar')
+                                ->label('Kamar')
+                                ->options(\App\Models\Kamar::query()->pluck('kd_kamar', 'kd_kamar'))
+                                ->searchable()
+                                ->reactive()
+                                ->afterStateUpdated(function ($state, callable $set) {
+                                    $kamar = \App\Models\Kamar::where('kd_kamar', $state)->first();
+                                    // dd($kamar->trf_kamar);
+                                    $set('ttl_biaya', $kamar->trf_kamar ?? 0);
+                                })
+                                ->required(),
+                            TextInput::make('diagnosa_awal')
+                                ->label('Diagnosa Awal')
+                                ->required(),
                         ]),
                 ]),
             ], position: ActionsPosition::BeforeColumns)
