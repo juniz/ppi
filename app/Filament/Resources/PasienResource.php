@@ -264,12 +264,7 @@ class PasienResource extends Resource
                                     'L' => 'Laki-laki',
                                     'P' => 'Perempuan',
                                 ])
-                                ->required()
-                                ->in('L', 'P')
-                                ->validationMessages([
-                                    'required' => 'Jenis Kelamin tidak boleh kosong',
-                                    'in' => 'Jenis Kelamin tidak valid',
-                                ]),
+                                ->required(),
                             // TextInput::make('tmp_lahir')
                             //     ->label('Tempat Lahir')
                             //     ->maxLength(15),
