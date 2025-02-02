@@ -369,7 +369,7 @@ class Ranap extends Page implements HasTable
                         ->modalCancelActionLabel('Batal')
                         ->modalSubmitActionLabel('Simpan'),
                     Tables\Actions\EditAction::make('audit_bundle_iadp')
-                        ->label('Audit Bundle IADP')
+                        ->label('Input Bundle IADP')
                         ->modalHeading('Audit Bundle IADP')
                         ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
                             $data = \App\Models\AuditBundleIadp::where('no_rawat', $regPeriksa->no_rawat)->where('tanggal', date('Y-m-d'))->first();
@@ -450,7 +450,7 @@ class Ranap extends Page implements HasTable
                                 ->required(),
                         ]),
                     Tables\Actions\EditAction::make('audit_bundle_ido')
-                        ->label('Audit Bundle IDO')
+                        ->label('Input Bundle IDO')
                         ->modalHeading('Audit Bundle IDO')
                         ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
                             $data = \App\Models\AuditBundleIdo::where('no_rawat', $regPeriksa->no_rawat)->where('tanggal', date('Y-m-d'))->first();
@@ -526,7 +526,7 @@ class Ranap extends Page implements HasTable
                                 ->required(),
                         ]),
                     Tables\Actions\EditAction::make('audit_bundle_isk')
-                        ->label('Audit Bundle ISK')
+                        ->label('Input Bundle ISK')
                         ->modalHeading('Audit Bundle ISK')
                         ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
                             $data = \App\Models\AuditBundleIsk::where('no_rawat', $regPeriksa->no_rawat)->where('tanggal', date('Y-m-d'))->first();
@@ -631,7 +631,7 @@ class Ranap extends Page implements HasTable
                                 ->required(),
                         ]),
                     Tables\Actions\EditAction::make('audit_bundle_vap')
-                        ->label('Audit Bundle VAP')
+                        ->label('Input Bundle VAP')
                         ->modalHeading('Audit Bundle VAP')
                         ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
                             $data = \App\Models\AuditBundleVap::where('no_rawat', $regPeriksa->no_rawat)->where('tanggal', date('Y-m-d'))->first();
@@ -742,7 +742,7 @@ class Ranap extends Page implements HasTable
                                 ->required(),
                         ]),
                     Tables\Actions\EditAction::make('audit_bundle_plabsi')
-                        ->label('Audit Bundle Plabsi')
+                        ->label('Input Bundle Plabsi')
                         ->modalHeading('Audit Bundle Plabsi')
                         ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
                             $data = \App\Models\AuditBundlePlabsi::where('no_rawat', $regPeriksa->no_rawat)->where('tanggal', date('Y-m-d'))->first();
