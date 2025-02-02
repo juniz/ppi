@@ -24,9 +24,19 @@ class BangsalResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\TextInput::make('kd_bangsal')
+                    ->label('Kode Bangsal')
+                    ->required(),
                 Forms\Components\TextInput::make('nm_bangsal')
                     ->maxLength(30),
-                Forms\Components\TextInput::make('status'),
+                Forms\Components\Select::make('status')
+                    ->label('Status')
+                    ->default('1')
+                    ->required()
+                    ->options([
+                        '1' => 'Aktif',
+                        '0' => 'Tidak Aktif',
+                    ]),
             ]);
     }
 
