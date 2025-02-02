@@ -96,12 +96,12 @@ class Ranap extends Page implements HasTable
                     ->label('No. RM')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('no_rawat')
-                    ->label('No. Rawat')
-                    ->searchable()
-                    ->sortable(),
                 TextColumn::make('pasien.nm_pasien')
                     ->label('Nama Pasien')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('no_rawat')
+                    ->label('No. Rawat')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('kamarInap.kamar.bangsal.nm_bangsal')
