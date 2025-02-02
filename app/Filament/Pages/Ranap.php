@@ -30,6 +30,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class Ranap extends Page implements HasTable
 {
@@ -125,9 +126,9 @@ class Ranap extends Page implements HasTable
                         ->modalHeading('Status Pulang Pasien')
                         ->action(function (array $data, RegPeriksa $regPeriksa) {
                             try {
-                                $kamar = \App\Models\KamarInap::where('no_rawat', $regPeriksa->no_rawat)->first();
-                                $kamar->stts_pulang = $data['stts_pulang'];
-                                $kamar->save();
+                                DB::table('kamar_inap')
+                                    ->where('no_rawat', $regPeriksa->no_rawat)
+                                    ->update(['stts_pulang' => $data['stts_pulang']]);
                                 Notification::make()
                                     ->title('Data berhasil disimpan')
                                     ->success()
