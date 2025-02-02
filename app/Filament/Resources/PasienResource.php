@@ -378,21 +378,39 @@ class PasienResource extends Resource
                         ->modalHeading('Kamar Inap')
                         ->action(function (array $data, Pasien $regPeriksa): void {
                             try {
-                                $kamar = \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->first();
-                                $kamar->status = 'ISI';
-                                $kamar->save();
-                                $regPeriksa->status_lanjut = 'Ranap';
-                                $regPeriksa->save();
-                                $data['no_rawat'] = $regPeriksa->no_rawat;
-                                $data['tgl_masuk'] = date('Y-m-d');
-                                $data['jam_masuk'] = date('H:i:s');
-                                $data['tgl_keluar'] = '0000-00-00';
-                                $data['jam_keluar'] = '00:00:00';
-                                $data['lama'] = 1;
-                                $data['diagnosa_akhir'] = '-';
-                                $data['trf_kamar'] = $kamar->trf_kamar;
-                                $data['ttl_biaya'] = $kamar->trf_kamar;
-                                \App\Models\KamarInap::create($data);
+                                $pasien = \App\Models\Pasien::where('no_rkm_medis', $data['no_rkm_medis'])->first();
+                                $cekStatus = \App\Models\RegPeriksa::where('no_rkm_medis', $data['no_rkm_medis'])->where('status_lanjut', 'Ralan')->first();
+                                $tgl_lahir = Carbon::parse($pasien->tgl_lahir);
+                                $data['umurdaftar'] = $tgl_lahir->diff(Carbon::now())->format('%y Th %m Bl %d Hr');
+                                $data['no_reg'] = \App\Models\RegPeriksa::generateNoReg($data['kd_dokter'], $data['kd_poli']);
+                                $data['no_rawat'] = \App\Models\RegPeriksa::generateNoRawat();
+                                $data['tgl_registrasi'] = date('Y-m-d');
+                                $data['jam_reg'] = date('H:i:s');
+                                $data['status_lanjut'] = 'Ranap';
+                                $data['stts'] = 'Belum';
+                                $data['sttsumur'] = 'Th';
+                                $data['biaya_reg'] = \App\Models\Poliklinik::where('kd_poli', $data['kd_poli'])->first()->registrasi;
+                                $data['status_bayar'] = 'Belum Bayar';
+                                $data['stts_daftar'] = $cekStatus ? 'Lama' : 'Baru';
+                                DB::transaction(function () use ($data, $pasien) {
+                                    \App\Models\RegPeriksa::create($data);
+                                    $pasien->umur = $data['umurdaftar'];
+                                    $pasien->save();
+                                    $kamar = \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->first();
+                                    $kamar->status = 'ISI';
+                                    $kamar->save();
+                                    $item['no_rawat'] = $data['no_rawat'];
+                                    $item['tgl_masuk'] = date('Y-m-d');
+                                    $item['jam_masuk'] = date('H:i:s');
+                                    $item['tgl_keluar'] = '0000-00-00';
+                                    $item['jam_keluar'] = '00:00:00';
+                                    $item['lama'] = 1;
+                                    $item['diagnosa_akhir'] = '-';
+                                    $item['trf_kamar'] = $kamar->trf_kamar;
+                                    $item['ttl_biaya'] = $kamar->trf_kamar;
+                                    $item['kd_kamar'] = $data['kd_kamar'];
+                                    \App\Models\KamarInap::create($item);
+                                });
                                 Notification::make()
                                     ->title('Pasien Berhasil Diinapkan')
                                     ->success()
@@ -400,6 +418,7 @@ class PasienResource extends Resource
                                     ->iconColor('success')
                                     ->send();
                             } catch (\Exception $e) {
+                                DB::rollBack();
                                 Notification::make()
                                     ->title('Gagal Menginapkan Pasien')
                                     ->body($e->getMessage())
@@ -409,25 +428,39 @@ class PasienResource extends Resource
                                     ->send();
                             }
                         })
+                        ->mountUsing(function (Form $form, Pasien $pasien) {
+                            $cekStatus = \App\Models\RegPeriksa::where('no_rkm_medis', $pasien->no_rkm_medis)->where('status_lanjut', 'Ralan')->first();
+                            $form->fill([
+                                'no_rkm_medis' => $pasien->no_rkm_medis,
+                                'p_jawab' => $pasien->namakeluarga ?? '',
+                                'hubunganpj' => $pasien->namakeluarga ?? '',
+                                'almt_pj' => $pasien->almt_pj ?? '',
+                                'status_poli' => $cekStatus ? 'Lama' : 'Baru',
+                            ]);
+                        })
                         ->form([
-                            Select::make('kd_kamar')
-                                ->label('Kamar')
-                                ->options(\App\Models\Kamar::where('status', 'KOSONG')->pluck('kd_kamar', 'kd_kamar'))
-                                ->searchable()
+                            TextInput::make('no_rkm_medis')
+                                ->label('No Rekam Medis')
+                                ->required(),
+                            TextInput::make('status_poli')
+                                ->label('Status Poli')
                                 ->reactive()
-                                ->afterStateUpdated(function ($state, callable $set) {
-                                    $kamar = \App\Models\Kamar::where('kd_kamar', $state)->first();
-                                    // dd($kamar->trf_kamar);
-                                    $set('ttl_biaya', $kamar->trf_kamar ?? 0);
-                                })
                                 ->required(),
-                            TextInput::make('diagnosa_awal')
-                                ->label('Diagnosa Awal')
+                            Select::make('kd_pj')
+                                ->label('Jenis Bayar')
+                                ->options(\App\Models\Penjab::where('status', '1')->pluck('png_jawab', 'kd_pj'))
+                                ->searchable()
                                 ->required(),
-                            // TextInput::make('ttl_biaya')
-                            //     ->label('Total Biaya')
-                            //     ->reactive()
-                            //     ->required(),
+                            Select::make('kd_poli')
+                                ->label('Poliklinik')
+                                ->options(\App\Models\Poliklinik::where('status', '1')->pluck('nm_poli', 'kd_poli'))
+                                ->searchable()
+                                ->required(),
+                            Select::make('kd_dokter')
+                                ->label('Dokter')
+                                ->options(\App\Models\Dokter::where('status', '1')->pluck('nm_dokter', 'kd_dokter'))
+                                ->searchable()
+                                ->required(),
                         ]),
                 ]),
             ], position: ActionsPosition::BeforeColumns)
