@@ -13,15 +13,17 @@ class AlatTerpasangChart extends ChartWidget
     
     protected static ?int $sort = 3;
     
-    // Mengatur lebar widget
+    // Mengubah ukuran widget agar sama dengan chart di atasnya
     protected int | string | array $columnSpan = [
         'default' => 'full',
-        'sm' => 'full',
         'md' => 'full',
-        'lg' => 'full',
-        'xl' => 'full',
-        '2xl' => 'full',
+        'lg' => 6,    // Setengah layar pada ukuran large
+        'xl' => 6,    // Setengah layar pada ukuran extra large
+        '2xl' => 6,   // Setengah layar pada ukuran 2x extra large
     ];
+
+    // Mengatur tinggi chart
+    protected static ?string $maxHeight = '300px';
 
     protected function getData(): array
     {
