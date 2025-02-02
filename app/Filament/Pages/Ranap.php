@@ -235,16 +235,13 @@ class Ranap extends Page implements HasTable
                                         ->schema([
                                             TextInput::make('SPUTUM')
                                                 ->label('Sputum')
-                                                ->default('')
-                                                ->required(),
+                                                ->default(''),
                                             TextInput::make('DARAH')
                                                 ->label('Darah')
-                                                ->default('')
-                                                ->required(),
+                                                ->default(''),
                                             TextInput::make('URINE')
                                                 ->label('Urine')
-                                                ->default('')
-                                                ->required(),
+                                                ->default(''),
                                         ]),
                                 ]),
                                 Section::make([
