@@ -126,11 +126,8 @@ class Ranap extends Page implements HasTable
                         ->action(function (array $data, RegPeriksa $regPeriksa) {
                             try {
                                 $kamar = \App\Models\KamarInap::where('no_rawat', $regPeriksa->no_rawat)->first();
-                                dd($kamar);
-                                $kamar->update([
-                                    'stts_pulang' => $data['stts_pulang'],
-                                    // 'tgl_keluar' => date('Y-m-d'),
-                                ]);
+                                $kamar->stts_pulang = $data['stts_pulang'];
+                                $kamar->save();
                                 Notification::make()
                                     ->title('Data berhasil disimpan')
                                     ->success()
