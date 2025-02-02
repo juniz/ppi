@@ -66,6 +66,10 @@ class Ranap extends Page implements HasTable
                         )
                     )
                     ->autoApply(),*/
+                SelectFilter::make('kd_kamar')
+                    ->label('Kamar')
+                    ->options(\App\Models\Kamar::join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')->pluck('nm_bangsal', 'kamar.kd_kamar'))
+                    ->placeholder('Pilih Kamar'),
                 SelectFilter::make('stts_pulang')
                     ->label('Status Pulang')
                     ->options([
