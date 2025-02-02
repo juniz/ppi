@@ -30,7 +30,7 @@ class AlatTerpasangChart extends ChartWidget
         $today = Carbon::now()->format('Y-m-d');
         
         $data = DataHais::query()
-            ->join('kamar', 'data_hais.kd_kamar', '=', 'kamar.kd_kamar')
+            ->join('kamar', 'data_HAIs.kd_kamar', '=', 'kamar.kd_kamar')
             ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
             ->whereDate('tanggal', $today)
             ->select(
