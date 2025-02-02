@@ -22,6 +22,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ActionGroup;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Filament\Tables\Enums\ActionsPosition;
 
 class PasienResource extends Resource
 {
@@ -429,7 +430,7 @@ class PasienResource extends Resource
                             //     ->required(),
                         ]),
                 ]),
-            ])
+            ], position: ActionsPosition::BeforeColumns)
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
