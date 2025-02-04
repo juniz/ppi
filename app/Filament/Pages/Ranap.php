@@ -224,27 +224,17 @@ class Ranap extends Page implements HasTable
                                         ->default(now())
                                         ->required(),
                                     Select::make('DEKU')
-                                        ->label('Deku')
+                                        ->label('Dekubitus')
                                         ->options([
                                             'IYA' => 'IYA',
                                             'TIDAK' => 'TIDAK'
                                         ])
                                         ->default('Tidak')
                                         ->required(),
-                                    Section::make('Kultur')
-                                        ->schema([
-                                            TextInput::make('SPUTUM')
-                                                ->label('Sputum')
-                                                ->default(''),
-                                            TextInput::make('DARAH')
-                                                ->label('Darah')
-                                                ->default(''),
-                                            TextInput::make('URINE')
-                                                ->label('Urine')
-                                                ->default(''),
-                                        ]),
-                                ]),
-                                Section::make([
+                                    TextInput::make('ANTIBIOTIK')
+                                        ->label('Antibiotik')
+                                        ->default('')
+                                        ->required(),
                                     Section::make('Hari Pemasangan Alat')
                                         ->schema([
                                             Select::make('ETT')
@@ -281,6 +271,8 @@ class Ranap extends Page implements HasTable
                                                 ->required(),
                                         ])
                                         ->columns(4),
+                                ]),
+                                Section::make([
                                     Section::make('Infeksi RS')
                                         ->schema([
                                             Select::make('VAP')
@@ -349,17 +341,20 @@ class Ranap extends Page implements HasTable
                                                 ->required(),
                                         ])
                                         ->columns(4),
-                                    TextInput::make('ANTIBIOTIK')
-                                        ->label('Antibiotik')
-                                        ->default('')
-                                        ->required(),
-                                    // TextInput::make('TIRAH')
-                                    //     ->label('Tirah Baring')
-                                    //     ->default('1')
-                                    //     ->required(),
+                                    Section::make('Kultur')
+                                        ->schema([
+                                            TextInput::make('SPUTUM')
+                                                ->label('Sputum')
+                                                ->default(''),
+                                            TextInput::make('DARAH')
+                                                ->label('Darah')
+                                                ->default(''),
+                                            TextInput::make('URINE')
+                                                ->label('Urine')
+                                                ->default(''),
+                                        ]),
                                 ]),
                             ])
-                                ->from('md')
                         ])
                         ->modalWidth(MaxWidth::Full)
                         // ->modalSubmitAction(false)
