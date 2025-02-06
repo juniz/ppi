@@ -15,20 +15,22 @@ use App\Models\Dokter;
 use App\Models\Pegawai;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-users';
     protected static ?string $navigationGroup = 'Master Data';
+    protected static ?string $navigationLabel = 'Users';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\Select::make('nip')
-                    ->label('nip')
+                    ->label('NIP')
                     ->searchable()
                     ->reactive()
                     ->options(
@@ -36,28 +38,25 @@ class UserResource extends Resource
                     )
                     ->getOptionLabelUsing(fn($value): ?string => Pegawai::find($value)?->nama)
                     ->afterStateUpdated(function ($state, callable $set) {
-                        // dd($state);
                         $petugas = Pegawai::where('nik', $state)->first();
                         $set('name', $petugas->nama ?? '');
                     }),
                 Forms\Components\Select::make('kamar')
-                    ->label('kamar')
+                    ->label('Kamar')
                     ->options(
                         \App\Models\Bangsal::where('status', '1')->pluck('nm_bangsal', 'kd_bangsal')->toArray()
-                    )
-                    ->required(),
+                    ),
                 Forms\Components\TextInput::make('name')
-                    ->reactive()
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('email')
                     ->email()
                     ->required()
                     ->maxLength(255),
-                // Forms\Components\DateTimePicker::make('email_verified_at'),
                 Forms\Components\TextInput::make('password')
                     ->password()
-                    ->required()
+                    ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+                    ->required(fn (string $operation): bool => $operation === 'create')
                     ->maxLength(255),
             ]);
     }
@@ -67,30 +66,23 @@ class UserResource extends Resource
         return $table
             ->query(
                 User::query()
-                    // ->with('petugas')
                     ->with('bangsal')
                     ->orderBy('created_at', 'desc')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('email')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('nip')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('bangsal.nm_bangsal')
-                    ->searchable(),
-                // Tables\Columns\TextColumn::make('email_verified_at')
-                //     ->dateTime()
-                //     ->sortable(),
-                // Tables\Columns\TextColumn::make('created_at')
-                //     ->dateTime()
-                //     ->sortable()
-                //     ->toggleable(isToggledHiddenByDefault: true),
-                // Tables\Columns\TextColumn::make('updated_at')
-                //     ->dateTime()
-                //     ->sortable()
-                //     ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('Kamar')
+                    ->searchable()
+                    ->sortable(),
             ])
             ->filters([
                 //

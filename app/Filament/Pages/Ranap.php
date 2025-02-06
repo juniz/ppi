@@ -97,12 +97,12 @@ class Ranap extends Page implements HasTable
                     ->label('No. RM')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('no_rawat')
-                    ->label('No. Rawat')
-                    ->searchable()
-                    ->sortable(),
                 TextColumn::make('pasien.nm_pasien')
                     ->label('Nama Pasien')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('no_rawat')
+                    ->label('No. Rawat')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('kamarInap.kamar.bangsal.nm_bangsal')
@@ -225,30 +225,17 @@ class Ranap extends Page implements HasTable
                                         ->default(now())
                                         ->required(),
                                     Select::make('DEKU')
-                                        ->label('Deku')
+                                        ->label('Dekubitus')
                                         ->options([
                                             'IYA' => 'IYA',
                                             'TIDAK' => 'TIDAK'
                                         ])
                                         ->default('Tidak')
                                         ->required(),
-                                    Section::make('Kultur')
-                                        ->schema([
-                                            TextInput::make('SPUTUM')
-                                                ->label('Sputum')
-                                                ->default('')
-                                                ->required(),
-                                            TextInput::make('DARAH')
-                                                ->label('Darah')
-                                                ->default('')
-                                                ->required(),
-                                            TextInput::make('URINE')
-                                                ->label('Urine')
-                                                ->default('')
-                                                ->required(),
-                                        ]),
-                                ]),
-                                Section::make([
+                                    TextInput::make('ANTIBIOTIK')
+                                        ->label('Antibiotik')
+                                        ->default('')
+                                        ->required(),
                                     Section::make('Hari Pemasangan Alat')
                                         ->schema([
                                             Select::make('ETT')
@@ -285,6 +272,8 @@ class Ranap extends Page implements HasTable
                                                 ->required(),
                                         ])
                                         ->columns(4),
+                                ]),
+                                Section::make([
                                     Section::make('Infeksi RS')
                                         ->schema([
                                             Select::make('VAP')
@@ -353,24 +342,27 @@ class Ranap extends Page implements HasTable
                                                 ->required(),
                                         ])
                                         ->columns(4),
-                                    TextInput::make('ANTIBIOTIK')
-                                        ->label('Antibiotik')
-                                        ->default('')
-                                        ->required(),
-                                    // TextInput::make('TIRAH')
-                                    //     ->label('Tirah Baring')
-                                    //     ->default('1')
-                                    //     ->required(),
-                                ])->from('md'),
-                            ])
-                                ->from('md')
+                                    Section::make('Kultur')
+                                        ->schema([
+                                            TextInput::make('SPUTUM')
+                                                ->label('Sputum')
+                                                ->default(''),
+                                            TextInput::make('DARAH')
+                                                ->label('Darah')
+                                                ->default(''),
+                                            TextInput::make('URINE')
+                                                ->label('Urine')
+                                                ->default(''),
+                                        ]),
+                                ]),
+                            ])->from('md')
                         ])
                         ->modalWidth(MaxWidth::Full)
                         // ->modalSubmitAction(false)
                         ->modalCancelActionLabel('Batal')
                         ->modalSubmitActionLabel('Simpan'),
                     Tables\Actions\EditAction::make('audit_bundle_iadp')
-                        ->label('Audit Bundle IADP')
+                        ->label('Input Bundle IADP')
                         ->modalHeading('Audit Bundle IADP')
                         ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
                             $data = \App\Models\AuditBundleIadp::where('no_rawat', $regPeriksa->no_rawat)->where('tanggal', date('Y-m-d'))->first();
@@ -451,7 +443,7 @@ class Ranap extends Page implements HasTable
                                 ->required(),
                         ]),
                     Tables\Actions\EditAction::make('audit_bundle_ido')
-                        ->label('Audit Bundle IDO')
+                        ->label('Input Bundle IDO')
                         ->modalHeading('Audit Bundle IDO')
                         ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
                             $data = \App\Models\AuditBundleIdo::where('no_rawat', $regPeriksa->no_rawat)->where('tanggal', date('Y-m-d'))->first();
@@ -527,7 +519,7 @@ class Ranap extends Page implements HasTable
                                 ->required(),
                         ]),
                     Tables\Actions\EditAction::make('audit_bundle_isk')
-                        ->label('Audit Bundle ISK')
+                        ->label('Input Bundle ISK')
                         ->modalHeading('Audit Bundle ISK')
                         ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
                             $data = \App\Models\AuditBundleIsk::where('no_rawat', $regPeriksa->no_rawat)->where('tanggal', date('Y-m-d'))->first();
@@ -632,7 +624,7 @@ class Ranap extends Page implements HasTable
                                 ->required(),
                         ]),
                     Tables\Actions\EditAction::make('audit_bundle_vap')
-                        ->label('Audit Bundle VAP')
+                        ->label('Input Bundle VAP')
                         ->modalHeading('Audit Bundle VAP')
                         ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
                             $data = \App\Models\AuditBundleVap::where('no_rawat', $regPeriksa->no_rawat)->where('tanggal', date('Y-m-d'))->first();
@@ -743,7 +735,7 @@ class Ranap extends Page implements HasTable
                                 ->required(),
                         ]),
                     Tables\Actions\EditAction::make('audit_bundle_plabsi')
-                        ->label('Audit Bundle Plabsi')
+                        ->label('Input Bundle Plabsi')
                         ->modalHeading('Audit Bundle Plabsi')
                         ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
                             $data = \App\Models\AuditBundlePlabsi::where('no_rawat', $regPeriksa->no_rawat)->where('tanggal', date('Y-m-d'))->first();
