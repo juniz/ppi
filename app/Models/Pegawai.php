@@ -5,13 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Pegawai extends Model
 {
     use HasFactory;
 
     protected $table = 'pegawai';
-    protected $primaryKey = 'id';
+    protected $primaryKey = 'nik';
     public $incrementing = false;
     public $timestamps = false;
 
@@ -48,6 +49,12 @@ class Pegawai extends Model
         'dankes',
         'photo',
         'no_ktp',
+    ];
+
+    protected $casts = [
+        'tgl_lahir' => 'date',
+        'mulai_kerja' => 'date',
+        'mulai_kontrak' => 'date',
     ];
 
     public function __construct(array $attributes = [])
@@ -140,5 +147,10 @@ class Pegawai extends Model
     public function bank()
     {
         return $this->belongsTo(Bank::class, 'bpd', 'namabank');
+    }
+
+    public function dokter(): HasOne
+    {
+        return $this->hasOne(Dokter::class, 'kd_dokter', 'nik');
     }
 }
