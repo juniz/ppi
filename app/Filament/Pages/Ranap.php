@@ -69,6 +69,7 @@ class Ranap extends Page implements HasTable
                     ->autoApply(),*/
                 SelectFilter::make('kd_kamar')
                     ->label('Kamar')
+                    // ->default(auth()->user()->kamar ?? '')
                     ->options(\App\Models\Kamar::join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')->pluck('nm_bangsal', 'kamar.kd_kamar'))
                     ->placeholder('Pilih Kamar'),
                 SelectFilter::make('stts_pulang')
@@ -354,7 +355,7 @@ class Ranap extends Page implements HasTable
                                                 ->default(''),
                                         ]),
                                 ]),
-                            ])
+                            ])->from('md')
                         ])
                         ->modalWidth(MaxWidth::Full)
                         // ->modalSubmitAction(false)
