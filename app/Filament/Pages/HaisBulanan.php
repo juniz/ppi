@@ -35,7 +35,7 @@ class HaisBulanan extends Page implements HasTable
                 \App\Models\DataHais::query()
                     // ->with('kamar.bangsal')
                     ->with('regPeriksa.pasien')
-                    ->join('kamar', 'data_hais.kd_kamar', '=', 'kamar.kd_kamar')
+                    ->join('kamar', 'data_HAIs.kd_kamar', '=', 'kamar.kd_kamar')
                     ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
                     ->orderByDesc('tanggal')
                     ->groupBy('tanggal')
