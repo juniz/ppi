@@ -33,7 +33,7 @@ class AuditBundleIskResource extends Resource
                     ->relationship('ruangAuditKepatuhan', 'nama_ruang')
                     ->required(),
                 Forms\Components\Select::make('pemasangan_sesuai_indikasi')
-                    ->label('Pemasangan sesuai indikasi')
+                    ->label('Pemasangan Sesuai Indikasi')
                     ->options([
                         'Ya' => 'Ya',
                         'Tidak' => 'Tidak',
@@ -41,6 +41,7 @@ class AuditBundleIskResource extends Resource
                     ->default('Ya')
                     ->required(),
                 Forms\Components\Select::make('hand_hygiene')
+                    ->label('Hand Hygiene')
                     ->options([
                         'Ya' => 'Ya',
                         'Tidak' => 'Tidak',
@@ -48,6 +49,7 @@ class AuditBundleIskResource extends Resource
                     ->default('Ya')
                     ->required(),
                 Forms\Components\Select::make('menggunakan_apd_yang_tepat')
+                    ->label('Menggunakan APD Yang Tepat')
                     ->options([
                         'Ya' => 'Ya',
                         'Tidak' => 'Tidak',
@@ -55,6 +57,7 @@ class AuditBundleIskResource extends Resource
                     ->default('Ya')
                     ->required(),
                 Forms\Components\Select::make('pemasangan_menggunakan_alat_steril')
+                    ->label('Pemasangan Menggunakan Alat Steril')
                     ->options([
                         'Ya' => 'Ya',
                         'Tidak' => 'Tidak',
@@ -62,6 +65,7 @@ class AuditBundleIskResource extends Resource
                     ->default('Ya')
                     ->required(),
                 Forms\Components\Select::make('segera_dilepas_setelah_tidak_diperlukan')
+                    ->label('Segera Dilepas Setelah Tidak Diperlukan')
                     ->options([
                         'Ya' => 'Ya',
                         'Tidak' => 'Tidak',
@@ -69,6 +73,7 @@ class AuditBundleIskResource extends Resource
                     ->default('Ya')
                     ->required(),
                 Forms\Components\Select::make('pengisian_balon_sesuai_petunjuk')
+                    ->label('Pengisian Balon Sesuai Petunjuk')
                     ->options([
                         'Ya' => 'Ya',
                         'Tidak' => 'Tidak',
@@ -76,6 +81,7 @@ class AuditBundleIskResource extends Resource
                     ->default('Ya')
                     ->required(),
                 Forms\Components\Select::make('fiksasi_kateter_dengan_plester')
+                    ->label('Fiksasi Kateter Dengan Plester')
                     ->options([
                         'Ya' => 'Ya',
                         'Tidak' => 'Tidak',
@@ -83,6 +89,7 @@ class AuditBundleIskResource extends Resource
                     ->default('Ya')
                     ->required(),
                 Forms\Components\Select::make('urinebag_menggantung_tidak_menyentuh_lantai')
+                    ->label('Urinebag Menggantung Tidak Menyentuh Lantai')
                     ->options([
                         'Ya' => 'Ya',
                         'Tidak' => 'Tidak',

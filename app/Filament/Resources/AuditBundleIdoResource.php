@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\AuditBundleIdoResource\Pages;
-use App\Filament\Resources\AuditBundleIdoResource\RelationManagers;
 use App\Models\AuditBundleIdo;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -13,7 +12,6 @@ use Filament\Tables\Columns\Summarizers\Count;
 use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Table;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
 
 class AuditBundleIdoResource extends Resource
@@ -31,6 +29,8 @@ class AuditBundleIdoResource extends Resource
                 Forms\Components\Select::make('id_ruang')
                     ->label('Ruang')
                     ->relationship('ruangAuditKepatuhan', 'nama_ruang')
+                    ->searchable()
+                    ->preload()
                     ->required(),
                 Forms\Components\Select::make('pencukuran_rambut')
                     ->label('Pencukuran Rambut')
@@ -39,6 +39,7 @@ class AuditBundleIdoResource extends Resource
                         'Tidak' => 'Tidak',
                     ])
                     ->default('Ya')
+                    ->selectablePlaceholder(false)
                     ->required(),
                 Forms\Components\Select::make('antibiotik')
                     ->label('Antibiotik')
@@ -47,6 +48,7 @@ class AuditBundleIdoResource extends Resource
                         'Tidak' => 'Tidak',
                     ])
                     ->default('Ya')
+                    ->selectablePlaceholder(false)
                     ->required(),
                 Forms\Components\Select::make('temperature')
                     ->label('Temperature')
@@ -55,6 +57,7 @@ class AuditBundleIdoResource extends Resource
                         'Tidak' => 'Tidak',
                     ])
                     ->default('Ya')
+                    ->selectablePlaceholder(false)
                     ->required(),
                 Forms\Components\Select::make('sugar')
                     ->label('Sugar')
@@ -63,8 +66,11 @@ class AuditBundleIdoResource extends Resource
                         'Tidak' => 'Tidak',
                     ])
                     ->default('Ya')
+                    ->selectablePlaceholder(false)
                     ->required(),
-            ]);
+            ])
+            ->statePath('data')
+            ->model(AuditBundleIdo::class);
     }
 
     public static function table(Table $table): Table
@@ -80,6 +86,10 @@ class AuditBundleIdoResource extends Resource
                     ->dateTime()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('ruangAuditKepatuhan.nama_ruang')
+                    ->label('Ruang')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('no_rawat')
+                    ->label('No Rawat')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('pencukuran_rambut'),
                 Tables\Columns\TextColumn::make('antibiotik'),
@@ -90,43 +100,43 @@ class AuditBundleIdoResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('pencukuran_rambut')
                     ->summarize([
-                        Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('pencukuran_rambut', 'Ya')),
-                        Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('pencukuran_rambut', 'Tidak')),
+                        Count::make()->label('Ya')->query(fn (Builder $query) => $query->where('pencukuran_rambut', 'Ya')),
+                        Count::make()->label('Tidak')->query(fn (Builder $query) => $query->where('pencukuran_rambut', 'Tidak')),
                         Summarizer::make()->label('Rata-rata')->using(function (Builder $query) {
                             $total = $query->count();
                             $ya = $query->where('pencukuran_rambut', 'Ya')->count();
-                            return $total == 0 ? 0 : ($ya / $total) * 100;
-                        })
+                            return round($total == 0 ? 0 : ($ya / $total) * 100, 2);
+                        })->suffix('%')
                     ]),
                 Tables\Columns\TextColumn::make('antibiotik')
                     ->summarize([
-                        Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('antibiotik', 'Ya')),
-                        Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('antibiotik', 'Tidak')),
+                        Count::make()->label('Ya')->query(fn (Builder $query) => $query->where('antibiotik', 'Ya')),
+                        Count::make()->label('Tidak')->query(fn (Builder $query) => $query->where('antibiotik', 'Tidak')),
                         Summarizer::make()->label('Rata-rata')->using(function (Builder $query) {
                             $total = $query->count();
                             $ya = $query->where('antibiotik', 'Ya')->count();
-                            return $total == 0 ? 0 : ($ya / $total) * 100;
-                        })
+                            return round($total == 0 ? 0 : ($ya / $total) * 100, 2);
+                        })->suffix('%')
                     ]),
                 Tables\Columns\TextColumn::make('temperature')
                     ->summarize([
-                        Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('temperature', 'Ya')),
-                        Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('temperature', 'Tidak')),
+                        Count::make()->label('Ya')->query(fn (Builder $query) => $query->where('temperature', 'Ya')),
+                        Count::make()->label('Tidak')->query(fn (Builder $query) => $query->where('temperature', 'Tidak')),
                         Summarizer::make()->label('Rata-rata')->using(function (Builder $query) {
                             $total = $query->count();
                             $ya = $query->where('temperature', 'Ya')->count();
-                            return $total == 0 ? 0 : ($ya / $total) * 100;
-                        })
+                            return round($total == 0 ? 0 : ($ya / $total) * 100, 2);
+                        })->suffix('%')
                     ]),
                 Tables\Columns\TextColumn::make('sugar')
                     ->summarize([
-                        Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('sugar', 'Ya')),
-                        Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('sugar', 'Tidak')),
+                        Count::make()->label('Ya')->query(fn (Builder $query) => $query->where('sugar', 'Ya')),
+                        Count::make()->label('Tidak')->query(fn (Builder $query) => $query->where('sugar', 'Tidak')),
                         Summarizer::make()->label('Rata-rata')->using(function (Builder $query) {
                             $total = $query->count();
                             $ya = $query->where('sugar', 'Ya')->count();
-                            return $total == 0 ? 0 : ($ya / $total) * 100;
-                        })
+                            return round($total == 0 ? 0 : ($ya / $total) * 100, 2);
+                        })->suffix('%')
                     ]),
                 Tables\Columns\TextColumn::make('ttl')
                     ->label('Ttl. Nilai (%)')
@@ -161,15 +171,11 @@ class AuditBundleIdoResource extends Resource
                                 if ($item->sugar == 'Ya') $ttl++;
                             }
                             return round((($ttl / $total) * 100), 2);
-                        })
-                            ->suffix('%'),
+                        })->suffix('%'),
                     ]),
             ])
             ->filters([
                 //
-            ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

@@ -456,6 +456,7 @@ class Ranap extends Page implements HasTable
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
+                                ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('antibiotik')
                                 ->label('Antibiotik')
@@ -463,6 +464,7 @@ class Ranap extends Page implements HasTable
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
+                                ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('temperature')
                                 ->label('Temperature')
@@ -470,13 +472,15 @@ class Ranap extends Page implements HasTable
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
+                                ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('sugar')
-                                ->label('Sugar')
+                                ->label('Sugar (Gula Darah Pasien)')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
+                                ->default('Ya')
                                 ->required(),
                         ])
                         ->action(function (array $data, RegPeriksa $record): void {
@@ -513,6 +517,7 @@ class Ranap extends Page implements HasTable
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
+                                ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('hand_hygiene')
                                 ->label('Hand hygiene')
@@ -520,6 +525,7 @@ class Ranap extends Page implements HasTable
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
+                                ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('menggunakan_apd_yang_tepat')
                                 ->label('Menggunakan apd yang tepat')
@@ -527,6 +533,7 @@ class Ranap extends Page implements HasTable
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
+                                ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('pemasangan_menggunakan_alat_steril')
                                 ->label('Pemasangan menggunakan alat steril')
@@ -534,6 +541,7 @@ class Ranap extends Page implements HasTable
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
+                                ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('segera_dilepas_setelah_tidak_diperlukan')
                                 ->label('Segera dilepas setelah tidak diperlukan')
@@ -541,6 +549,7 @@ class Ranap extends Page implements HasTable
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
+                                ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('pengisian_balon_sesuai_petunjuk')
                                 ->label('Pengisian balon sesuai petunjuk')
@@ -548,6 +557,7 @@ class Ranap extends Page implements HasTable
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
+                                ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('fiksasi_kateter_dengan_plester')
                                 ->label('Fiksasi kateter dengan plester')
@@ -555,6 +565,7 @@ class Ranap extends Page implements HasTable
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
+                                ->default('Ya')
                                 ->required(),
                         ])
                         ->action(function (array $data, RegPeriksa $record): void {

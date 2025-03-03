@@ -11,10 +11,9 @@ class AuditBundleIdo extends Model
     use HasFactory;
 
     protected $table = 'audit_bundle_ido';
-    protected $primaryKey = ['tanggal', 'id_ruang'];
+    protected $primaryKey = 'tanggal';
     public $timestamps = false;
     public $incrementing = false;
-    protected $keyType = 'string';
 
     protected $fillable = [
         'tanggal',
@@ -23,7 +22,16 @@ class AuditBundleIdo extends Model
         'antibiotik',
         'temperature',
         'sugar',
-        'no_rawat',
+        'no_rawat'
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'tanggal' => 'datetime',
     ];
 
     public function __construct(array $attributes = [])
