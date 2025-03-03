@@ -11,9 +11,10 @@ class AuditBundleIdo extends Model
     use HasFactory;
 
     protected $table = 'audit_bundle_ido';
-    protected $primaryKey = 'tanggal';
+    protected $primaryKey = ['tanggal', 'id_ruang'];
     public $timestamps = false;
     public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'tanggal',

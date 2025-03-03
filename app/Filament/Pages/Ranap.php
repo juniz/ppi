@@ -32,6 +32,7 @@ use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\AuditBundleIadp;
+use Filament\Tables\Actions\Action;
 
 class Ranap extends Page implements HasTable
 {
@@ -167,12 +168,18 @@ class Ranap extends Page implements HasTable
                         ->label('Data HAIs')
                         ->modalHeading('Data HAIs')
                         ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
-                            $data = \App\Models\DataHais::where('no_rawat', $regPeriksa->no_rawat)->where('tanggal', date('Y-m-d'))->first();
+                            $data = \App\Models\DataHais::where('no_rawat', $regPeriksa->no_rawat)
+                                ->whereDate('tanggal', date('Y-m-d'))
+                                ->first();
+                            
                             if ($data) {
-                                $form->fill($data->toArray());
+                                $form->fill([
+                                    ...$data->toArray(),
+                                    'tanggal' => date('Y-m-d H:i:s'),
+                                ]);
                             } else {
                                 $form->fill([
-                                    'tanggal' => now(),
+                                    'tanggal' => date('Y-m-d H:i:s'),
                                     'DEKU' => 'TIDAK',
                                     'SPUTUM' => '',
                                     'DARAH' => '',
@@ -435,48 +442,13 @@ class Ranap extends Page implements HasTable
                                 ->default('Ya')
                                 ->required(),
                         ]),
-                    Tables\Actions\EditAction::make('audit_bundle_ido')
+                    Action::make('input_bundle_ido')
                         ->label('Input Bundle IDO')
-                        ->modalHeading('Audit Bundle IDO')
-                        ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
-                            $data = \App\Models\AuditBundleIdo::where('no_rawat', $regPeriksa->no_rawat)->where('tanggal', date('Y-m-d'))->first();
-                            if ($data) {
-                                $form->fill($data->toArray());
-                            } else {
-                                $form->fill([
-                                    'tanggal' => now(),
-                                    'id_ruang' => '',
-                                    'pencukuran_rambut' => 'Ya',
-                                    'antibiotik' => 'Ya',
-                                    'temperature' => 'Ya',
-                                    'sugar' => 'Ya',
-                                ]);
-                            }
-                        })
-                        ->action(function (array $data, RegPeriksa $regPeriksa) {
-                            try {
-                                $data['no_rawat'] = $regPeriksa->no_rawat;
-                                \App\Models\AuditBundleIdo::updateOrCreate([
-                                    'no_rawat' => $regPeriksa->no_rawat,
-                                    'tanggal' => date('Y-m-d'),
-                                ], $data);
-
-                                Notification::make()
-                                    ->title('Data Audit Bundle IDO berhasil disimpan')
-                                    ->success()
-                                    ->send();
-                            } catch (\Exception $e) {
-                                Notification::make()
-                                    ->title('Data Audit Bundle IDO gagal disimpan')
-                                    ->body($e->getMessage())
-                                    ->danger()
-                                    ->send();
-                            }
-                        })
+                        ->icon('heroicon-o-clipboard-document-check')
                         ->form([
                             Forms\Components\Select::make('id_ruang')
                                 ->label('Ruang')
-                                ->options(\App\Models\RuangAuditKepatuhan::pluck('nama_ruang', 'id_ruang')->toArray())
+                                ->options(\DB::table('ruang_audit_kepatuhan')->pluck('nama_ruang', 'id_ruang'))
                                 ->required(),
                             Forms\Components\Select::make('pencukuran_rambut')
                                 ->label('Pencukuran Rambut')
@@ -484,7 +456,6 @@ class Ranap extends Page implements HasTable
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
-                                ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('antibiotik')
                                 ->label('Antibiotik')
@@ -492,7 +463,6 @@ class Ranap extends Page implements HasTable
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
-                                ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('temperature')
                                 ->label('Temperature')
@@ -500,7 +470,6 @@ class Ranap extends Page implements HasTable
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
-                                ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('sugar')
                                 ->label('Sugar')
@@ -508,55 +477,35 @@ class Ranap extends Page implements HasTable
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
-                                ->default('Ya')
                                 ->required(),
-                        ]),
-                    Tables\Actions\EditAction::make('audit_bundle_isk')
-                        ->label('Input Bundle ISK')
-                        ->modalHeading('Audit Bundle ISK')
-                        ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
-                            $data = \App\Models\AuditBundleIsk::where('no_rawat', $regPeriksa->no_rawat)->where('tanggal', date('Y-m-d'))->first();
-                            if ($data) {
-                                $form->fill($data->toArray());
-                            } else {
-                                $form->fill([
-                                    'tanggal' => now(),
-                                    'id_ruang' => '',
-                                    'pemasangan_sesuai_indikasi' => 'Ya',
-                                    'hand_hygiene' => 'Ya',
-                                    'menggunakan_apd_yang_tepat' => 'Ya',
-                                    'pemasangan_menggunakan_alat_steril' => 'Ya',
-                                    'segera_dilepas_setelah_tidak_diperlukan' => 'Ya',
-                                    'pengisian_balon_sesuai_petunjuk' => 'Ya',
-                                    'fiksasi_kateter_dengan_plester' => 'Ya',
-                                    'urinebag_menggantung_tidak_menyentuh_lantai' => 'Ya',
-                                ]);
-                            }
-                        })
-                        ->action(function (array $data, RegPeriksa $regPeriksa) {
+                        ])
+                        ->action(function (array $data, RegPeriksa $record): void {
                             try {
-                                $data['no_rawat'] = $regPeriksa->no_rawat;
-                                \App\Models\AuditBundleIsk::updateOrCreate([
-                                    'no_rawat' => $regPeriksa->no_rawat,
-                                    'tanggal' => date('Y-m-d'),
-                                ], $data);
-
+                                // Set data untuk disimpan
+                                $data['tanggal'] = date('Y-m-d H:i:s');
+                                $data['no_rawat'] = $record->no_rawat;
+                                
+                                \App\Models\AuditBundleIdo::create($data);
+                                
                                 Notification::make()
-                                    ->title('Data Audit Bundle ISK berhasil disimpan')
+                                    ->title('Bundle IDO berhasil disimpan')
                                     ->success()
                                     ->send();
                             } catch (\Exception $e) {
                                 Notification::make()
-                                    ->title('Data Audit Bundle ISK gagal disimpan')
-                                    ->body($e->getMessage())
+                                    ->title('Error')
+                                    ->body('Gagal menyimpan bundle IDO: ' . $e->getMessage())
                                     ->danger()
                                     ->send();
                             }
-                        })
+                        }),
+                    Action::make('input_bundle_isk')
+                        ->label('Input Bundle ISK')
+                        ->icon('heroicon-o-clipboard-document-check')
                         ->form([
                             Forms\Components\Select::make('id_ruang')
                                 ->label('Ruang')
-                                ->options(\App\Models\RuangAuditKepatuhan::pluck('nama_ruang', 'id_ruang')->toArray())
+                                ->options(\DB::table('ruang_audit_kepatuhan')->pluck('nama_ruang', 'id_ruang'))
                                 ->required(),
                             Forms\Components\Select::make('pemasangan_sesuai_indikasi')
                                 ->label('Pemasangan sesuai indikasi')
@@ -564,289 +513,216 @@ class Ranap extends Page implements HasTable
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
-                                ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('hand_hygiene')
+                                ->label('Hand hygiene')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
-                                ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('menggunakan_apd_yang_tepat')
+                                ->label('Menggunakan apd yang tepat')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
-                                ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('pemasangan_menggunakan_alat_steril')
+                                ->label('Pemasangan menggunakan alat steril')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
-                                ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('segera_dilepas_setelah_tidak_diperlukan')
+                                ->label('Segera dilepas setelah tidak diperlukan')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
-                                ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('pengisian_balon_sesuai_petunjuk')
+                                ->label('Pengisian balon sesuai petunjuk')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
-                                ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('fiksasi_kateter_dengan_plester')
+                                ->label('Fiksasi kateter dengan plester')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
                                 ])
-                                ->default('Ya')
                                 ->required(),
-                            Forms\Components\Select::make('urinebag_menggantung_tidak_menyentuh_lantai')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
-                                ->default('Ya')
-                                ->required(),
-                        ]),
-                    Tables\Actions\EditAction::make('audit_bundle_vap')
-                        ->label('Input Bundle VAP')
-                        ->modalHeading('Audit Bundle VAP')
-                        ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
-                            $data = \App\Models\AuditBundleVap::where('no_rawat', $regPeriksa->no_rawat)->where('tanggal', date('Y-m-d'))->first();
-                            if ($data) {
-                                $form->fill($data->toArray());
-                            } else {
-                                $form->fill([
-                                    'tanggal' => now(),
-                                    'id_ruang' => '',
-                                    'posisi_kepala' => 'Ya',
-                                    'pengkajian_setiap_hari' => 'Ya',
-                                    'hand_hygiene' => 'Ya',
-                                    'oral_hygiene' => 'Ya',
-                                    'suction_manajemen_sekresi' => 'Ya',
-                                    'profilaksis_peptic_ulcer' => 'Ya',
-                                    'dvt_profiklasisi' => 'Ya',
-                                    'penggunaan_apd_sesuai' => 'Ya',
-                                ]);
-                            }
-                        })
-                        ->action(function (array $data, RegPeriksa $regPeriksa) {
+                        ])
+                        ->action(function (array $data, RegPeriksa $record): void {
                             try {
-                                $data['no_rawat'] = $regPeriksa->no_rawat;
-                                \App\Models\AuditBundleVap::updateOrCreate([
-                                    'no_rawat' => $regPeriksa->no_rawat,
-                                    'tanggal' => date('Y-m-d'),
-                                ], $data);
-
+                                // Set data untuk disimpan
+                                $data['tanggal'] = date('Y-m-d H:i:s');
+                                $data['no_rawat'] = $record->no_rawat;
+                                
+                                \App\Models\AuditBundleIsk::create($data);
+                                
                                 Notification::make()
-                                    ->title('Data Audit Bundle VAP berhasil disimpan')
+                                    ->title('Bundle ISK berhasil disimpan')
                                     ->success()
                                     ->send();
                             } catch (\Exception $e) {
                                 Notification::make()
-                                    ->title('Data Audit Bundle VAP gagal disimpan')
-                                    ->body($e->getMessage())
+                                    ->title('Error')
+                                    ->body('Gagal menyimpan bundle ISK: ' . $e->getMessage())
                                     ->danger()
                                     ->send();
                             }
-                        })
+                        }),
+                    Action::make('input_bundle_vap')
+                        ->label('Input Bundle VAP')
+                        ->icon('heroicon-o-clipboard-document-check')
                         ->form([
                             Forms\Components\Select::make('id_ruang')
                                 ->label('Ruang')
-                                ->options(\App\Models\RuangAuditKepatuhan::pluck('nama_ruang', 'id_ruang')->toArray())
+                                ->options(\DB::table('ruang_audit_kepatuhan')->pluck('nama_ruang', 'id_ruang'))
                                 ->required(),
                             Forms\Components\Select::make('posisi_kepala')
                                 ->label('Posisi Kepala')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
+                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('pengkajian_setiap_hari')
                                 ->label('Pengkajian Setiap Hari')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
+                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('hand_hygiene')
                                 ->label('Hand Hygiene')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
+                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('oral_hygiene')
                                 ->label('Oral Hygiene')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
+                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('suction_manajemen_sekresi')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
+                                ->label('Suction Manajemen Sekresi')
+                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('profilaksis_peptic_ulcer')
                                 ->label('Profilaksis Peptic Ulcer')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
+                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('dvt_profiklasisi')
                                 ->label('DVT Profiklasisi')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
+                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('penggunaan_apd_sesuai')
                                 ->label('Penggunaan APD Sesuai')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
+                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
-                        ]),
-                    Tables\Actions\EditAction::make('audit_bundle_plabsi')
-                        ->label('Input Bundle Plabsi')
-                        ->modalHeading('Audit Bundle Plabsi')
-                        ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
-                            $data = \App\Models\AuditBundlePlabsi::where('no_rawat', $regPeriksa->no_rawat)->where('tanggal', date('Y-m-d'))->first();
-                            if ($data) {
-                                $form->fill($data->toArray());
-                            } else {
-                                $form->fill([
-                                    'tanggal' => now(),
-                                    'id_ruang' => '',
-                                    'sebelum_melakukan_hand_hygiene' => 'Ya',
-                                    'menggunakan_apd_lengkap' => 'Ya',
-                                    'lokasi_pemasangan_sesuai' => 'Ya',
-                                    'alat_yang_digunakan_steril' => 'Ya',
-                                    'pembersihan_kulit' => 'Ya',
-                                    'setelah_melakukan_hand_hygiene' => 'Ya',
-                                    'perawatan_dressing_infus' => 'Ya',
-                                    'spoit_yang_digunakan_disposible' => 'Ya',
-                                    'memberi_tanggal_dan_jam_pemasangan_infus' => 'Ya',
-                                    'set_infus_setiap_72jam' => 'Ya',
-                                ]);
-                            }
-                        })
-                        ->action(function (array $data, RegPeriksa $regPeriksa) {
+                        ])
+                        ->action(function (array $data, RegPeriksa $record): void {
                             try {
-                                $data['no_rawat'] = $regPeriksa->no_rawat;
-                                \App\Models\AuditBundlePlabsi::updateOrCreate([
-                                    'no_rawat' => $regPeriksa->no_rawat,
-                                    'tanggal' => date('Y-m-d'),
-                                ], $data);
-
+                                $data['tanggal'] = date('Y-m-d H:i:s');
+                                $data['no_rawat'] = $record->no_rawat;
+                                
+                                \App\Models\AuditBundleVap::create($data);
+                                
                                 Notification::make()
-                                    ->title('Data Audit Bundle Plabsi berhasil disimpan')
+                                    ->title('Bundle VAP berhasil disimpan')
                                     ->success()
                                     ->send();
                             } catch (\Exception $e) {
                                 Notification::make()
-                                    ->title('Data Audit Bundle Plabsi gagal disimpan')
-                                    ->body($e->getMessage())
+                                    ->title('Error')
+                                    ->body('Gagal menyimpan bundle VAP: ' . $e->getMessage())
                                     ->danger()
                                     ->send();
                             }
-                        })
+                        }),
+                    Action::make('input_bundle_plabsi')
+                        ->label('Input Bundle Plabsi')
+                        ->icon('heroicon-o-clipboard-document-check')
                         ->form([
                             Forms\Components\Select::make('id_ruang')
                                 ->label('Ruang')
-                                ->options(\App\Models\RuangAuditKepatuhan::pluck('nama_ruang', 'id_ruang')->toArray())
+                                ->options(\DB::table('ruang_audit_kepatuhan')->pluck('nama_ruang', 'id_ruang'))
                                 ->required(),
                             Forms\Components\Select::make('sebelum_melakukan_hand_hygiene')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
+                                ->label('Sebelum Melakukan Hand Hygiene')
+                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('menggunakan_apd_lengkap')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
+                                ->label('Menggunakan APD Lengkap')
+                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('lokasi_pemasangan_sesuai')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
+                                ->label('Lokasi Pemasangan Sesuai')
+                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('alat_yang_digunakan_steril')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
+                                ->label('Alat Yang Digunakan Steril')
+                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('pembersihan_kulit')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
+                                ->label('Pembersihan Kulit')
+                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('setelah_melakukan_hand_hygiene')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
+                                ->label('Setelah Melakukan Hand Hygiene')
+                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('perawatan_dressing_infus')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
+                                ->label('Perawatan Dressing Infus')
+                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('spoit_yang_digunakan_disposible')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
+                                ->label('Spoit Yang Digunakan Disposible')
+                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('memberi_tanggal_dan_jam_pemasangan_infus')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
+                                ->label('Memberi Tanggal dan Jam Pemasangan Infus')
+                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('set_infus_setiap_72jam')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
+                                ->label('Set Infus Setiap 72 Jam')
+                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                         ])
+                        ->action(function (array $data, RegPeriksa $record): void {
+                            try {
+                                $data['tanggal'] = date('Y-m-d H:i:s');
+                                $data['no_rawat'] = $record->no_rawat;
+                                
+                                \App\Models\AuditBundlePlabsi::create($data);
+                                
+                                Notification::make()
+                                    ->title('Bundle Plabsi berhasil disimpan')
+                                    ->success()
+                                    ->send();
+                            } catch (\Exception $e) {
+                                Notification::make()
+                                    ->title('Error')
+                                    ->body('Gagal menyimpan bundle Plabsi: ' . $e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        }),
                 ])
 
             ], position: ActionsPosition::BeforeColumns);

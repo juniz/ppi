@@ -17,15 +17,24 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
+use App\Filament\Resources\DataHaisResource\Widgets\HaisHarianChart;
 
 class HaisHarian extends Page implements HasTable
 {
     use InteractsWithTable;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationGroup = 'Laporan';
+    protected static ?string $navigationLabel = 'HAIs Harian';
     protected static ?int $navigationSort = 2;
 
     protected static string $view = 'filament.pages.hais-harian';
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            HaisHarianChart::class,
+        ];
+    }
 
     public function table(Table $table): Table
     {
