@@ -13,6 +13,7 @@ use App\Models\DataHais;
 use Filament\Tables\Filters\Filter;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class LajuVAP extends Page implements HasTable
 {
@@ -45,6 +46,21 @@ class LajuVAP extends Page implements HasTable
                     ->where('data_HAIs.VAP', '>', 0)
                     ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
             )
+            ->filters([
+                DateRangeFilter::make('tanggal')
+                    ->label('PERIODE')
+                    ->startDate(Carbon::now())
+                    ->endDate(Carbon::now())
+                    ->modifyQueryUsing(
+                        fn(Builder $query, ?Carbon $startDate, ?Carbon $endDate, $dateString) =>
+                        $query->when(
+                            !empty($dateString),
+                            fn(Builder $query, $date): Builder =>
+                            $query->whereBetween('data_HAIs.tanggal', [$startDate, $endDate])
+                        )
+                    )
+                    ->autoApply(),
+            ])
             ->columns([
                 TextColumn::make('nm_bangsal')
                     ->label('KAMAR/BANGSAL')
@@ -65,16 +81,56 @@ class LajuVAP extends Page implements HasTable
                 TextColumn::make('persentase')
                     ->label('PERSENTASE VAP (%)')
                     ->alignCenter()
-                    ->formatStateUsing(function ($record) {
-                        $total = DataHais::query()
-                            ->where('VAP', '>', 0)
-                            ->sum(DB::raw('ROUND((COUNT(DISTINCT no_rawat)/SUM(VAP))*1000,2)'));
-                        return number_format(($record->laju_vap / $total) * 100, 2) . ' %';
+                    ->state(function ($record, $livewire) {
+                        try {
+                            // Jika ini baris rangkuman
+                            if ($record->nm_bangsal === 'Rangkuman') {
+                                return '100.00 %';
+                            }
+
+                            // Buat query dasar dengan filter yang aktif
+                            $query = DataHais::query()
+                                ->join('kamar', 'data_HAIs.kd_kamar', '=', 'kamar.kd_kamar')
+                                ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal');
+
+                            // Terapkan filter tanggal terlebih dahulu
+                            if (isset($livewire->tableFilters['tanggal'])) {
+                                $dates = $livewire->tableFilters['tanggal'];
+                                if (!empty($dates['start']) && !empty($dates['end'])) {
+                                    $query->whereBetween('data_HAIs.tanggal', [
+                                        $dates['start'],
+                                        $dates['end']
+                                    ]);
+                                }
+                            }
+
+                            // Kemudian hitung total bangsal yang aktif dari data terfilter
+                            $totalBangsal = $query
+                                ->where('data_HAIs.VAP', '>', 0)
+                                ->select('bangsal.nm_bangsal')
+                                ->groupBy('bangsal.nm_bangsal')
+                                ->get()
+                                ->count();
+
+                            // Debug info
+                            \Log::info('Total bangsal aktif: ' . $totalBangsal);
+                            \Log::info('Current bangsal: ' . $record->nm_bangsal);
+                            \Log::info('Filter dates: ' . json_encode($livewire->tableFilters));
+
+                            // Jika tidak ada data
+                            if ($totalBangsal === 0) {
+                                return '0.00 %';
+                            }
+
+                            // Hitung persentase: 100% / jumlah bangsal aktif
+                            $persentase = 100 / $totalBangsal;
+                            return number_format($persentase, 2) . ' %';
+
+                        } catch (\Exception $e) {
+                            \Log::error('Error calculating percentage: ' . $e->getMessage());
+                            return '0.00 %';
+                        }
                     }),
-            ])
-            ->filters([
-                DateRangeFilter::make('tanggal')
-                    ->label('PERIODE')
             ])
             ->striped()
             ->defaultPaginationPageOption(25);
