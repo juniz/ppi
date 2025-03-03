@@ -369,44 +369,18 @@ class Ranap extends Page implements HasTable
                         // ->modalSubmitAction(false)
                         ->modalCancelActionLabel('Batal')
                         ->modalSubmitActionLabel('Simpan'),
-                    Tables\Actions\EditAction::make('audit_bundle_iadp')
-                        ->label('Input Bundle IADP')
-                        ->modalHeading('Audit Bundle IADP')
-                        ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
-                            $data = \App\Models\AuditBundleIadp::where('no_rawat', $regPeriksa->no_rawat)
-                                ->whereDate('tanggal', date('Y-m-d'))
-                                ->first();
-                            
-                            if ($data) {
-                                $form->fill($data->toArray());
-                            } else {
-                                $form->fill([
-                                    'tanggal' => now(),
-                                    'nik' => '',
-                                    'handhygiene' => 'Ya',
-                                    'apd' => 'Ya',
-                                    'skin_antiseptik' => 'Ya',
-                                    'lokasi_iv' => 'Ya',
-                                    'perawatan_rutin' => 'Ya',
-                                ]);
-                            }
-                        })
-                        ->action(function (array $data, RegPeriksa $regPeriksa): void {
-                            $data['tanggal'] = now();
-                            AuditBundleIadp::create($data);
-                            
-                            Notification::make()
-                                ->success()
-                                ->title('Berhasil menyimpan data')
-                                ->send();
-                        })
+                    Action::make('input_bundle_iadp')
+                        ->label('Bundle IADP (Plebitis)')
+                        ->icon('heroicon-o-clipboard-document-check')
                         ->form([
                             Forms\Components\Select::make('nik')
+                                ->label('Petugas / Pegawai')
                                 ->options(\App\Models\Pegawai::pluck('nama', 'nik')->toArray())
                                 ->getOptionLabelFromRecordUsing(fn($record) => $record->nama)
                                 ->searchable(['nama', 'nik'])
                                 ->required(),
                             Forms\Components\Select::make('handhygiene')
+                                ->label('Handhygiene')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak'
@@ -414,6 +388,7 @@ class Ranap extends Page implements HasTable
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('apd')
+                                ->label('APD (Alat Pelindung Diri)')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak'
@@ -421,6 +396,7 @@ class Ranap extends Page implements HasTable
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('skin_antiseptik')
+                                ->label('Skin Antiseptik')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak'
@@ -428,6 +404,7 @@ class Ranap extends Page implements HasTable
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('lokasi_iv')
+                                ->label('Lokasi IV')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak'
@@ -435,6 +412,7 @@ class Ranap extends Page implements HasTable
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('perawatan_rutin')
+                                ->label('Perawatan Rutin')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak'
@@ -443,7 +421,7 @@ class Ranap extends Page implements HasTable
                                 ->required(),
                         ]),
                     Action::make('input_bundle_ido')
-                        ->label('Input Bundle IDO')
+                        ->label('Bundle IDO')
                         ->icon('heroicon-o-clipboard-document-check')
                         ->form([
                             Forms\Components\Select::make('id_ruang')
@@ -451,7 +429,7 @@ class Ranap extends Page implements HasTable
                                 ->options(\DB::table('ruang_audit_kepatuhan')->pluck('nama_ruang', 'id_ruang'))
                                 ->required(),
                             Forms\Components\Select::make('pencukuran_rambut')
-                                ->label('Pencukuran Rambut')
+                                ->label('Pencukuran Rambut Yang Mengganggu Jalanya Operasi')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
@@ -467,7 +445,7 @@ class Ranap extends Page implements HasTable
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('temperature')
-                                ->label('Temperature')
+                                ->label('Temperature (Suhu Pasien)')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
@@ -504,7 +482,7 @@ class Ranap extends Page implements HasTable
                             }
                         }),
                     Action::make('input_bundle_isk')
-                        ->label('Input Bundle ISK')
+                        ->label('Bundle ISK')
                         ->icon('heroicon-o-clipboard-document-check')
                         ->form([
                             Forms\Components\Select::make('id_ruang')
@@ -512,7 +490,7 @@ class Ranap extends Page implements HasTable
                                 ->options(\DB::table('ruang_audit_kepatuhan')->pluck('nama_ruang', 'id_ruang'))
                                 ->required(),
                             Forms\Components\Select::make('pemasangan_sesuai_indikasi')
-                                ->label('Pemasangan sesuai indikasi')
+                                ->label('1. Pemasangan Sesuai Indikasi')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
@@ -520,7 +498,7 @@ class Ranap extends Page implements HasTable
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('hand_hygiene')
-                                ->label('Hand hygiene')
+                                ->label('2. Hand Hygiene')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
@@ -528,7 +506,7 @@ class Ranap extends Page implements HasTable
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('menggunakan_apd_yang_tepat')
-                                ->label('Menggunakan apd yang tepat')
+                                ->label('3. Menggunakan APD yang Tepat')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
@@ -536,7 +514,7 @@ class Ranap extends Page implements HasTable
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('pemasangan_menggunakan_alat_steril')
-                                ->label('Pemasangan menggunakan alat steril')
+                                ->label('4. Pemasangan Menggunakan Alat Steril')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
@@ -544,7 +522,7 @@ class Ranap extends Page implements HasTable
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('segera_dilepas_setelah_tidak_diperlukan')
-                                ->label('Segera dilepas setelah tidak diperlukan')
+                                ->label('5. Segera dilepas setelah tidak diperlukan')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
@@ -552,7 +530,7 @@ class Ranap extends Page implements HasTable
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('pengisian_balon_sesuai_petunjuk')
-                                ->label('Pengisian balon sesuai petunjuk')
+                                ->label('6. Pengisian Balon Sesuai Petunjuk (20 ml)')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
@@ -560,7 +538,15 @@ class Ranap extends Page implements HasTable
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('fiksasi_kateter_dengan_plester')
-                                ->label('Fiksasi kateter dengan plester')
+                                ->label('7. Fiksasi Kateter dengan Plester')
+                                ->options([
+                                    'Ya' => 'Ya',
+                                    'Tidak' => 'Tidak',
+                                ])
+                                ->default('Ya')
+                                ->required(),
+                            Forms\Components\Select::make('urinebag_menggantung_tidak_menyentuh_lantai')
+                                ->label('8. Urinebag Menggantung Tidak Menyentuh Lantai')
                                 ->options([
                                     'Ya' => 'Ya',
                                     'Tidak' => 'Tidak',
@@ -589,7 +575,7 @@ class Ranap extends Page implements HasTable
                             }
                         }),
                     Action::make('input_bundle_vap')
-                        ->label('Input Bundle VAP')
+                        ->label('Bundle VAP')
                         ->icon('heroicon-o-clipboard-document-check')
                         ->form([
                             Forms\Components\Select::make('id_ruang')
@@ -597,42 +583,42 @@ class Ranap extends Page implements HasTable
                                 ->options(\DB::table('ruang_audit_kepatuhan')->pluck('nama_ruang', 'id_ruang'))
                                 ->required(),
                             Forms\Components\Select::make('posisi_kepala')
-                                ->label('Posisi Kepala')
+                                ->label('1. Posisi Kepala')
                                 ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('pengkajian_setiap_hari')
-                                ->label('Pengkajian Setiap Hari')
+                                ->label('2. Pengkajian Setiap Hari terhadap sedasi dan extubasi')
                                 ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('hand_hygiene')
-                                ->label('Hand Hygiene')
+                                ->label('3. Hand Hygiene')
                                 ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('oral_hygiene')
-                                ->label('Oral Hygiene')
+                                ->label('4. Oral Hygiene secara rutin')
                                 ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('suction_manajemen_sekresi')
-                                ->label('Suction Manajemen Sekresi')
+                                ->label('5. Suction / Manajemen Sekresi')
                                 ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('profilaksis_peptic_ulcer')
-                                ->label('Profilaksis Peptic Ulcer')
+                                ->label('6. Profilaksis Peptic Ulcer')
                                 ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('dvt_profiklasisi')
-                                ->label('DVT Profiklasisi')
+                                ->label('7. DVT Profilaksisi jika ada indikasi')
                                 ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('penggunaan_apd_sesuai')
-                                ->label('Penggunaan APD Sesuai')
+                                ->label('8. Penggunaan APD Sesuai')
                                 ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
@@ -657,7 +643,7 @@ class Ranap extends Page implements HasTable
                             }
                         }),
                     Action::make('input_bundle_plabsi')
-                        ->label('Input Bundle Plabsi')
+                        ->label('Bundle CLABSI')
                         ->icon('heroicon-o-clipboard-document-check')
                         ->form([
                             Forms\Components\Select::make('id_ruang')
@@ -665,52 +651,52 @@ class Ranap extends Page implements HasTable
                                 ->options(\DB::table('ruang_audit_kepatuhan')->pluck('nama_ruang', 'id_ruang'))
                                 ->required(),
                             Forms\Components\Select::make('sebelum_melakukan_hand_hygiene')
-                                ->label('Sebelum Melakukan Hand Hygiene')
+                                ->label('1.Melakukan Hand Hygiene dan 5 Moment')
                                 ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('menggunakan_apd_lengkap')
-                                ->label('Menggunakan APD Lengkap')
+                                ->label('2. Menggunakan APD Lengkap dan Sarung tangan steril')
                                 ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('lokasi_pemasangan_sesuai')
-                                ->label('Lokasi Pemasangan Sesuai')
+                                ->label('3. Lokasi Pemasangan Sesuai')
                                 ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('alat_yang_digunakan_steril')
-                                ->label('Alat Yang Digunakan Steril')
+                                ->label('4. Alat Yang Digunakan Steril')
                                 ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('pembersihan_kulit')
-                                ->label('Pembersihan Kulit')
+                                ->label('5. Pembersihan Kulit area pemasangan dengan chlorhexidine 2% atau alcohol 70%')
                                 ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('setelah_melakukan_hand_hygiene')
-                                ->label('Setelah Melakukan Hand Hygiene')
+                                ->label('6. Melakukan Hand Hygiene dan 5 Moment')
                                 ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('perawatan_dressing_infus')
-                                ->label('Perawatan Dressing Infus')
+                                ->label('7. Perawatan Dressing Infus jika kotor atau basah')
                                 ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('spoit_yang_digunakan_disposible')
-                                ->label('Spoit Yang Digunakan Disposible')
+                                ->label('8. Spoit Yang Digunakan Disposible')
                                 ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('memberi_tanggal_dan_jam_pemasangan_infus')
-                                ->label('Memberi Tanggal dan Jam Pemasangan Infus')
+                                ->label('9. Memberi Tanggal dan Jam Pemasangan Infus')
                                 ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
                             Forms\Components\Select::make('set_infus_setiap_72jam')
-                                ->label('Set Infus Setiap 72 Jam')
+                                ->label('10. Set Infus Setiap 72 Jam')
                                 ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
