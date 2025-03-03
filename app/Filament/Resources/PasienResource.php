@@ -23,6 +23,8 @@ use Filament\Tables\Actions\ActionGroup;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Filament\Tables\Enums\ActionsPosition;
+use Filament\Tables\Actions\Action;
+use Illuminate\Database\Eloquent\Model;
 
 class PasienResource extends Resource
 {
@@ -215,85 +217,39 @@ class PasienResource extends Resource
             ])
             ->actions([
                 ActionGroup::make([
-                    Tables\Actions\EditAction::make()
-                        ->action(function (array $data): void {
-                            try {
-                                $data['no_rkm_medis'] = Pasien::generateNoRm();
-                                $data['umur'] = Pasien::calculateAge($data['tgl_lahir']);
-                                // Pasien::create($data);
-                                $pasien = new Pasien();
-                                $pasien->fill($data);
-                                $pasien->save();
-                                Notification::make()
-                                    ->title('Data Pasien Berhasil Disimpan')
-                                    ->success()
-                                    ->icon('heroicon-o-document-text')
-                                    ->iconColor('success')
-                                    ->send();
-                            } catch (\Exception $e) {
-                                // dd($e->getMessage());
-                                Notification::make()
-                                    ->title('Data Pasien Gagal Disimpan')
-                                    ->body($e->getMessage())
-                                    ->danger()
-                                    ->send();
-                            }
-                        })
+                    Tables\Actions\EditAction::make('ubah')
+                        ->label('Ubah')
+                        ->icon('heroicon-o-pencil')
+                        ->button()
+                        ->color('warning')
                         ->form([
                             TextInput::make('no_rkm_medis')
                                 ->label('No Rekam Medis')
-                                ->unique()
-                                ->validationMessages([
-                                    'unique' => 'No Rekam Medis sudah terdaftar',
-                                ])
                                 ->required(),
                             TextInput::make('nm_pasien')
                                 ->label('Nama Pasien')
-                                ->minLength(3)
-                                ->maxLength(50)
-                                ->string()
-                                ->required()
-                                ->validationMessages([
-                                    'required' => 'Nama Pasien tidak boleh kosong',
-                                    'string' => 'Nama Pasien harus berupa huruf',
-                                    'max' => 'Nama Pasien tidak boleh lebih dari 50 karakter',
-                                    'min' => 'Nama Pasien tidak boleh kurang dari 3 karakter',
-                                ]),
+                                ->required(),
                             Select::make('jk')
                                 ->label('Jenis Kelamin')
                                 ->options([
                                     'L' => 'Laki-laki',
-                                    'P' => 'Perempuan',
+                                    'P' => 'Perempuan'
                                 ])
                                 ->required(),
-                            // TextInput::make('tmp_lahir')
-                            //     ->label('Tempat Lahir')
-                            //     ->maxLength(15),
                             DatePicker::make('tgl_lahir')
                                 ->label('Tanggal Lahir')
-                                ->default(now())
-                                ->reactive()
-                                ->afterStateUpdated(function ($state, callable $set) {
-                                    $birthDate = \Carbon\Carbon::parse($state);
-                                    $age = $birthDate->age;
-                                    $month = $birthDate->month;
-                                    $day = $birthDate->day;
-                                    $set('umur', $age . ' Th ' . $month . ' Bl ' . $day . ' Hr');
-                                })
                                 ->required(),
                             TextInput::make('umur')
-                                ->disabled()
                                 ->label('Umur')
-                                ->required()
-                                ->maxLength(30),
+                                ->disabled(),
                             Textarea::make('alamat')
                                 ->label('Alamat')
-                                ->maxLength(100)
                                 ->required(),
                         ])
-                        ->modalCancelActionLabel('Batal')
-                        ->modalSubmitActionLabel('Simpan'),
-                    // Tables\Actions\DeleteAction::make(),
+                        ->modalHeading('Edit Pasien')
+                        ->modalWidth('md')
+                        ->modalSubmitActionLabel('Simpan')
+                        ->modalCancelActionLabel('Batal'),
                     Tables\Actions\EditAction::make()
                         ->label('Rawat Jalan')
                         ->icon('heroicon-o-plus-circle')
@@ -332,7 +288,6 @@ class PasienResource extends Resource
                                 Notification::make()
                                     ->title('Gagal Mendaftarkan Pasien')
                                     ->body($e->getMessage())
-                                    ->danger()
                                     // ->icon('heroicon-o-exclamation')
                                     // ->iconColor('error')
                                     ->send();
@@ -422,7 +377,6 @@ class PasienResource extends Resource
                                 Notification::make()
                                     ->title('Gagal Menginapkan Pasien')
                                     ->body($e->getMessage())
-                                    ->danger()
                                     // ->icon('heroicon-o-exclamation')
                                     // ->iconColor('error')
                                     ->send();
