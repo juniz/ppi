@@ -31,6 +31,7 @@ use Filament\Forms\Form;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Models\AuditBundleIadp;
 
 class Ranap extends Page implements HasTable
 {
@@ -365,7 +366,10 @@ class Ranap extends Page implements HasTable
                         ->label('Input Bundle IADP')
                         ->modalHeading('Audit Bundle IADP')
                         ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
-                            $data = \App\Models\AuditBundleIadp::where('no_rawat', $regPeriksa->no_rawat)->where('tanggal', date('Y-m-d'))->first();
+                            $data = \App\Models\AuditBundleIadp::where('no_rawat', $regPeriksa->no_rawat)
+                                ->whereDate('tanggal', date('Y-m-d'))
+                                ->first();
+                            
                             if ($data) {
                                 $form->fill($data->toArray());
                             } else {
@@ -380,25 +384,14 @@ class Ranap extends Page implements HasTable
                                 ]);
                             }
                         })
-                        ->action(function (array $data, RegPeriksa $regPeriksa) {
-                            try {
-                                $data['no_rawat'] = $regPeriksa->no_rawat;
-                                \App\Models\AuditBundleIadp::updateOrCreate([
-                                    'no_rawat' => $regPeriksa->no_rawat,
-                                    'tanggal' => date('Y-m-d'),
-                                ], $data);
-
-                                Notification::make()
-                                    ->title('Data Audit Bundle IADP berhasil disimpan')
-                                    ->success()
-                                    ->send();
-                            } catch (\Exception $e) {
-                                Notification::make()
-                                    ->title('Data Audit Bundle IADP gagal disimpan')
-                                    ->body($e->getMessage())
-                                    ->danger()
-                                    ->send();
-                            }
+                        ->action(function (array $data, RegPeriksa $regPeriksa): void {
+                            $data['tanggal'] = now();
+                            AuditBundleIadp::create($data);
+                            
+                            Notification::make()
+                                ->success()
+                                ->title('Berhasil menyimpan data')
+                                ->send();
                         })
                         ->form([
                             Forms\Components\Select::make('nik')
