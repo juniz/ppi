@@ -583,7 +583,7 @@ class Ranap extends Page implements HasTable
                                 ->options(\DB::table('ruang_audit_kepatuhan')->pluck('nama_ruang', 'id_ruang'))
                                 ->required(),
                             Forms\Components\Select::make('posisi_kepala')
-                                ->label('1. Posisi Kepala')
+                                ->label('1. Posisi Kepala 30 derajat s/d 45 derajat')
                                 ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
                                 ->default('Ya')
                                 ->required(),
@@ -650,56 +650,66 @@ class Ranap extends Page implements HasTable
                                 ->label('Ruang')
                                 ->options(\DB::table('ruang_audit_kepatuhan')->pluck('nama_ruang', 'id_ruang'))
                                 ->required(),
-                            Forms\Components\Select::make('sebelum_melakukan_hand_hygiene')
-                                ->label('1.Melakukan Hand Hygiene dan 5 Moment')
-                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
-                                ->default('Ya')
-                                ->required(),
-                            Forms\Components\Select::make('menggunakan_apd_lengkap')
-                                ->label('2. Menggunakan APD Lengkap dan Sarung tangan steril')
-                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
-                                ->default('Ya')
-                                ->required(),
-                            Forms\Components\Select::make('lokasi_pemasangan_sesuai')
-                                ->label('3. Lokasi Pemasangan Sesuai')
-                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
-                                ->default('Ya')
-                                ->required(),
-                            Forms\Components\Select::make('alat_yang_digunakan_steril')
-                                ->label('4. Alat Yang Digunakan Steril')
-                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
-                                ->default('Ya')
-                                ->required(),
-                            Forms\Components\Select::make('pembersihan_kulit')
-                                ->label('5. Pembersihan Kulit area pemasangan dengan chlorhexidine 2% atau alcohol 70%')
-                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
-                                ->default('Ya')
-                                ->required(),
-                            Forms\Components\Select::make('setelah_melakukan_hand_hygiene')
-                                ->label('6. Melakukan Hand Hygiene dan 5 Moment')
-                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
-                                ->default('Ya')
-                                ->required(),
-                            Forms\Components\Select::make('perawatan_dressing_infus')
-                                ->label('7. Perawatan Dressing Infus jika kotor atau basah')
-                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
-                                ->default('Ya')
-                                ->required(),
-                            Forms\Components\Select::make('spoit_yang_digunakan_disposible')
-                                ->label('8. Spoit Yang Digunakan Disposible')
-                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
-                                ->default('Ya')
-                                ->required(),
-                            Forms\Components\Select::make('memberi_tanggal_dan_jam_pemasangan_infus')
-                                ->label('9. Memberi Tanggal dan Jam Pemasangan Infus')
-                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
-                                ->default('Ya')
-                                ->required(),
-                            Forms\Components\Select::make('set_infus_setiap_72jam')
-                                ->label('10. Set Infus Setiap 72 Jam')
-                                ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
-                                ->default('Ya')
-                                ->required(),
+                            
+                            Forms\Components\Section::make('Saat Pemasangan')
+                                ->description('Tahap 1-5 dilakukan saat pemasangan')
+                                ->schema([
+                                    Forms\Components\Select::make('sebelum_melakukan_hand_hygiene')
+                                        ->label('1. Melakukan Hand Hygiene dan 5 Moment')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
+                                        ->default('Ya')
+                                        ->required(),
+                                    Forms\Components\Select::make('menggunakan_apd_lengkap')
+                                        ->label('2. Menggunakan APD Lengkap dan Sarung tangan steril')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
+                                        ->default('Ya')
+                                        ->required(),
+                                    Forms\Components\Select::make('lokasi_pemasangan_sesuai')
+                                        ->label('3. Lokasi Pemasangan Sesuai')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
+                                        ->default('Ya')
+                                        ->required(),
+                                    Forms\Components\Select::make('alat_yang_digunakan_steril')
+                                        ->label('4. Alat Yang Digunakan Steril')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
+                                        ->default('Ya')
+                                        ->required(),
+                                    Forms\Components\Select::make('pembersihan_kulit')
+                                        ->label('5. Pembersihan Kulit area pemasangan dengan chlorhexidine 2% atau alcohol 70%')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
+                                        ->default('Ya')
+                                        ->required(),
+                                ]),
+
+                            Forms\Components\Section::make('Penggantian/Perawatan Peralatan')
+                                ->description('Tahap 6-10 dilakukan saat perawatan')
+                                ->schema([
+                                    Forms\Components\Select::make('setelah_melakukan_hand_hygiene')
+                                        ->label('6. Melakukan Hand Hygiene dan 5 Moment')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
+                                        ->default('Ya')
+                                        ->required(),
+                                    Forms\Components\Select::make('perawatan_dressing_infus')
+                                        ->label('7. Perawatan Dressing Infus jika kotor atau basah')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
+                                        ->default('Ya')
+                                        ->required(),
+                                    Forms\Components\Select::make('spoit_yang_digunakan_disposible')
+                                        ->label('8. Spoit Yang Digunakan Disposible')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
+                                        ->default('Ya')
+                                        ->required(),
+                                    Forms\Components\Select::make('memberi_tanggal_dan_jam_pemasangan_infus')
+                                        ->label('9. Memberi Tanggal dan Jam Pemasangan Infus')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
+                                        ->default('Ya')
+                                        ->required(),
+                                    Forms\Components\Select::make('set_infus_setiap_72jam')
+                                        ->label('10. Set Infus Setiap 72 Jam')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak'])
+                                        ->default('Ya')
+                                        ->required(),
+                                ]),
                         ])
                         ->action(function (array $data, RegPeriksa $record): void {
                             try {
@@ -709,13 +719,13 @@ class Ranap extends Page implements HasTable
                                 \App\Models\AuditBundlePlabsi::create($data);
                                 
                                 Notification::make()
-                                    ->title('Bundle Plabsi berhasil disimpan')
+                                    ->title('Bundle CLABSI berhasil disimpan')
                                     ->success()
                                     ->send();
                             } catch (\Exception $e) {
                                 Notification::make()
                                     ->title('Error')
-                                    ->body('Gagal menyimpan bundle Plabsi: ' . $e->getMessage())
+                                    ->body('Gagal menyimpan bundle CLABSI: ' . $e->getMessage())
                                     ->danger()
                                     ->send();
                             }
