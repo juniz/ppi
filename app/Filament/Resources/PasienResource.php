@@ -217,42 +217,10 @@ class PasienResource extends Resource
             ])
             ->actions([
                 ActionGroup::make([
-                    Tables\Actions\EditAction::make('ubah')
-                        ->label('Ubah')
-                        ->icon('heroicon-o-pencil')
-                        ->button()
-                        ->color('warning')
-                        ->form([
-                            TextInput::make('no_rkm_medis')
-                                ->label('No Rekam Medis')
-                                ->required(),
-                            TextInput::make('nm_pasien')
-                                ->label('Nama Pasien')
-                                ->required(),
-                            Select::make('jk')
-                                ->label('Jenis Kelamin')
-                                ->options([
-                                    'L' => 'Laki-laki',
-                                    'P' => 'Perempuan'
-                                ])
-                                ->required(),
-                            DatePicker::make('tgl_lahir')
-                                ->label('Tanggal Lahir')
-                                ->required(),
-                            TextInput::make('umur')
-                                ->label('Umur')
-                                ->disabled(),
-                            Textarea::make('alamat')
-                                ->label('Alamat')
-                                ->required(),
-                        ])
-                        ->modalHeading('Edit Pasien')
-                        ->modalWidth('md')
-                        ->modalSubmitActionLabel('Simpan')
-                        ->modalCancelActionLabel('Batal'),
                     Tables\Actions\EditAction::make()
                         ->label('Rawat Jalan')
                         ->icon('heroicon-o-plus-circle')
+                        ->color('warning')
                         ->modalHeading('Pasien Baru')
                         ->action(function (array $data): void {
                             try {
@@ -330,6 +298,7 @@ class PasienResource extends Resource
                     Tables\Actions\CreateAction::make('kamar_inap')
                         ->label('Rawat Inap')
                         ->icon('heroicon-o-plus-circle')
+                        ->color('warning')
                         ->modalHeading('Kamar Inap')
                         ->action(function (array $data, Pasien $regPeriksa): void {
                             try {
@@ -430,6 +399,38 @@ class PasienResource extends Resource
                                 ->label('Diagnosa Awal')
                                 ->required(),
                         ]),
+                        Tables\Actions\EditAction::make('ubah')
+                        ->label('Ubah')
+                        ->icon('heroicon-o-pencil')
+                        ->color('warning')
+                        ->form([
+                            TextInput::make('no_rkm_medis')
+                                ->label('No Rekam Medis')
+                                ->required(),
+                            TextInput::make('nm_pasien')
+                                ->label('Nama Pasien')
+                                ->required(),
+                            Select::make('jk')
+                                ->label('Jenis Kelamin')
+                                ->options([
+                                    'L' => 'Laki-laki',
+                                    'P' => 'Perempuan'
+                                ])
+                                ->required(),
+                            DatePicker::make('tgl_lahir')
+                                ->label('Tanggal Lahir')
+                                ->required(),
+                            TextInput::make('umur')
+                                ->label('Umur')
+                                ->disabled(),
+                            Textarea::make('alamat')
+                                ->label('Alamat')
+                                ->required(),
+                        ])
+                        ->modalHeading('Edit Pasien')
+                        ->modalWidth('md')
+                        ->modalSubmitActionLabel('Simpan')
+                        ->modalCancelActionLabel('Batal'),
                 ]),
             ], position: ActionsPosition::BeforeColumns)
             ->bulkActions([
