@@ -67,6 +67,17 @@ class HaisPerBangsal extends Page implements HasTable
             ->filters([
                 DateRangeFilter::make('tanggal')
                     ->label('Periode')
+                    ->startDate(Carbon::now())
+                    ->endDate(Carbon::now())
+                    ->modifyQueryUsing(
+                        fn(Builder $query, ?Carbon $startDate, ?Carbon $endDate, $dateString) =>
+                        $query->when(
+                            !empty($dateString),
+                            fn(Builder $query, $date): Builder =>
+                            $query->whereBetween('tanggal', [$startDate, $endDate])
+                        )
+                    )
+                    ->autoApply(),
             ])
             ->columns([
                 TextColumn::make('no')
