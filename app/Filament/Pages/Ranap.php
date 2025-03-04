@@ -741,6 +741,60 @@ class Ranap extends Page implements HasTable
                                     ->send();
                             }
                         }),
+                    Action::make('pindah_kamar')
+                        ->label('Pindah Kamar')
+                        ->icon('heroicon-o-arrows-right-left')
+                        ->form([
+                            Section::make('Informasi Pasien')
+                                ->schema([
+                                    TextInput::make('no_rkm_medis')
+                                        ->label('No. RM')
+                                        ->default(fn (RegPeriksa $record) => $record->no_rkm_medis)
+                                        ->disabled(),
+                                    TextInput::make('nm_pasien')
+                                        ->label('Nama Pasien')
+                                        ->default(fn (RegPeriksa $record) => $record->pasien->nm_pasien)
+                                        ->disabled(),
+                                ])
+                                ->columns(2),
+                                
+                            Section::make('Pindah Kamar')
+                                ->schema([
+                                    Select::make('kd_kamar')
+                                        ->label('Pilih Kamar')
+                                        ->options(function () {
+                                            return \App\Models\Kamar::query()
+                                                ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
+                                                ->pluck('bangsal.nm_bangsal', 'kamar.kd_kamar')
+                                                ->toArray();
+                                        })
+                                        ->required()
+                                ]),
+                        ])
+                        ->action(function (array $data, RegPeriksa $record): void {
+                            try {
+                                DB::table('kamar_inap')
+                                    ->where('no_rawat', $record->no_rawat)
+                                    ->update([
+                                        'kd_kamar' => $data['kd_kamar'],
+                                        'stts_pulang' => 'Pindah Kamar'
+                                    ]);
+
+                                Notification::make()
+                                    ->title('Berhasil pindah kamar')
+                                    ->success()
+                                    ->send();
+                            } catch (\Exception $e) {
+                                Notification::make()
+                                    ->title('Gagal pindah kamar')
+                                    ->body($e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        })
+                        ->modalHeading('Pindah Kamar')
+                        ->modalSubmitActionLabel('Simpan')
+                        ->modalCancelActionLabel('Batal'),
                 ])
 
             ], position: ActionsPosition::BeforeColumns);
