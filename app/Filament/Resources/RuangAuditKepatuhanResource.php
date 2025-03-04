@@ -3,22 +3,21 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\RuangAuditKepatuhanResource\Pages;
-use App\Filament\Resources\RuangAuditKepatuhanResource\RelationManagers;
-use App\Models\RuangAuditKepatuhan;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Models\RuangAuditKepatuhan;
 
 class RuangAuditKepatuhanResource extends Resource
 {
     protected static ?string $model = RuangAuditKepatuhan::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $group = 'Master Data';
+    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
+    protected static ?string $navigationGroup = 'Master Data';
+    protected static ?int $navigationSort = 1;
+    protected static ?string $navigationLabel = 'Ruang Audit';
 
     public static function form(Form $form): Form
     {
@@ -38,8 +37,10 @@ class RuangAuditKepatuhanResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id_ruang')
+                    ->label('Id ruang')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nama_ruang')
+                    ->label('Nama ruang')
                     ->searchable(),
             ])
             ->filters([

@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\RuangAuditKepatuhanResource\Pages;
 
 use App\Filament\Resources\RuangAuditKepatuhanResource;
-use Filament\Actions;
 use Filament\Resources\Pages\ManageRecords;
+use Filament\Actions;
 
 class ManageRuangAuditKepatuhans extends ManageRecords
 {

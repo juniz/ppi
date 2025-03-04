@@ -5,15 +5,16 @@ namespace App\Filament\Pages;
 use App\Filament\Widgets\AlatTerpasangChart;
 use App\Filament\Widgets\BundleAuditChart;
 use App\Filament\Widgets\StatsOverview;
-use Filament\Pages\Dashboard as BaseDashboard;
-use Filament\Widgets\StatsOverviewWidget\Stat;
-use Filament\Widgets\StatsOverviewWidget;
-use App\Models\DataHais;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use Filament\Pages\Page;
 
-class Dashboard extends BaseDashboard
+class Dashboard extends Page
 {
+    protected static ?string $navigationIcon = 'heroicon-o-home';
+    protected static ?string $navigationLabel = 'Dashboard';
+    protected static ?int $navigationSort = -2;
+    
+    protected static string $view = 'filament.pages.dashboard';
+
     public function getHeaderWidgets(): array
     {
         return [

@@ -81,54 +81,50 @@ class LajuVAP extends Page implements HasTable
                 TextColumn::make('persentase')
                     ->label('PERSENTASE VAP (%)')
                     ->alignCenter()
-                    ->state(function ($record, $livewire) {
+                    ->state(function ($record) {
                         try {
-                            // Jika ini baris rangkuman
-                            if ($record->nm_bangsal === 'Rangkuman') {
-                                return '100.00 %';
+                            // Ambil tanggal dari filter yang aktif
+                            $filter = $this->getTableFilters()['tanggal']->getState();
+                            $startDate = $filter['start'] ?? null;
+                            $endDate = $filter['end'] ?? null;
+
+                            // Debug log untuk filter tanggal
+                            \Log::info('Filter dates:', ['start' => $startDate, 'end' => $endDate]);
+
+                            // Hitung jumlah ruang dari tabel audit_bundle_vap dengan filter tanggal
+                            $query = DB::table('audit_bundle_vap')
+                                ->distinct();
+                            
+                            // Tambahkan filter tanggal jika ada
+                            if ($startDate && $endDate) {
+                                $query->whereBetween('tanggal', [$startDate, $endDate]);
+                            }
+                            
+                            $jumlahRuang = $query->count('id_ruang');
+
+                            // Debug log untuk jumlah ruang
+                            \Log::info('Jumlah ruang:', ['count' => $jumlahRuang]);
+
+                            // Jika tidak ada ruang
+                            if ($jumlahRuang === 0) {
+                                \Log::warning('Tidak ada ruang ditemukan');
+                                return '0 %';
                             }
 
-                            // Buat query dasar dengan filter yang aktif
-                            $query = DataHais::query()
-                                ->join('kamar', 'data_HAIs.kd_kamar', '=', 'kamar.kd_kamar')
-                                ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal');
-
-                            // Terapkan filter tanggal terlebih dahulu
-                            if (isset($livewire->tableFilters['tanggal'])) {
-                                $dates = $livewire->tableFilters['tanggal'];
-                                if (!empty($dates['start']) && !empty($dates['end'])) {
-                                    $query->whereBetween('data_HAIs.tanggal', [
-                                        $dates['start'],
-                                        $dates['end']
-                                    ]);
-                                }
-                            }
-
-                            // Kemudian hitung total bangsal yang aktif dari data terfilter
-                            $totalBangsal = $query
-                                ->where('data_HAIs.VAP', '>', 0)
-                                ->select('bangsal.nm_bangsal')
-                                ->groupBy('bangsal.nm_bangsal')
-                                ->get()
-                                ->count();
-
-                            // Debug info
-                            \Log::info('Total bangsal aktif: ' . $totalBangsal);
-                            \Log::info('Current bangsal: ' . $record->nm_bangsal);
-                            \Log::info('Filter dates: ' . json_encode($livewire->tableFilters));
-
-                            // Jika tidak ada data
-                            if ($totalBangsal === 0) {
-                                return '0.00 %';
-                            }
-
-                            // Hitung persentase: 100% / jumlah bangsal aktif
-                            $persentase = 100 / $totalBangsal;
-                            return number_format($persentase, 2) . ' %';
+                            // Hitung persentase: 100% dibagi jumlah ruang
+                            $persentase = (int)(100 / $jumlahRuang);
+                            
+                            // Debug log untuk hasil perhitungan
+                            \Log::info('Hasil perhitungan:', [
+                                'jumlah_ruang' => $jumlahRuang,
+                                'persentase' => $persentase
+                            ]);
+                            
+                            return $persentase . ' %';
 
                         } catch (\Exception $e) {
-                            \Log::error('Error calculating percentage: ' . $e->getMessage());
-                            return '0.00 %';
+                            \Log::error('Error calculating VAP percentage: ' . $e->getMessage());
+                            return '0 %';
                         }
                     }),
             ])
