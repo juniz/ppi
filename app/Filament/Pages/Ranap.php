@@ -79,6 +79,7 @@ class Ranap extends Page implements HasTable
                     ->label('Status Pulang')
                     ->options([
                         '-' => '-',
+                        'Pindah Kamar' => 'Pindah Kamar',
                         'Sehat' => 'Sehat',
                         'Rujuk' => 'Rujuk',
                         'APS' => 'APS',
@@ -92,7 +93,8 @@ class Ranap extends Page implements HasTable
                         'Isoman' => 'Isoman',
                         'Lain-lain' => 'Lain-lain'
                     ])
-                    ->default('-')
+                    ->multiple()
+                    ->default(['Pindah Kamar', '-'])
                     ->placeholder('Pilih Status Pulang'),
             ])
             ->columns([
