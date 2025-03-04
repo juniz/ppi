@@ -49,6 +49,7 @@ class Ranap extends Page implements HasTable
         return $table
             ->query(
                 RegPeriksa::query()
+                    ->select('reg_periksa.*')
                     ->join('kamar_inap', 'reg_periksa.no_rawat', '=', 'kamar_inap.no_rawat')
                     ->with(['pasien', 'poliklinik', 'penjab', 'kamarInap.kamar'])
                     ->where('status_lanjut', 'Ranap')
@@ -97,15 +98,23 @@ class Ranap extends Page implements HasTable
             ->columns([
                 TextColumn::make('no_rkm_medis')
                     ->label('No. RM')
-                    ->searchable()
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->where('reg_periksa.no_rkm_medis', 'like', "%{$search}%");
+                    })
                     ->sortable(),
                 TextColumn::make('pasien.nm_pasien')
                     ->label('Nama Pasien')
-                    ->searchable()
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('pasien', function ($q) use ($search) {
+                            $q->where('nm_pasien', 'like', "%{$search}%");
+                        });
+                    })
                     ->sortable(),
                 TextColumn::make('no_rawat')
                     ->label('No. Rawat')
-                    ->searchable()
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->where('reg_periksa.no_rawat', 'like', "%{$search}%");
+                    })
                     ->sortable(),
                 TextColumn::make('kamarInap.kamar.bangsal.nm_bangsal')
                     ->label('Kamar')
