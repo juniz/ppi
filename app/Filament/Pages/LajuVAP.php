@@ -42,6 +42,7 @@ class LajuVAP extends Page implements HasTable
                         DB::raw('COUNT(DISTINCT data_HAIs.no_rawat) as numerator'),
                         DB::raw('SUM(data_HAIs.VAP) as denumerator'),
                         DB::raw('ROUND((COUNT(DISTINCT data_HAIs.no_rawat)/SUM(data_HAIs.VAP))*1000,2) as laju_vap'),
+                        DB::raw('COUNT(SELECT DISTINCT * FROM kamar WHERE kd_bangsal = bangsal.kd_bangsal) / 100 as persentase')
                     ])
                     ->where('data_HAIs.VAP', '>', 0)
                     ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
@@ -77,56 +78,55 @@ class LajuVAP extends Page implements HasTable
                 TextColumn::make('laju_vap')
                     ->label('LAJU VAP')
                     ->alignCenter()
-                    ->formatStateUsing(fn ($state) => number_format($state, 2)),
+                    ->formatStateUsing(fn($state) => number_format($state, 2)),
                 TextColumn::make('persentase')
                     ->label('PERSENTASE VAP (%)')
                     ->alignCenter()
-                    ->state(function ($record) {
-                        try {
-                            // Ambil tanggal dari filter yang aktif
-                            $filter = $this->getTableFilters()['tanggal']->getState();
-                            $startDate = $filter['start'] ?? null;
-                            $endDate = $filter['end'] ?? null;
+                // ->state(function ($record) {
+                //     try {
+                //         // Ambil tanggal dari filter yang aktif
+                //         $filter = $this->getTableFilters()['tanggal']->getState();
+                //         $startDate = $filter['start'] ?? null;
+                //         $endDate = $filter['end'] ?? null;
 
-                            // Debug log untuk filter tanggal
-                            \Log::info('Filter dates:', ['start' => $startDate, 'end' => $endDate]);
+                //         // Debug log untuk filter tanggal
+                //         \Log::info('Filter dates:', ['start' => $startDate, 'end' => $endDate]);
 
-                            // Hitung jumlah ruang dari tabel audit_bundle_vap dengan filter tanggal
-                            $query = DB::table('audit_bundle_vap')
-                                ->distinct();
-                            
-                            // Tambahkan filter tanggal jika ada
-                            if ($startDate && $endDate) {
-                                $query->whereBetween('tanggal', [$startDate, $endDate]);
-                            }
-                            
-                            $jumlahRuang = $query->count('id_ruang');
+                //         // Hitung jumlah ruang dari tabel audit_bundle_vap dengan filter tanggal
+                //         $query = DB::table('audit_bundle_vap')
+                //             ->distinct();
 
-                            // Debug log untuk jumlah ruang
-                            \Log::info('Jumlah ruang:', ['count' => $jumlahRuang]);
+                //         // Tambahkan filter tanggal jika ada
+                //         if ($startDate && $endDate) {
+                //             $query->whereBetween('tanggal', [$startDate, $endDate]);
+                //         }
 
-                            // Jika tidak ada ruang
-                            if ($jumlahRuang === 0) {
-                                \Log::warning('Tidak ada ruang ditemukan');
-                                return '0 %';
-                            }
+                //         $jumlahRuang = $query->count('id_ruang');
 
-                            // Hitung persentase: 100% dibagi jumlah ruang
-                            $persentase = (int)(100 / $jumlahRuang);
-                            
-                            // Debug log untuk hasil perhitungan
-                            \Log::info('Hasil perhitungan:', [
-                                'jumlah_ruang' => $jumlahRuang,
-                                'persentase' => $persentase
-                            ]);
-                            
-                            return $persentase . ' %';
+                //         // Debug log untuk jumlah ruang
+                //         \Log::info('Jumlah ruang:', ['count' => $jumlahRuang]);
 
-                        } catch (\Exception $e) {
-                            \Log::error('Error calculating VAP percentage: ' . $e->getMessage());
-                            return '0 %';
-                        }
-                    }),
+                //         // Jika tidak ada ruang
+                //         if ($jumlahRuang === 0) {
+                //             \Log::warning('Tidak ada ruang ditemukan');
+                //             return '0 %';
+                //         }
+
+                //         // Hitung persentase: 100% dibagi jumlah ruang
+                //         $persentase = (int)(100 / $jumlahRuang);
+
+                //         // Debug log untuk hasil perhitungan
+                //         \Log::info('Hasil perhitungan:', [
+                //             'jumlah_ruang' => $jumlahRuang,
+                //             'persentase' => $persentase
+                //         ]);
+
+                //         return $persentase . ' %';
+                //     } catch (\Exception $e) {
+                //         \Log::error('Error calculating VAP percentage: ' . $e->getMessage());
+                //         return '0 %';
+                //     }
+                // }),
             ])
             ->striped()
             ->defaultPaginationPageOption(25);
