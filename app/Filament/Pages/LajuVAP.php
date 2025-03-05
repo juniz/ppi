@@ -42,7 +42,7 @@ class LajuVAP extends Page implements HasTable
                         DB::raw('COUNT(DISTINCT data_HAIs.no_rawat) as numerator'),
                         DB::raw('SUM(data_HAIs.VAP) as denumerator'),
                         DB::raw('ROUND((COUNT(DISTINCT data_HAIs.no_rawat)/SUM(data_HAIs.VAP))*1000,2) as laju_vap'),
-                        DB::raw('COUNT(SELECT DISTINCT * FROM kamar WHERE kd_bangsal = bangsal.kd_bangsal) / 100 as persentase')
+                        DB::raw('ROUND((100/COUNT(DISTINCT kamar.kd_kamar)),2) as persentase')
                     ])
                     ->where('data_HAIs.VAP', '>', 0)
                     ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
