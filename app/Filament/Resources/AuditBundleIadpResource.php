@@ -22,8 +22,9 @@ class AuditBundleIadpResource extends Resource
     protected static ?string $title = 'Audit Bundle IADP';
     protected static ?string $heading = 'Audit Bundle IADP';
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationGroup = 'Audit';
+    protected static ?string $navigationGroup = 'Laporan';
     protected static ?string $navigationLabel = 'Bundle IADP';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
