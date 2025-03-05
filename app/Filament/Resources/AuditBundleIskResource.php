@@ -21,8 +21,9 @@ class AuditBundleIskResource extends Resource
     protected static ?string $model = AuditBundleIsk::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationGroup = 'Audit';
+    protected static ?string $navigationGroup = 'Laporan';
     protected static ?string $navigationLabel = 'Bundle ISK';
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
