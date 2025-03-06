@@ -34,6 +34,9 @@ use Illuminate\Support\Facades\DB;
 use App\Models\AuditBundleIadp;
 use Filament\Tables\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Placeholder;
+use Illuminate\Support\HtmlString;
+use Filament\Forms\Components\Grid;
 
 class Ranap extends Page implements HasTable
 {
@@ -774,50 +777,123 @@ class Ranap extends Page implements HasTable
                     Action::make('pemulangan_pasien')
                         ->label('Pemulangan Pasien')
                         ->icon('heroicon-o-arrow-right-circle')
-                        ->modalWidth('lg')
+                        ->modalWidth(MaxWidth::SevenExtraLarge)
                         ->modalHeading(fn (RegPeriksa $record): string => "Pemulangan Pasien: {$record->pasien->nm_pasien} ({$record->no_rawat})")
                         ->form([
-                            Section::make('Informasi Pasien')
-                                ->schema([
-                                    TextInput::make('no_rawat')
-                                        ->label('No Rawat')
-                                        ->default(fn ($record) => $record->no_rawat)
-                                        ->disabled(),
-                                    TextInput::make('nm_pasien')
-                                        ->label('Nama Pasien')
-                                        ->default(fn ($record) => $record->pasien->nm_pasien)
-                                        ->disabled(),
-                                ])
-                                ->columns(2),
-                                
-                            Section::make('Data Pemulangan')
-                                ->schema([
-                                    DateTimePicker::make('tgl_keluar')
-                                        ->label('Tanggal & Jam Keluar')
-                                        ->default(now())
-                                        ->required(),
-                                    Select::make('stts_pulang')
-                                        ->label('Status Pulang')
-                                        ->options([
-                                            'Sehat' => 'Sehat',
-                                            'Rujuk' => 'Rujuk',
-                                            'APS' => 'APS',
-                                            '+' => '+',
-                                            'Meninggal' => 'Meninggal',
-                                            'Sembuh' => 'Sembuh',
-                                            'Membaik' => 'Membaik',
-                                            'Pulang Paksa' => 'Pulang Paksa',
-                                            '-' => '-',
-                                            'Pindah Kamar' => 'Pindah Kamar',
-                                            'Status Belum Lengkap' => 'Status Belum Lengkap',
-                                            'Atas Persetujuan Dokter' => 'Atas Persetujuan Dokter',
-                                            'Atas Permintaan Sendiri' => 'Atas Permintaan Sendiri',
-                                            'Isoman' => 'Isoman',
-                                            'Lain-lain' => 'Lain-lain'
-                                        ])
-                                        ->required(),
-                                ])
-                                ->columns(2),
+                            Split::make([
+                                // Kolom Kiri
+                                Grid::make()
+                                    ->schema([
+                                        Section::make('Informasi Pasien')
+                                            ->schema([
+                                                TextInput::make('no_rawat')
+                                                    ->label('No Rawat')
+                                                    ->default(fn ($record) => $record->no_rawat)
+                                                    ->disabled(),
+                                                TextInput::make('nm_pasien')
+                                                    ->label('Nama Pasien')
+                                                    ->default(fn ($record) => $record->pasien->nm_pasien)
+                                                    ->disabled(),
+                                            ])
+                                            ->columns(2),
+
+                                        Section::make('Data Pemulangan')
+                                            ->schema([
+                                                DateTimePicker::make('tgl_keluar')
+                                                    ->label('Tanggal & Jam Keluar')
+                                                    ->default(now())
+                                                    ->required(),
+                                                Select::make('stts_pulang')
+                                                    ->label('Status Pulang')
+                                                    ->options([
+                                                        'Sehat' => 'Sehat',
+                                                        'Rujuk' => 'Rujuk',
+                                                        'APS' => 'APS',
+                                                        '+' => '+',
+                                                        'Meninggal' => 'Meninggal',
+                                                        'Sembuh' => 'Sembuh',
+                                                        'Membaik' => 'Membaik',
+                                                        'Pulang Paksa' => 'Pulang Paksa',
+                                                        '-' => '-',
+                                                        'Pindah Kamar' => 'Pindah Kamar',
+                                                        'Status Belum Lengkap' => 'Status Belum Lengkap',
+                                                        'Atas Persetujuan Dokter' => 'Atas Persetujuan Dokter',
+                                                        'Atas Permintaan Sendiri' => 'Atas Permintaan Sendiri',
+                                                        'Isoman' => 'Isoman',
+                                                        'Lain-lain' => 'Lain-lain'
+                                                    ])
+                                                    ->required(),
+                                            ])
+                                            ->columns(2),
+                                    ])
+                                    ->columnSpan(['lg' => 1]),
+
+                                // Kolom Kanan
+                                Section::make('Status Pengisian HAIs')
+                                    ->schema([
+                                        Placeholder::make('status_hais')
+                                            ->content(function (RegPeriksa $record): HtmlString {
+                                                $tglMasuk = Carbon::parse($record->kamarInap->tgl_masuk);
+                                                $today = Carbon::today();
+                                                
+                                                // Hitung total hari
+                                                $totalDays = $tglMasuk->diffInDays($today) + 1;
+                                                // Hitung jumlah kolom yang dibutuhkan (8 item per kolom)
+                                                $columns = ceil($totalDays / 8);
+                                                
+                                                $html = '<div class="grid grid-cols-' . $columns . ' gap-4">';
+                                                
+                                                // Array untuk menampung item per kolom
+                                                $columnItems = array_fill(0, $columns, '');
+                                                $currentColumn = 0;
+                                                $itemsInCurrentColumn = 0;
+                                                
+                                                for ($date = clone $tglMasuk; $date->lte($today); $date->addDay()) {
+                                                    $isDataExist = \App\Models\DataHais::query()
+                                                        ->where('no_rawat', $record->no_rawat)
+                                                        ->whereDate('tanggal', $date->format('Y-m-d'))
+                                                        ->exists();
+                                                    
+                                                    if ($isDataExist) {
+                                                        $icon = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" style="color: #10b981;">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                                        </svg>';
+                                                        $textColor = 'text-success-600';
+                                                    } else {
+                                                        $icon = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" style="color: #ef4444;">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                                        </svg>';
+                                                        $textColor = 'text-danger-600';
+                                                    }
+                                                    
+                                                    $item = '<div class="flex items-center gap-2">
+                                                        ' . $icon . '
+                                                        <span class="' . $textColor . '">' . $date->format('d/m/Y') . '</span>
+                                                    </div>';
+                                                    
+                                                    // Tambahkan item ke kolom saat ini
+                                                    $columnItems[$currentColumn] .= $item;
+                                                    $itemsInCurrentColumn++;
+                                                    
+                                                    // Pindah ke kolom berikutnya jika sudah mencapai 8 item
+                                                    if ($itemsInCurrentColumn >= 8) {
+                                                        $currentColumn++;
+                                                        $itemsInCurrentColumn = 0;
+                                                    }
+                                                }
+                                                
+                                                // Gabungkan semua kolom
+                                                foreach ($columnItems as $items) {
+                                                    $html .= '<div class="space-y-2">' . $items . '</div>';
+                                                }
+                                                
+                                                $html .= '</div>';
+                                                
+                                                return new HtmlString($html);
+                                            }),
+                                    ])
+                                    ->columnSpan(['lg' => 1]),
+                            ])->columns(['lg' => 2]),
                         ])
                         ->action(function (array $data, RegPeriksa $record): void {
                             try {
