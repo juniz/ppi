@@ -151,46 +151,6 @@ class Ranap extends Page implements HasTable
             ])
             ->actions([
                 ActionGroup::make([
-                    Tables\Actions\EditAction::make('status')
-                        ->label('Status Pasien')
-                        ->modalHeading('Status Pulang Pasien')
-                        ->action(function (array $data, RegPeriksa $regPeriksa) {
-                            try {
-                                DB::table('kamar_inap')
-                                    ->where('no_rawat', $regPeriksa->no_rawat)
-                                    ->update(['stts_pulang' => $data['stts_pulang']]);
-                                Notification::make()
-                                    ->title('Data berhasil disimpan')
-                                    ->success()
-                                    ->send();
-                            } catch (\Exception $e) {
-                                // dd($e->getMessage());
-                                Notification::make()
-                                    ->title('Data gagal disimpan')
-                                    ->body($e->getMessage())
-                                    ->danger()
-                                    ->send();
-                            }
-                        })
-                        ->form([
-                            Select::make('stts_pulang')
-                                ->label('Status')
-                                ->options([
-                                    '-' => '-',
-                                    'Sehat' => 'Sehat',
-                                    'Rujuk' => 'Rujuk',
-                                    'APS' => 'APS',
-                                    '+' => '+',
-                                    'Meninggal' => 'Meninggal',
-                                    'Membaik' => 'Membaik',
-                                    'Pulang Paksa' => 'Pulang Paksa',
-                                    'Status Belum Lengkap' => 'Status Belum Lengkap',
-                                    'Atas Persetujuan Dokter' => 'Atas Persetujuan Dokter',
-                                    'Atas Permintaan Sendiri' => 'Atas Permintaan Sendiri',
-                                    'Isoman' => 'Isoman',
-                                    'Lain-lain' => 'Lain-lain'
-                                ])
-                        ]),
                     Tables\Actions\EditAction::make('hais')
                         ->label('Data HAIs')
                         ->modalHeading('Data HAIs')
@@ -882,7 +842,6 @@ class Ranap extends Page implements HasTable
                             }
                         }),
                 ])
-
             ], position: ActionsPosition::BeforeColumns);
     }
 }
