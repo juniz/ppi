@@ -132,6 +132,21 @@ class Ranap extends Page implements HasTable
                 TextColumn::make('kamarInap.stts_pulang')
                     ->label('Status Pulang')
                     ->sortable(),
+                IconColumn::make('has_hais_today')
+                    ->label('HAIs')
+                    ->alignCenter()
+                    ->tooltip('Status pengisian HAIs hari ini')
+                    ->boolean()
+                    ->getStateUsing(function ($record): bool {
+                        return \App\Models\DataHais::query()
+                            ->where('no_rawat', $record->no_rawat)
+                            ->whereDate('tanggal', now()->format('Y-m-d'))
+                            ->exists();
+                    })
+                    ->trueIcon('heroicon-o-check-circle')
+                    ->falseIcon('heroicon-o-x-circle')
+                    ->trueColor('success')
+                    ->falseColor('danger'),
             ])
             ->actions([
                 ActionGroup::make([
