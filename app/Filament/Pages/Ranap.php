@@ -33,6 +33,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\AuditBundleIadp;
 use Filament\Tables\Actions\Action;
+use Filament\Forms\Components\DateTimePicker;
 
 class Ranap extends Page implements HasTable
 {
@@ -810,6 +811,76 @@ class Ranap extends Page implements HasTable
                         ->modalHeading('Pindah Kamar')
                         ->modalSubmitActionLabel('Simpan')
                         ->modalCancelActionLabel('Batal'),
+                    Action::make('pemulangan_pasien')
+                        ->label('Pemulangan Pasien')
+                        ->icon('heroicon-o-arrow-right-circle')
+                        ->modalWidth('lg')
+                        ->modalHeading(fn (RegPeriksa $record): string => "Pemulangan Pasien: {$record->pasien->nm_pasien} ({$record->no_rawat})")
+                        ->form([
+                            Section::make('Informasi Pasien')
+                                ->schema([
+                                    TextInput::make('no_rawat')
+                                        ->label('No Rawat')
+                                        ->default(fn ($record) => $record->no_rawat)
+                                        ->disabled(),
+                                    TextInput::make('nm_pasien')
+                                        ->label('Nama Pasien')
+                                        ->default(fn ($record) => $record->pasien->nm_pasien)
+                                        ->disabled(),
+                                ])
+                                ->columns(2),
+                                
+                            Section::make('Data Pemulangan')
+                                ->schema([
+                                    DateTimePicker::make('tgl_keluar')
+                                        ->label('Tanggal & Jam Keluar')
+                                        ->default(now())
+                                        ->required(),
+                                    Select::make('stts_pulang')
+                                        ->label('Status Pulang')
+                                        ->options([
+                                            'Sehat' => 'Sehat',
+                                            'Rujuk' => 'Rujuk',
+                                            'APS' => 'APS',
+                                            '+' => '+',
+                                            'Meninggal' => 'Meninggal',
+                                            'Sembuh' => 'Sembuh',
+                                            'Membaik' => 'Membaik',
+                                            'Pulang Paksa' => 'Pulang Paksa',
+                                            '-' => '-',
+                                            'Pindah Kamar' => 'Pindah Kamar',
+                                            'Status Belum Lengkap' => 'Status Belum Lengkap',
+                                            'Atas Persetujuan Dokter' => 'Atas Persetujuan Dokter',
+                                            'Atas Permintaan Sendiri' => 'Atas Permintaan Sendiri',
+                                            'Isoman' => 'Isoman',
+                                            'Lain-lain' => 'Lain-lain'
+                                        ])
+                                        ->required(),
+                                ])
+                                ->columns(2),
+                        ])
+                        ->action(function (array $data, RegPeriksa $record): void {
+                            try {
+                                DB::table('kamar_inap')
+                                    ->where('no_rawat', $record->no_rawat)
+                                    ->update([
+                                        'tgl_keluar' => Carbon::parse($data['tgl_keluar'])->format('Y-m-d'),
+                                        'jam_keluar' => Carbon::parse($data['tgl_keluar'])->format('H:i:s'),
+                                        'stts_pulang' => $data['stts_pulang']
+                                    ]);
+
+                                Notification::make()
+                                    ->title('Berhasil memulangkan pasien')
+                                    ->success()
+                                    ->send();
+                            } catch (\Exception $e) {
+                                Notification::make()
+                                    ->title('Gagal memulangkan pasien')
+                                    ->body($e->getMessage())
+                                    ->danger()
+                                    ->send();
+                            }
+                        }),
                 ])
 
             ], position: ActionsPosition::BeforeColumns);
