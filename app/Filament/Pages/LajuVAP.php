@@ -14,6 +14,9 @@ use Filament\Tables\Filters\Filter;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Dflydev\DotAccessData\Data;
+
+use function PHPUnit\Framework\isNull;
 
 class LajuVAP extends Page implements HasTable
 {
@@ -24,6 +27,9 @@ class LajuVAP extends Page implements HasTable
     protected static ?string $navigationLabel = 'Laju VAP';
     protected static ?int $navigationSort = 3;
     protected static string $view = 'filament.pages.laju-vap';
+
+    public $startDate;
+    public $endDate;
 
     public function getTableRecordKey($record): string
     {
@@ -42,7 +48,7 @@ class LajuVAP extends Page implements HasTable
                         DB::raw('COUNT(DISTINCT data_HAIs.no_rawat) as numerator'),
                         DB::raw('SUM(data_HAIs.VAP) as denumerator'),
                         DB::raw('ROUND((COUNT(DISTINCT data_HAIs.no_rawat)/SUM(data_HAIs.VAP))*1000,2) as laju_vap'),
-                        DB::raw('ROUND((100/COUNT(DISTINCT kamar.kd_kamar)),2) as persentase')
+                        DB::raw('ROUND(100/(SELECT COUNT(DISTINCT data_HAIs.kd_kamar) FROM data_HAIs WHERE data_HAIs.VAP > 0),2) as persentase')
                     ])
                     ->where('data_HAIs.VAP', '>', 0)
                     ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
@@ -53,12 +59,16 @@ class LajuVAP extends Page implements HasTable
                     ->startDate(Carbon::now())
                     ->endDate(Carbon::now())
                     ->modifyQueryUsing(
-                        fn(Builder $query, ?Carbon $startDate, ?Carbon $endDate, $dateString) =>
-                        $query->when(
-                            !empty($dateString),
-                            fn(Builder $query, $date): Builder =>
-                            $query->whereBetween('data_HAIs.tanggal', [$startDate, $endDate])
-                        )
+                        function (Builder $query, ?Carbon $startDate, ?Carbon $endDate, $dateString) {
+                            $this->startDate = $startDate?->format('Y-m-d');
+                            $this->endDate = $endDate?->format('Y-m-d');
+                            $query->when(
+                                !empty($dateString),
+                                fn(Builder $query, $date): Builder =>
+                                $query->whereBetween('data_HAIs.tanggal', [$startDate, $endDate])
+                            );
+                        }
+
                     )
                     ->autoApply(),
             ])
@@ -77,56 +87,33 @@ class LajuVAP extends Page implements HasTable
                     ->summarize(Sum::make()),
                 TextColumn::make('laju_vap')
                     ->label('LAJU VAP')
-                    ->alignCenter()
-                    ->formatStateUsing(fn($state) => number_format($state, 2)),
+                    ->alignCenter(),
+                // ->formatStateUsing(fn($state) => number_format($state, 2)),
                 TextColumn::make('persentase')
                     ->label('PERSENTASE VAP (%)')
                     ->alignCenter()
-                // ->state(function ($record) {
-                //     try {
-                //         // Ambil tanggal dari filter yang aktif
-                //         $filter = $this->getTableFilters()['tanggal']->getState();
-                //         $startDate = $filter['start'] ?? null;
-                //         $endDate = $filter['end'] ?? null;
-
-                //         // Debug log untuk filter tanggal
-                //         \Log::info('Filter dates:', ['start' => $startDate, 'end' => $endDate]);
-
-                //         // Hitung jumlah ruang dari tabel audit_bundle_vap dengan filter tanggal
-                //         $query = DB::table('audit_bundle_vap')
-                //             ->distinct();
-
-                //         // Tambahkan filter tanggal jika ada
-                //         if ($startDate && $endDate) {
-                //             $query->whereBetween('tanggal', [$startDate, $endDate]);
-                //         }
-
-                //         $jumlahRuang = $query->count('id_ruang');
-
-                //         // Debug log untuk jumlah ruang
-                //         \Log::info('Jumlah ruang:', ['count' => $jumlahRuang]);
-
-                //         // Jika tidak ada ruang
-                //         if ($jumlahRuang === 0) {
-                //             \Log::warning('Tidak ada ruang ditemukan');
-                //             return '0 %';
-                //         }
-
-                //         // Hitung persentase: 100% dibagi jumlah ruang
-                //         $persentase = (int)(100 / $jumlahRuang);
-
-                //         // Debug log untuk hasil perhitungan
-                //         \Log::info('Hasil perhitungan:', [
-                //             'jumlah_ruang' => $jumlahRuang,
-                //             'persentase' => $persentase
-                //         ]);
-
-                //         return $persentase . ' %';
-                //     } catch (\Exception $e) {
-                //         \Log::error('Error calculating VAP percentage: ' . $e->getMessage());
-                //         return '0 %';
-                //     }
-                // }),
+                    ->state(function ($record) {
+                        $presentase = 0;
+                        if ($this->startDate != null || $this->endDate != null) {
+                            $data = DataHais::query()
+                                ->select([
+                                    DB::raw('ROUND(100/(SELECT COUNT(DISTINCT data_HAIs.kd_kamar)),2) as persentase')
+                                ])
+                                ->where('data_HAIs.VAP', '>', 0)
+                                ->whereBetween('data_HAIs.tanggal', [$this->startDate, $this->endDate])
+                                ->first();
+                            $presentase = $data->persentase;
+                        } else {
+                            $data = DataHais::query()
+                                ->select([
+                                    DB::raw('ROUND(100/(SELECT COUNT(DISTINCT data_HAIs.kd_kamar)),2) as persentase')
+                                ])
+                                ->where('data_HAIs.VAP', '>', 0)
+                                ->first();
+                            $presentase = $data->persentase;
+                        }
+                        return $presentase  . ' %';
+                    }),
             ])
             ->striped()
             ->defaultPaginationPageOption(25);
