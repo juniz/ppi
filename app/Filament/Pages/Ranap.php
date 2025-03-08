@@ -159,7 +159,7 @@ class Ranap extends Page implements HasTable
                         ->modalHeading('Data HAIs')
                         ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
                             $data = \App\Models\DataHais::where('no_rawat', $regPeriksa->no_rawat)
-                                ->whereDate('tanggal', date('Y-m-d'))
+                                ->latest('tanggal')  // Ambil data terbaru jika ada multiple entries
                                 ->first();
                             
                             if ($data) {
@@ -193,21 +193,19 @@ class Ranap extends Page implements HasTable
                         ->action(function (array $data, RegPeriksa $regPeriksa) {
                             try {
                                 $data['no_rawat'] = $regPeriksa->no_rawat;
-                                $kamar = \App\Models\KamarInap::where('no_rawat', $regPeriksa->no_rawat)->first();
+                                $kamar = \App\Models\KamarInap::where('no_rawat', $regPeriksa->no_rawat)
+                                    ->latest('tgl_masuk')  // Ambil data kamar terbaru
+                                    ->first();
                                 $data['kd_kamar'] = $kamar->kd_kamar;
-                                \App\Models\DataHais::updateOrCreate([
-                                    'no_rawat' => $regPeriksa->no_rawat,
-                                    'tanggal' => $data['tanggal'],
-                                ], $data);
+                                
+                                \App\Models\DataHais::create($data);  // Selalu buat entry baru
 
                                 Notification::make()
                                     ->title('Data HAIs berhasil disimpan')
                                     ->success()
                                     ->send();
 
-                                // $this->redirect('/data-hais?tableSearch=' . $regPeriksa->no_rawat);
                             } catch (\Exception $e) {
-                                // dd($e->getMessage());
                                 Notification::make()
                                     ->title('Data Pasien Gagal Disimpan')
                                     ->body($e->getMessage())
