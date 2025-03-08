@@ -156,7 +156,14 @@ class Ranap extends Page implements HasTable
                 ActionGroup::make([
                     Tables\Actions\EditAction::make('hais')
                         ->label('Data HAIs')
-                        ->modalHeading('Data HAIs')
+                        ->modalHeading(fn (RegPeriksa $record) => new HtmlString("
+                        <div>
+                            <h2 class='text-xl font-bold tracking-tight'>Data HAIs</h2>
+                            <p class='mt-1 text-gray-600'>
+                                {$record->pasien->nm_pasien} (RM: {$record->no_rkm_medis}, No.Rawat: {$record->no_rawat})
+                            </p>
+                        </div>
+                        ")) 
                         ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
                             $data = \App\Models\DataHais::where('no_rawat', $regPeriksa->no_rawat)
                                 ->latest('tanggal')  // Ambil data terbaru jika ada multiple entries
