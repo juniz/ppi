@@ -349,21 +349,71 @@ class Ranap extends Page implements HasTable
                         ])
                         ->action(function (array $data, RegPeriksa $record): void {
                             try {
-                                // Tambahkan no_rawat dan kd_kamar
-                                $data['no_rawat'] = $record->no_rawat;
-                                $data['kd_kamar'] = $record->kamarInap->kd_kamar;
-                                
-                                \App\Models\DataHais::create($data);
+                                // Debug data yang diterima dari form
+                                \Log::info('Data from form:', $data);
+
+                                // Format tanggal dari form ke format database (Y-m-d)
+                                $tanggal = date('Y-m-d', strtotime($data['tanggal']));
+
+                                // Siapkan data untuk insert/update
+                                $updateData = [
+                                    'ETT' => $data['ETT'] ?? 0,
+                                    'CVL' => $data['CVL'] ?? 0,
+                                    'IVL' => $data['IVL'] ?? 0,
+                                    'UC' => $data['UC'] ?? 0,
+                                    'VAP' => $data['VAP'] ?? 0,
+                                    'IAD' => $data['IAD'] ?? 0,
+                                    'PLEB' => $data['PLEB'] ?? 0,
+                                    'ISK' => $data['ISK'] ?? 0,
+                                    'ILO' => $data['ILO'] ?? 0,
+                                    'HAP' => $data['HAP'] ?? 0,
+                                    'Tinea' => $data['Tinea'] ?? 0,
+                                    'Scabies' => $data['Scabies'] ?? 0,
+                                    'DEKU' => $data['DEKU'] ?? 'TIDAK',
+                                    'SPUTUM' => $data['SPUTUM'] ?? null,
+                                    'DARAH' => $data['DARAH'] ?? null,
+                                    'URINE' => $data['URINE'] ?? null,
+                                    'ANTIBIOTIK' => $data['ANTIBIOTIK'] ?? '-',
+                                    'kd_kamar' => $record->kamarInap->kd_kamar,
+                                ];
+
+                                // Debug data yang akan disimpan
+                                \Log::info('Data to be saved:', $updateData);
+
+                                // Gunakan updateOrInsert dengan tanggal dari form
+                                \DB::table('data_hais')->updateOrInsert(
+                                    [
+                                        'no_rawat' => $record->no_rawat,
+                                        'tanggal' => $tanggal
+                                    ],
+                                    $updateData
+                                );
                                 
                                 Notification::make()
                                     ->title('Data HAIs berhasil disimpan')
                                     ->success()
                                     ->send();
+
+                                // Tampilkan data form untuk debugging
+                                Notification::make()
+                                    ->title('Debug Info')
+                                    ->body('Form Data: ' . json_encode($data, JSON_PRETTY_PRINT))
+                                    ->info()
+                                    ->persistent()
+                                    ->send();
+
                             } catch (\Exception $e) {
+                                $errorLog = 'Error: ' . $e->getMessage() . "\n" . 
+                                           'File: ' . $e->getFile() . "\n" . 
+                                           'Line: ' . $e->getLine();
+                                
+                                \Log::error($errorLog);
+                                
                                 Notification::make()
                                     ->title('Error')
-                                    ->body('Gagal menyimpan data HAIs: ' . $e->getMessage())
+                                    ->body($errorLog)
                                     ->danger()
+                                    ->persistent()
                                     ->send();
                             }
                         })
