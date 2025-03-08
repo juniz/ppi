@@ -154,216 +154,222 @@ class Ranap extends Page implements HasTable
             ])
             ->actions([
                 ActionGroup::make([
-                    Tables\Actions\EditAction::make('hais')
-                        ->label('Data HAIs')
+                    Action::make('input_hais')
+                        ->label('Input HAIs')
+                        ->icon('heroicon-o-clipboard-document-list')
                         ->modalHeading(fn (RegPeriksa $record) => new HtmlString("
-                        <div>
-                            <h2 class='text-xl font-bold tracking-tight'>Data HAIs</h2>
-                            <p class='mt-1 text-gray-600'>
-                                {$record->pasien->nm_pasien} (RM: {$record->no_rkm_medis}, No.Rawat: {$record->no_rawat})
-                            </p>
-                        </div>
-                        ")) 
-                        ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
-                            $data = \App\Models\DataHais::where('no_rawat', $regPeriksa->no_rawat)
-                                ->latest('tanggal')  // Ambil data terbaru jika ada multiple entries
-                                ->first();
-                            
-                            if ($data) {
-                                $form->fill([
-                                    ...$data->toArray(),
-                                    'tanggal' => date('Y-m-d H:i:s'),
-                                ]);
-                            } else {
-                                $form->fill([
-                                    'tanggal' => date('Y-m-d H:i:s'),
-                                    'DEKU' => 'TIDAK',
-                                    'SPUTUM' => '',
-                                    'DARAH' => '',
-                                    'URINE' => '',
-                                    'ETT' => 0,
-                                    'CVL' => 0,
-                                    'IVL' => 0,
-                                    'UC' => 0,
-                                    'VAP' => 0,
-                                    'IAD' => 0,
-                                    'PLEB' => 0,
-                                    'ISK' => 0,
-                                    'ILO' => 0,
-                                    'HAP' => 0,
-                                    'Tinea' => 0,
-                                    'Scabies' => 0,
-                                    'ANTIBIOTIK' => '',
-                                ]);
-                            }
-                        })
-                        ->action(function (array $data, RegPeriksa $regPeriksa) {
-                            try {
-                                $data['no_rawat'] = $regPeriksa->no_rawat;
-                                $kamar = \App\Models\KamarInap::where('no_rawat', $regPeriksa->no_rawat)
-                                    ->latest('tgl_masuk')  // Ambil data kamar terbaru
-                                    ->first();
-                                $data['kd_kamar'] = $kamar->kd_kamar;
-                                
-                                \App\Models\DataHais::create($data);  // Selalu buat entry baru
+                            <div>
+                                <h2 class='text-xl font-bold tracking-tight'>Input HAIs</h2>
+                                <p class='mt-1 text-gray-600'>
+                                    {$record->pasien->nm_pasien} (RM: {$record->no_rkm_medis})
+                                </p>
+                            </div>
+                        "))
+                        ->form([
+                            Grid::make([
+                                'default' => 1,    
+                                'sm' => 2,         
+                                'lg' => 4          // Ubah menjadi 4 kolom
+                            ])
+                            ->schema([
+                                // Kolom 1: Data Umum
+                                Section::make('Data Umum')
+                                    ->schema([
+                                        DatePicker::make('tanggal')
+                                            ->label('Tanggal')
+                                            ->default(now())
+                                            ->required(),
+                                        TextInput::make('ANTIBIOTIK')
+                                            ->label('Antibiotik')
+                                            ->default('-')
+                                            ->required(),
+                                        Select::make('DEKU')
+                                            ->label('Dekubitus')
+                                            ->options([
+                                                'TIDAK' => 'TIDAK',
+                                                'IYA' => 'IYA'
+                                            ])
+                                            ->default('TIDAK')
+                                            ->required(),
+                                        Grid::make(2)
+                                            ->schema([
+                                                Select::make('ETT')
+                                                    ->label('ETT')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('CVL')
+                                                    ->label('CVL')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('IVL')
+                                                    ->label('IVL')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('UC')
+                                                    ->label('UC')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                            ]),
+                                    ])
+                                    ->columnSpan(['lg' => 1]),
 
+                                // Kolom 2: Infeksi RS
+                                Section::make('Infeksi RS')
+                                    ->schema([
+                                        Grid::make(2)
+                                            ->schema([
+                                                Select::make('VAP')
+                                                    ->label('VAP')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('IAD')
+                                                    ->label('IAD')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('PLEB')
+                                                    ->label('PLEB')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('ISK')
+                                                    ->label('ISK')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('ILO')
+                                                    ->label('ILO')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('HAP')
+                                                    ->label('HAP')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('Tinea')
+                                                    ->label('Tinea')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('Scabies')
+                                                    ->label('Scabies')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                            ]),
+                                    ])
+                                    ->columnSpan(['lg' => 1]),
+
+                                // Kolom 3: Kultur
+                                Section::make('Kultur')
+                                    ->schema([
+                                        TextInput::make('SPUTUM')
+                                            ->label('Sputum'),
+                                        TextInput::make('DARAH')
+                                            ->label('Darah'),
+                                        TextInput::make('URINE')
+                                            ->label('Urine'),
+                                    ])
+                                    ->columnSpan(['lg' => 1]),
+
+                                // Kolom 4: Status Pengisian HAIs
+                                Section::make('Status Pengisian HAIs')
+                                    ->schema([
+                                        Placeholder::make('status_hais')
+                                            ->content(function (RegPeriksa $record): HtmlString {
+                                                $tglMasuk = Carbon::parse($record->kamarInap->tgl_masuk);
+                                                $today = Carbon::today();
+                                                
+                                                // Hitung total hari
+                                                $totalDays = $tglMasuk->diffInDays($today) + 1;
+                                                
+                                                $html = '<div class="space-y-2">';
+                                                
+                                                for ($date = clone $tglMasuk; $date->lte($today); $date->addDay()) {
+                                                    $isDataExist = \App\Models\DataHais::query()
+                                                        ->where('no_rawat', $record->no_rawat)
+                                                        ->whereDate('tanggal', $date->format('Y-m-d'))
+                                                        ->exists();
+                                                    
+                                                    if ($isDataExist) {
+                                                        $icon = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" style="color: #10b981;">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                                        </svg>';
+                                                        $textColor = 'text-success-600';
+                                                    } else {
+                                                        $icon = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" style="color: #ef4444;">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                                        </svg>';
+                                                        $textColor = 'text-danger-600';
+                                                    }
+                                                    
+                                                    $html .= '<div class="flex items-center gap-2">
+                                                        ' . $icon . '
+                                                        <span class="' . $textColor . '">' . $date->format('d/m/Y') . '</span>
+                                                    </div>';
+                                                }
+                                                
+                                                $html .= '</div>';
+                                                
+                                                return new HtmlString($html);
+                                            }),
+                                    ])
+                                    ->columnSpan(['lg' => 1]),
+                            ])
+                        ])
+                        ->action(function (array $data, RegPeriksa $record): void {
+                            try {
+                                // Tambahkan no_rawat dan kd_kamar
+                                $data['no_rawat'] = $record->no_rawat;
+                                $data['kd_kamar'] = $record->kamarInap->kd_kamar;
+                                
+                                \App\Models\DataHais::create($data);
+                                
                                 Notification::make()
                                     ->title('Data HAIs berhasil disimpan')
                                     ->success()
                                     ->send();
-
                             } catch (\Exception $e) {
                                 Notification::make()
-                                    ->title('Data Pasien Gagal Disimpan')
-                                    ->body($e->getMessage())
+                                    ->title('Error')
+                                    ->body('Gagal menyimpan data HAIs: ' . $e->getMessage())
                                     ->danger()
                                     ->send();
                             }
                         })
-                        ->form([
-                            Split::make([
-                                Section::make([
-                                    DatePicker::make('tanggal')
-                                        ->label('Tanggal')
-                                        ->default(now())
-                                        ->required(),
-                                    Select::make('DEKU')
-                                        ->label('Dekubitus')
-                                        ->options([
-                                            'IYA' => 'IYA',
-                                            'TIDAK' => 'TIDAK'
-                                        ])
-                                        ->default('Tidak')
-                                        ->required(),
-                                    TextInput::make('ANTIBIOTIK')
-                                        ->label('Antibiotik')
-                                        ->default('')
-                                        ->required(),
-                                    Section::make('Hari Pemasangan Alat')
-                                        ->schema([
-                                            Select::make('ETT')
-                                                ->label('ETT')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya',
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('CVL')
-                                                ->label('CVL')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya',
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('IVL')
-                                                ->label('IVL')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya',
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('UC')
-                                                ->label('UC')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya',
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                        ])
-                                        ->columns(4),
-                                ]),
-                                Section::make([
-                                    Section::make('Infeksi RS')
-                                        ->schema([
-                                            Select::make('VAP')
-                                                ->label('VAP')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya'
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('IAD')
-                                                ->label('IAD')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya'
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('PLEB')
-                                                ->label('PLEB')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya'
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('ISK')
-                                                ->label('ISK')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya'
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('ILO')
-                                                ->label('ILO')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya'
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('HAP')
-                                                ->label('HAP')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya'
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('Tinea')
-                                                ->label('Tinea')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya'
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('Scabies')
-                                                ->label('Scabies')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya'
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                        ])
-                                        ->columns(4),
-                                    Section::make('Kultur')
-                                        ->schema([
-                                            TextInput::make('SPUTUM')
-                                                ->label('Sputum')
-                                                ->default(''),
-                                            TextInput::make('DARAH')
-                                                ->label('Darah')
-                                                ->default(''),
-                                            TextInput::make('URINE')
-                                                ->label('Urine')
-                                                ->default(''),
-                                        ]),
-                                ]),
-                            ])->from('md')
-                        ])
-                        ->modalWidth(MaxWidth::Full)
-                        // ->modalSubmitAction(false)
-                        ->modalCancelActionLabel('Batal')
-                        ->modalSubmitActionLabel('Simpan'),
+                        ->modalWidth(MaxWidth::SevenExtraLarge)
+                        ->modalSubmitActionLabel('Simpan')
+                        ->modalCancelActionLabel('Batal'),
                     Action::make('input_bundle_iadp')
                         ->label('Bundle IADP (Plebitis)')
                         ->icon('heroicon-o-clipboard-document-check')
