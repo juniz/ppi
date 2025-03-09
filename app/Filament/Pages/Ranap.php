@@ -349,12 +349,6 @@ class Ranap extends Page implements HasTable
                         ])
                         ->action(function (array $data, RegPeriksa $record): void {
                             try {
-                                // Debug data yang diterima dari form
-                                \Log::info('Data from form:', $data);
-
-                                // Format tanggal dari form ke format database (Y-m-d)
-                                $tanggal = date('Y-m-d', strtotime($data['tanggal']));
-
                                 // Siapkan data untuk insert/update
                                 $updateData = [
                                     'ETT' => $data['ETT'] ?? 0,
@@ -377,14 +371,11 @@ class Ranap extends Page implements HasTable
                                     'kd_kamar' => $record->kamarInap->kd_kamar,
                                 ];
 
-                                // Debug data yang akan disimpan
-                                \Log::info('Data to be saved:', $updateData);
-
-                                // Gunakan updateOrInsert dengan tanggal dari form
-                                \DB::table('data_hais')->updateOrInsert(
+                                // Gunakan updateOrInsert untuk menangani duplicate entry
+                                \DB::table('data_HAIs')->updateOrInsert(
                                     [
                                         'no_rawat' => $record->no_rawat,
-                                        'tanggal' => $tanggal
+                                        'tanggal' => $data['tanggal']
                                     ],
                                     $updateData
                                 );
@@ -394,26 +385,11 @@ class Ranap extends Page implements HasTable
                                     ->success()
                                     ->send();
 
-                                // Tampilkan data form untuk debugging
-                                Notification::make()
-                                    ->title('Debug Info')
-                                    ->body('Form Data: ' . json_encode($data, JSON_PRETTY_PRINT))
-                                    ->info()
-                                    ->persistent()
-                                    ->send();
-
                             } catch (\Exception $e) {
-                                $errorLog = 'Error: ' . $e->getMessage() . "\n" . 
-                                           'File: ' . $e->getFile() . "\n" . 
-                                           'Line: ' . $e->getLine();
-                                
-                                \Log::error($errorLog);
-                                
                                 Notification::make()
                                     ->title('Error')
-                                    ->body($errorLog)
+                                    ->body('Gagal menyimpan data HAIs: ' . $e->getMessage())
                                     ->danger()
-                                    ->persistent()
                                     ->send();
                             }
                         })
