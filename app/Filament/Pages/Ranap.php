@@ -128,11 +128,15 @@ class Ranap extends Page implements HasTable
                     ->sortable(),
                 TextColumn::make('kamarInap.tgl_masuk')
                     ->label('Tgl Masuk')
-                    // ->date()
+                    ->date('d-m-Y')
                     ->sortable(),
                 TextColumn::make('kamarInap.tgl_keluar')
                     ->label('Tgl Keluar')
-                    // ->date()
+                    ->formatStateUsing(function ($state) {
+                        return ($state && $state != '0000-00-00') 
+                            ? date('d-m-Y', strtotime($state))
+                            : '';
+                    })
                     ->sortable(),
                 TextColumn::make('kamarInap.stts_pulang')
                     ->label('Status Pulang')
