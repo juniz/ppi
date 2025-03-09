@@ -83,6 +83,7 @@ class Ranap extends Page implements HasTable
                     ->label('Status Pulang')
                     ->options([
                         '-' => '-',
+                        'Sembuh' => 'Sembuh',
                         'Pindah Kamar' => 'Pindah Kamar',
                         'Sehat' => 'Sehat',
                         'Rujuk' => 'Rujuk',
@@ -308,14 +309,14 @@ class Ranap extends Page implements HasTable
                                         Placeholder::make('status_hais')
                                             ->content(function (RegPeriksa $record): HtmlString {
                                                 $tglMasuk = Carbon::parse($record->kamarInap->tgl_masuk);
-                                                $today = Carbon::today();
-                                                
-                                                // Hitung total hari
-                                                $totalDays = $tglMasuk->diffInDays($today) + 1;
+                                                $tglKeluar = $record->kamarInap->tgl_keluar && $record->kamarInap->tgl_keluar != '0000-00-00' 
+                                                    ? Carbon::parse($record->kamarInap->tgl_keluar)
+                                                    : Carbon::today();
                                                 
                                                 $html = '<div class="space-y-2">';
                                                 
-                                                for ($date = clone $tglMasuk; $date->lte($today); $date->addDay()) {
+                                                // Loop dari tgl_masuk sampai tgl_keluar atau hari ini
+                                                for ($date = clone $tglMasuk; $date->lte($tglKeluar); $date->addDay()) {
                                                     $isDataExist = \App\Models\DataHais::query()
                                                         ->where('no_rawat', $record->no_rawat)
                                                         ->whereDate('tanggal', $date->format('Y-m-d'))
@@ -871,21 +872,14 @@ class Ranap extends Page implements HasTable
                                         Placeholder::make('status_hais')
                                             ->content(function (RegPeriksa $record): HtmlString {
                                                 $tglMasuk = Carbon::parse($record->kamarInap->tgl_masuk);
-                                                $today = Carbon::today();
+                                                $tglKeluar = $record->kamarInap->tgl_keluar && $record->kamarInap->tgl_keluar != '0000-00-00' 
+                                                    ? Carbon::parse($record->kamarInap->tgl_keluar)
+                                                    : Carbon::today();
                                                 
-                                                // Hitung total hari
-                                                $totalDays = $tglMasuk->diffInDays($today) + 1;
-                                                // Hitung jumlah kolom yang dibutuhkan (8 item per kolom)
-                                                $columns = ceil($totalDays / 8);
+                                                $html = '<div class="space-y-2">';
                                                 
-                                                $html = '<div class="grid grid-cols-' . $columns . ' gap-4">';
-                                                
-                                                // Array untuk menampung item per kolom
-                                                $columnItems = array_fill(0, $columns, '');
-                                                $currentColumn = 0;
-                                                $itemsInCurrentColumn = 0;
-                                                
-                                                for ($date = clone $tglMasuk; $date->lte($today); $date->addDay()) {
+                                                // Loop dari tgl_masuk sampai tgl_keluar atau hari ini
+                                                for ($date = clone $tglMasuk; $date->lte($tglKeluar); $date->addDay()) {
                                                     $isDataExist = \App\Models\DataHais::query()
                                                         ->where('no_rawat', $record->no_rawat)
                                                         ->whereDate('tanggal', $date->format('Y-m-d'))
@@ -903,25 +897,10 @@ class Ranap extends Page implements HasTable
                                                         $textColor = 'text-danger-600';
                                                     }
                                                     
-                                                    $item = '<div class="flex items-center gap-2">
+                                                    $html .= '<div class="flex items-center gap-2">
                                                         ' . $icon . '
                                                         <span class="' . $textColor . '">' . $date->format('d/m/Y') . '</span>
                                                     </div>';
-                                                    
-                                                    // Tambahkan item ke kolom saat ini
-                                                    $columnItems[$currentColumn] .= $item;
-                                                    $itemsInCurrentColumn++;
-                                                    
-                                                    // Pindah ke kolom berikutnya jika sudah mencapai 8 item
-                                                    if ($itemsInCurrentColumn >= 8) {
-                                                        $currentColumn++;
-                                                        $itemsInCurrentColumn = 0;
-                                                    }
-                                                }
-                                                
-                                                // Gabungkan semua kolom
-                                                foreach ($columnItems as $items) {
-                                                    $html .= '<div class="space-y-2">' . $items . '</div>';
                                                 }
                                                 
                                                 $html .= '</div>';
