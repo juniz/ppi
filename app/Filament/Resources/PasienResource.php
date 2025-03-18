@@ -390,7 +390,7 @@ class PasienResource extends Resource
                             try {
                                 DB::transaction(function () use ($data, $record) {
                                     // Generate no_rawat
-                                    $no_rawat = date('Y/m/d/') . random_int(100000, 999999);
+                                    $no_rawat = \App\Models\RegPeriksa::generateNoRawat();
                                     
                                     // Buat reg_periksa terlebih dahulu
                                     \App\Models\RegPeriksa::create([
