@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class KamarInap extends Model
 {
     use HasFactory;
 
     protected $table = 'kamar_inap';
-    protected $primaryKey = 'tgl_masuk';
+    protected $primaryKey = 'no_rawat';
     public $incrementing = false;
     public $timestamps = false;
 

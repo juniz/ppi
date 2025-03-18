@@ -8,6 +8,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Tables;
+use App\Models\KamarInap;
 use App\Models\RegPeriksa;
 use App\Models\Dokter;
 use App\Models\Poliklinik;
@@ -37,6 +38,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Placeholder;
 use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Radio;
 
 class Ranap extends Page implements HasTable
 {
@@ -52,38 +54,37 @@ class Ranap extends Page implements HasTable
     {
         return $table
             ->query(
-                RegPeriksa::query()
-                    ->select('reg_periksa.*')
-                    ->join('kamar_inap', 'reg_periksa.no_rawat', '=', 'kamar_inap.no_rawat')
-                    ->with(['pasien', 'poliklinik', 'penjab', 'kamarInap.kamar'])
-                    ->where('status_lanjut', 'Ranap')
+                KamarInap::query()
+                    ->join('reg_periksa', 'kamar_inap.no_rawat', '=', 'reg_periksa.no_rawat')
+                    ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+                    ->join('kamar', 'kamar_inap.kd_kamar', '=', 'kamar.kd_kamar')
+                    ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
+                    ->select([
+                        'reg_periksa.no_rkm_medis',
+                        'pasien.nm_pasien',
+                        'reg_periksa.no_rawat',
+                        'kamar_inap.kd_kamar',
+                        'kamar_inap.tgl_masuk',
+                        'kamar_inap.jam_masuk',
+                        'kamar_inap.tgl_keluar',
+                        'kamar_inap.jam_keluar',
+                        'kamar_inap.stts_pulang',
+                        'kamar_inap.diagnosa_awal',
+                        'kamar_inap.diagnosa_akhir',
+                        'bangsal.nm_bangsal',
+                        'kamar_inap.kd_kamar'
+                    ])
             )
             ->defaultSort('tgl_registrasi', 'desc')
             ->filters([
-                // Menonaktifkan filter tanggal registrasi dengan komentar
-                /*DateRangeFilter::make('tgl_registrasi')
-                    ->label('Tanggal Registrasi')
-                    ->startDate(Carbon::now())
-                    ->endDate(Carbon::now())
-                    ->modifyQueryUsing(
-                        fn(Builder $query, ?Carbon $startDate, ?Carbon $endDate, $dateString) =>
-                        $query->when(
-                            !empty($dateString),
-                            fn(Builder $query, $date): Builder =>
-                            $query->whereBetween('tgl_registrasi', [$startDate, $endDate])
-                        )
-                    )
-                    ->autoApply(),*/
-                SelectFilter::make('kd_kamar')
+                SelectFilter::make('kamar_inap.kd_kamar')
                     ->label('Kamar')
-                    // ->default(auth()->user()->kamar ?? '')
                     ->options(\App\Models\Kamar::join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')->pluck('nm_bangsal', 'kamar.kd_kamar'))
                     ->placeholder('Pilih Kamar'),
                 SelectFilter::make('stts_pulang')
                     ->label('Status Pulang')
                     ->options([
                         '-' => '-',
-                        'Sembuh' => 'Sembuh',
                         'Pindah Kamar' => 'Pindah Kamar',
                         'Sehat' => 'Sehat',
                         'Rujuk' => 'Rujuk',
@@ -99,9 +100,10 @@ class Ranap extends Page implements HasTable
                         'Lain-lain' => 'Lain-lain'
                     ])
                     ->multiple()
-                    ->default(['Pindah Kamar', '-'])
+                    ->default(['-'])
                     ->placeholder('Pilih Status Pulang'),
             ])
+            ->filtersFormColumns(1)
             ->columns([
                 TextColumn::make('no_rkm_medis')
                     ->label('No. RM')
@@ -109,13 +111,9 @@ class Ranap extends Page implements HasTable
                         return $query->where('reg_periksa.no_rkm_medis', 'like', "%{$search}%");
                     })
                     ->sortable(),
-                TextColumn::make('pasien.nm_pasien')
+                TextColumn::make('nm_pasien')
                     ->label('Nama Pasien')
-                    ->searchable(query: function (Builder $query, string $search): Builder {
-                        return $query->whereHas('pasien', function ($q) use ($search) {
-                            $q->where('nm_pasien', 'like', "%{$search}%");
-                        });
-                    })
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('no_rawat')
                     ->label('No. Rawat')
@@ -123,14 +121,14 @@ class Ranap extends Page implements HasTable
                         return $query->where('reg_periksa.no_rawat', 'like', "%{$search}%");
                     })
                     ->sortable(),
-                TextColumn::make('kamarInap.kamar.bangsal.nm_bangsal')
+                TextColumn::make('nm_bangsal')
                     ->label('Kamar')
                     ->sortable(),
-                TextColumn::make('kamarInap.tgl_masuk')
+                TextColumn::make('tgl_masuk')
                     ->label('Tgl Masuk')
                     ->date('d-m-Y')
                     ->sortable(),
-                TextColumn::make('kamarInap.tgl_keluar')
+                TextColumn::make('tgl_keluar')
                     ->label('Tgl Keluar')
                     ->formatStateUsing(function ($state) {
                         return ($state && $state != '0000-00-00') 
@@ -138,7 +136,7 @@ class Ranap extends Page implements HasTable
                             : '';
                     })
                     ->sortable(),
-                TextColumn::make('kamarInap.stts_pulang')
+                TextColumn::make('stts_pulang')
                     ->label('Status Pulang')
                     ->sortable(),
                 IconColumn::make('has_hais_today')
@@ -162,11 +160,11 @@ class Ranap extends Page implements HasTable
                     Action::make('input_hais')
                         ->label('Input HAIs')
                         ->icon('heroicon-o-clipboard-document-list')
-                        ->modalHeading(fn (RegPeriksa $record) => new HtmlString("
+                        ->modalHeading(fn (KamarInap $record) => new HtmlString("
                             <div>
                                 <h2 class='text-xl font-bold tracking-tight'>Input HAIs</h2>
                                 <p class='mt-1 text-gray-600'>
-                                    {$record->pasien->nm_pasien} (RM: {$record->no_rkm_medis})
+                                    {$record->nm_pasien} (RM: {$record->no_rkm_medis})
                                 </p>
                             </div>
                         "))
@@ -311,10 +309,10 @@ class Ranap extends Page implements HasTable
                                 Section::make('Status Pengisian HAIs')
                                     ->schema([
                                         Placeholder::make('status_hais')
-                                            ->content(function (RegPeriksa $record): HtmlString {
-                                                $tglMasuk = Carbon::parse($record->kamarInap->tgl_masuk);
-                                                $tglKeluar = $record->kamarInap->tgl_keluar && $record->kamarInap->tgl_keluar != '0000-00-00' 
-                                                    ? Carbon::parse($record->kamarInap->tgl_keluar)
+                                            ->content(function (KamarInap $record): HtmlString {
+                                                $tglMasuk = Carbon::parse($record->tgl_masuk);
+                                                $tglKeluar = $record->tgl_keluar && $record->tgl_keluar != '0000-00-00' 
+                                                    ? Carbon::parse($record->tgl_keluar)
                                                     : Carbon::today();
                                                 
                                                 $html = '<div class="space-y-2">';
@@ -352,7 +350,7 @@ class Ranap extends Page implements HasTable
                                     ->columnSpan(['lg' => 1]),
                             ])
                         ])
-                        ->action(function (array $data, RegPeriksa $record): void {
+                        ->action(function (array $data, KamarInap $record): void {
                             try {
                                 // Siapkan data untuk insert/update
                                 $updateData = [
@@ -493,7 +491,7 @@ class Ranap extends Page implements HasTable
                                 ->default('Ya')
                                 ->required(),
                         ])
-                        ->action(function (array $data, RegPeriksa $record): void {
+                        ->action(function (array $data, KamarInap $record): void {
                             try {
                                 // Set data untuk disimpan
                                 $data['tanggal'] = date('Y-m-d H:i:s');
@@ -586,7 +584,7 @@ class Ranap extends Page implements HasTable
                                 ->default('Ya')
                                 ->required(),
                         ])
-                        ->action(function (array $data, RegPeriksa $record): void {
+                        ->action(function (array $data, KamarInap $record): void {
                             try {
                                 // Set data untuk disimpan
                                 $data['tanggal'] = date('Y-m-d H:i:s');
@@ -655,7 +653,7 @@ class Ranap extends Page implements HasTable
                                 ->default('Ya')
                                 ->required(),
                         ])
-                        ->action(function (array $data, RegPeriksa $record): void {
+                        ->action(function (array $data, KamarInap $record): void {
                             try {
                                 $data['tanggal'] = date('Y-m-d H:i:s');
                                 $data['no_rawat'] = $record->no_rawat;
@@ -743,7 +741,7 @@ class Ranap extends Page implements HasTable
                                         ->required(),
                                 ]),
                         ])
-                        ->action(function (array $data, RegPeriksa $record): void {
+                        ->action(function (array $data, KamarInap $record): void {
                             try {
                                 $data['tanggal'] = date('Y-m-d H:i:s');
                                 $data['no_rawat'] = $record->no_rawat;
@@ -768,44 +766,101 @@ class Ranap extends Page implements HasTable
                         ->form([
                             Section::make('Informasi Pasien')
                                 ->schema([
-                                    TextInput::make('no_rkm_medis')
+                                    TextInput::make('no_rm')
                                         ->label('No. RM')
-                                        ->default(fn (RegPeriksa $record) => $record->no_rkm_medis)
+                                        ->default(fn ($record) => $record->no_rkm_medis)
                                         ->disabled(),
-                                    TextInput::make('nm_pasien')
+                                    TextInput::make('nama_pasien')
                                         ->label('Nama Pasien')
-                                        ->default(fn (RegPeriksa $record) => $record->pasien->nm_pasien)
+                                        ->default(fn ($record) => $record->nm_pasien)
                                         ->disabled(),
-                                ])
-                                ->columns(2),
-                                
+                                ]),
                             Section::make('Pindah Kamar')
                                 ->schema([
+                                    DateTimePicker::make('waktu_pindah')
+                                        ->label('Tanggal & Jam Pindah')
+                                        ->default(now())
+                                        ->required(),
                                     Select::make('kd_kamar')
                                         ->label('Pilih Kamar')
                                         ->options(function () {
                                             return \App\Models\Kamar::query()
                                                 ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
-                                                ->pluck('bangsal.nm_bangsal', 'kamar.kd_kamar')
-                                                ->toArray();
+                                                ->pluck('bangsal.nm_bangsal', 'kamar.kd_kamar');
                                         })
                                         ->required()
-                                ]),
+                                ])
                         ])
-                        ->action(function (array $data, RegPeriksa $record): void {
+                        ->action(function (array $data, KamarInap $record): void {
+                            // dd($record);
                             try {
+                                DB::beginTransaction();
+
+                                // 1. Update kamar lama - set status Pindah Kamar
+                                // KamarInap::where('no_rawat', $record->no_rawat)
+                                //          ->where('kd_kamar', $record->kd_kamar)
+                                //          ->where('tgl_masuk', $record->tgl_masuk)
+                                //          ->where('jam_masuk', $record->jam_masuk)
+                                //          ->update([
+                                //              'stts_pulang' => 'Pindah Kamar',
+                                //              'tgl_keluar' => date('Y-m-d', strtotime($data['waktu_pindah'])),
+                                //              'jam_keluar' => date('H:i:s', strtotime($data['waktu_pindah']))
+                                //          ]);
+
                                 DB::table('kamar_inap')
                                     ->where('no_rawat', $record->no_rawat)
+                                    ->where('kd_kamar', $record->kd_kamar)
+                                    ->where('tgl_masuk', $record->tgl_masuk)
+                                    ->where('jam_masuk', $record->jam_masuk)
+                                    ->where('stts_pulang', '-')
                                     ->update([
-                                        'kd_kamar' => $data['kd_kamar'],
-                                        'stts_pulang' => 'Pindah Kamar'
+                                        'stts_pulang' => 'Pindah Kamar',
+                                        'tgl_keluar' => date('Y-m-d', strtotime($data['waktu_pindah'])),
+                                        'jam_keluar' => date('H:i:s', strtotime($data['waktu_pindah']))
                                     ]);
+
+                                // 2. Insert kamar baru
+                                // $kamarBaru = new KamarInap();
+                                // $kamarBaru->no_rawat = $record->no_rawat;
+                                // $kamarBaru->kd_kamar = $data['kd_kamar'];
+                                // $kamarBaru->trf_kamar = \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->value('trf_kamar');
+                                // $kamarBaru->diagnosa_awal = $record->diagnosa_awal;
+                                // $kamarBaru->diagnosa_akhir = $record->diagnosa_akhir;
+                                // $kamarBaru->tgl_masuk = date('Y-m-d', strtotime($data['waktu_pindah']));
+                                // $kamarBaru->jam_masuk = date('H:i:s', strtotime($data['waktu_pindah']));
+                                // $kamarBaru->stts_pulang = '-';
+                                // $kamarBaru->save();
+
+                                DB::table('kamar_inap')
+                                    ->insert([
+                                        'no_rawat' => $record->no_rawat,
+                                        'kd_kamar' => $data['kd_kamar'],
+                                        'trf_kamar' => \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->value('trf_kamar'),
+                                        'diagnosa_awal' => $record->diagnosa_awal,
+                                        'diagnosa_akhir' => $record->diagnosa_akhir,
+                                        'tgl_masuk' => date('Y-m-d', strtotime($data['waktu_pindah'])),
+                                        'jam_masuk' => date('H:i:s', strtotime($data['waktu_pindah'])),
+                                        'tgl_keluar' => '0000-00-00',
+                                        'jam_keluar' => '00:00:00',
+                                        'stts_pulang' => '-',
+                                        'lama' => '1',
+                                        'ttl_biaya' => \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->value('trf_kamar'),
+                                    ]);
+
+                                // Update status kamar
+                                \App\Models\Kamar::where('kd_kamar', $record->kd_kamar)->update(['status' => 'KOSONG']);
+                                \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->update(['status' => 'ISI']);
+
+                                DB::commit();
 
                                 Notification::make()
                                     ->title('Berhasil pindah kamar')
                                     ->success()
                                     ->send();
+
                             } catch (\Exception $e) {
+                                DB::rollBack();
+                                
                                 Notification::make()
                                     ->title('Gagal pindah kamar')
                                     ->body($e->getMessage())
@@ -813,14 +868,12 @@ class Ranap extends Page implements HasTable
                                     ->send();
                             }
                         })
-                        ->modalHeading('Pindah Kamar')
-                        ->modalSubmitActionLabel('Simpan')
-                        ->modalCancelActionLabel('Batal'),
+                        ->modalWidth('xl'),
                     Action::make('pemulangan_pasien')
                         ->label('Pemulangan Pasien')
                         ->icon('heroicon-o-arrow-right-circle')
                         ->modalWidth(MaxWidth::SevenExtraLarge)
-                        ->modalHeading(fn (RegPeriksa $record): string => "Pemulangan Pasien: {$record->pasien->nm_pasien} ({$record->no_rawat})")
+                        ->modalHeading(fn (KamarInap $record): string => "Pemulangan Pasien: {$record->nm_pasien} ({$record->no_rawat})")
                         ->form([
                             Split::make([
                                 // Kolom Kiri
@@ -834,7 +887,7 @@ class Ranap extends Page implements HasTable
                                                     ->disabled(),
                                                 TextInput::make('nm_pasien')
                                                     ->label('Nama Pasien')
-                                                    ->default(fn ($record) => $record->pasien->nm_pasien)
+                                                    ->default(fn ($record) => $record->nm_pasien)
                                                     ->disabled(),
                                             ])
                                             ->columns(2),
@@ -874,10 +927,10 @@ class Ranap extends Page implements HasTable
                                 Section::make('Status Pengisian HAIs')
                                     ->schema([
                                         Placeholder::make('status_hais')
-                                            ->content(function (RegPeriksa $record): HtmlString {
-                                                $tglMasuk = Carbon::parse($record->kamarInap->tgl_masuk);
-                                                $tglKeluar = $record->kamarInap->tgl_keluar && $record->kamarInap->tgl_keluar != '0000-00-00' 
-                                                    ? Carbon::parse($record->kamarInap->tgl_keluar)
+                                            ->content(function (KamarInap $record): HtmlString {
+                                                $tglMasuk = Carbon::parse($record->tgl_masuk);
+                                                $tglKeluar = $record->tgl_keluar && $record->tgl_keluar != '0000-00-00' 
+                                                    ? Carbon::parse($record->tgl_keluar)
                                                     : Carbon::today();
                                                 
                                                 $html = '<div class="space-y-2">';
@@ -915,7 +968,7 @@ class Ranap extends Page implements HasTable
                                     ->columnSpan(['lg' => 1]),
                             ])->columns(['lg' => 2]),
                         ])
-                        ->action(function (array $data, RegPeriksa $record): void {
+                        ->action(function (array $data, KamarInap $record): void {
                             try {
                                 DB::table('kamar_inap')
                                     ->where('no_rawat', $record->no_rawat)
