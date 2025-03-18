@@ -371,7 +371,7 @@ class Ranap extends Page implements HasTable
                                     'DARAH' => $data['DARAH'] ?? null,
                                     'URINE' => $data['URINE'] ?? null,
                                     'ANTIBIOTIK' => $data['ANTIBIOTIK'] ?? '-',
-                                    'kd_kamar' => $record->kamarInap->kd_kamar,
+                                    'kd_kamar' => $record->kd_kamar,
                                 ];
 
                                 // Gunakan updateOrInsert untuk menangani duplicate entry
