@@ -29,6 +29,9 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Hidden;
+use App\Models\RegPeriksa;
+use App\Models\Kamar;
+use App\Models\KamarInap;
 
 class PasienResource extends Resource
 {
@@ -388,58 +391,90 @@ class PasienResource extends Resource
                         ->modalCancelActionLabel('Batal')
                         ->action(function (array $data, Pasien $record): void {
                             try {
-                                DB::transaction(function () use ($data, $record) {
-                                    // Generate no_rawat
-                                    $no_rawat = \App\Models\RegPeriksa::generateNoRawat();
+                                DB::beginTransaction();
+                                
+                                // Generate no_rawat yang unik
+                                $tanggal = date('Y/m/d');
+                                $lastNoRawat = RegPeriksa::where('no_rawat', 'like', $tanggal . '/%')
+                                    ->orderBy('no_rawat', 'desc')
+                                    ->first();
                                     
-                                    // Buat reg_periksa terlebih dahulu
-                                    \App\Models\RegPeriksa::create([
-                                        'no_rawat' => $no_rawat,
-                                        'no_reg' => date('Ymd') . random_int(100, 999),
-                                        'tgl_registrasi' => $data['tgl_masuk'],
-                                        'jam_reg' => $data['jam_masuk'],
-                                        'kd_dokter' => $data['kd_dokter'],
-                                        'no_rkm_medis' => $record->no_rkm_medis,
-                                        'kd_poli' => $data['kd_poli'],
-                                        'p_jawab' => $record->namakeluarga,
-                                        'almt_pj' => $record->alamat,
-                                        'hubunganpj' => $record->keluarga,
-                                        'biaya_reg' => 0,
-                                        'stts' => 'Belum',
-                                        'stts_daftar' => '-',
-                                        'status_lanjut' => 'Ranap',
-                                        'kd_pj' => $data['kd_pj'],
-                                        'umurdaftar' => $record->umur,
-                                        'stts_pulang' => '-',
-                                        'status_bayar' => 'Belum Bayar',
-                                    ]);
+                                if ($lastNoRawat) {
+                                    $lastNumber = (int) substr($lastNoRawat->no_rawat, -6);
+                                    $newNumber = str_pad($lastNumber + 1, 6, '0', STR_PAD_LEFT);
+                                } else {
+                                    $newNumber = '000001';
+                                }
+                                
+                                $no_rawat = $tanggal . '/' . $newNumber;
+                                
+                                // Generate no_reg yang unik untuk hari ini
+                                $lastNoReg = RegPeriksa::where('tgl_registrasi', date('Y-m-d'))
+                                    ->orderBy('no_reg', 'desc')
+                                    ->first();
+                                    
+                                if ($lastNoReg) {
+                                    $lastRegNumber = (int) substr($lastNoReg->no_reg, -3);
+                                    $newRegNumber = str_pad($lastRegNumber + 1, 3, '0', STR_PAD_LEFT);
+                                } else {
+                                    $newRegNumber = '001';
+                                }
+                                
+                                $no_reg = date('Ymd') . $newRegNumber;
 
-                                    // Update status kamar
-                                    $kamar = \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->first();
-                                    $kamar->status = 'ISI';
-                                    $kamar->save();
+                                // Buat reg_periksa terlebih dahulu
+                                RegPeriksa::create([
+                                    'no_rawat' => $no_rawat, // Gunakan no_rawat yang baru digenerate
+                                    'no_reg' => $no_reg, // Gunakan no_reg yang baru digenerate
+                                    'tgl_registrasi' => $data['tgl_masuk'],
+                                    'jam_reg' => $data['jam_masuk'],
+                                    'kd_dokter' => $data['kd_dokter'],
+                                    'no_rkm_medis' => $record->no_rkm_medis,
+                                    'kd_poli' => $data['kd_poli'],
+                                    'p_jawab' => $record->namakeluarga,
+                                    'almt_pj' => $record->alamat,
+                                    'hubunganpj' => $record->keluarga,
+                                    'biaya_reg' => 0,
+                                    'stts' => 'Belum',
+                                    'stts_daftar' => '-',
+                                    'status_lanjut' => 'Ranap',
+                                    'kd_pj' => $data['kd_pj'],
+                                    'umurdaftar' => $record->umur,
+                                    'stts_pulang' => '-',
+                                    'status_bayar' => 'Belum Bayar',
+                                ]);
 
-                                    // Buat data kamar inap dengan tanggal dan jam yang dipilih
-                                    \App\Models\KamarInap::create([
-                                        'no_rawat' => $no_rawat,
-                                        'kd_kamar' => $data['kd_kamar'],
-                                        'trf_kamar' => $kamar->trf_kamar,
-                                        'diagnosa_awal' => $data['diagnosa_awal'],
-                                        'diagnosa_akhir' => '-',
-                                        'tgl_masuk' => $data['tgl_masuk'],
-                                        'jam_masuk' => $data['jam_masuk'],
-                                        'tgl_keluar' => null,
-                                        'jam_keluar' => null,
-                                        'stts_pulang' => '-',
-                                        'lama' => 1,
-                                    ]);
-                                });
+                                // Update status kamar
+                                $kamar = Kamar::where('kd_kamar', $data['kd_kamar'])->first();
+                                $kamar->status = 'ISI';
+                                $kamar->save();
+
+                                // Buat data kamar inap
+                                KamarInap::create([
+                                    'no_rawat' => $no_rawat, // Gunakan no_rawat yang baru digenerate
+                                    'kd_kamar' => $data['kd_kamar'],
+                                    'trf_kamar' => $kamar->trf_kamar,
+                                    'diagnosa_awal' => $data['diagnosa_awal'],
+                                    'diagnosa_akhir' => '-',
+                                    'tgl_masuk' => $data['tgl_masuk'],
+                                    'jam_masuk' => $data['jam_masuk'],
+                                    'tgl_keluar' => null,
+                                    'jam_keluar' => null,
+                                    'stts_pulang' => '-',
+                                    'lama' => 1,
+                                    'ttl_biaya' => $kamar->trf_kamar,
+                                ]);
+
+                                DB::commit();
 
                                 Notification::make()
                                     ->title('Pasien Berhasil Masuk Rawat Inap')
                                     ->success()
                                     ->send();
+
                             } catch (\Exception $e) {
+                                DB::rollBack();
+                                
                                 Notification::make()
                                     ->title('Gagal Menginapkan Pasien')
                                     ->danger()
