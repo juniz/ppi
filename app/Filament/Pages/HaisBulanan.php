@@ -18,7 +18,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
-use App\Filament\Resources\DataHaisResource\Widgets\HaisBulananChart;
 
 class HaisBulanan extends Page implements HasTable
 {
@@ -29,13 +28,6 @@ class HaisBulanan extends Page implements HasTable
     protected static ?int $navigationSort = 1;
 
     protected static string $view = 'filament.pages.hais-bulanan';
-
-    protected function getHeaderWidgets(): array
-    {
-        return [
-            HaisBulananChart::class,
-        ];
-    }
 
     public function table(Table $table): Table
     {
