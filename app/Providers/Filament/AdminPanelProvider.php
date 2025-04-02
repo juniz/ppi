@@ -25,6 +25,8 @@ use App\Filament\Pages\HaisPerBangsal;
 use App\Filament\Pages\LajuVAP;
 use Filament\Navigation\NavigationItem;
 use App\Filament\Pages\Dashboard;
+use App\Filament\Pages\HaisPerPasien;
+use App\Filament\Pages\LajuIAD;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -55,6 +57,8 @@ class AdminPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->pages([
                 Dashboard::class,
+                LajuIAD::class,
+                HaisPerPasien::class,
             ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
