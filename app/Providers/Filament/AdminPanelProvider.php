@@ -27,6 +27,10 @@ use Filament\Navigation\NavigationItem;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\HaisPerPasien;
 use App\Filament\Pages\LajuIAD;
+use App\Filament\Pages\LajuPLEB;
+use App\Filament\Pages\LajuISK;
+use App\Filament\Pages\LajuILO;
+use App\Filament\Pages\LajuHAP;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -59,6 +63,10 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
                 LajuIAD::class,
                 HaisPerPasien::class,
+                LajuPLEB::class,
+                LajuISK::class,
+                LajuILO::class,
+                LajuHAP::class,
             ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')

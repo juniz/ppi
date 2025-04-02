@@ -16,17 +16,16 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Dflydev\DotAccessData\Data;
 
-use function PHPUnit\Framework\isNull;
-
-class LajuVAP extends Page implements HasTable
+class LajuISK extends Page implements HasTable
 {
     use InteractsWithTable;
 
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
+    protected static ?string $title = 'Laju ISK';
+    protected static ?string $slug = 'laju-isk';
     protected static ?string $navigationGroup = 'Laporan HAIs';
-    protected static ?string $navigationLabel = 'Laju VAP';
-    protected static ?int $navigationSort = 3;
-    protected static string $view = 'filament.pages.laju-vap';
+    protected static ?int $navigationSort = 7;
+    protected static string $view = 'filament.pages.laju-isk';
 
     public $startDate;
     public $endDate;
@@ -46,11 +45,10 @@ class LajuVAP extends Page implements HasTable
                     ->select([
                         'bangsal.nm_bangsal',
                         DB::raw('COUNT(DISTINCT data_HAIs.no_rawat) as numerator'),
-                        DB::raw('SUM(data_HAIs.VAP) as denumerator'),
-                        DB::raw('ROUND((COUNT(DISTINCT data_HAIs.no_rawat)/SUM(data_HAIs.VAP))*1000,2) as laju_vap'),
-                        // DB::raw('ROUND(100/(SELECT COUNT(DISTINCT data_HAIs.kd_kamar) FROM data_HAIs WHERE data_HAIs.VAP > 0),2) as persentase')
+                        DB::raw('SUM(data_HAIs.ISK) as denumerator'),
+                        DB::raw('ROUND((COUNT(DISTINCT data_HAIs.no_rawat)/SUM(data_HAIs.ISK))*1000,2) as laju_isk'),
                     ])
-                    ->where('data_HAIs.VAP', '>', 0)
+                    ->where('data_HAIs.ISK', '>', 0)
                     ->groupBy('bangsal.kd_bangsal', 'bangsal.kd_bangsal')
             )
             ->filters([
@@ -68,7 +66,6 @@ class LajuVAP extends Page implements HasTable
                                 $query->whereBetween('data_HAIs.tanggal', [$startDate, $endDate])
                             );
                         }
-
                     )
                     ->autoApply(),
             ])
@@ -85,12 +82,11 @@ class LajuVAP extends Page implements HasTable
                     ->label('JUMLAH HARI (DENUMERATOR)')
                     ->alignCenter()
                     ->summarize(Sum::make()),
-                TextColumn::make('laju_vap')
-                    ->label('LAJU VAP')
+                TextColumn::make('laju_isk')
+                    ->label('LAJU ISK')
                     ->alignCenter(),
-                // ->formatStateUsing(fn($state) => number_format($state, 2)),
                 TextColumn::make('persentase')
-                    ->label('PERSENTASE VAP (%)')
+                    ->label('PERSENTASE ISK (%)')
                     ->alignCenter()
                     ->state(function ($record) {
                         $presentase = 0;
@@ -99,7 +95,7 @@ class LajuVAP extends Page implements HasTable
                                 ->select([
                                     DB::raw('ROUND(100/(SELECT COUNT(DISTINCT data_HAIs.kd_kamar)),2) as persentase')
                                 ])
-                                ->where('data_HAIs.VAP', '>', 0)
+                                ->where('data_HAIs.ISK', '>', 0)
                                 ->whereBetween('data_HAIs.tanggal', [$this->startDate, $this->endDate])
                                 ->first();
                             $presentase = $data->persentase;
@@ -108,7 +104,7 @@ class LajuVAP extends Page implements HasTable
                                 ->select([
                                     DB::raw('ROUND(100/(SELECT COUNT(DISTINCT data_HAIs.kd_kamar)),2) as persentase')
                                 ])
-                                ->where('data_HAIs.VAP', '>', 0)
+                                ->where('data_HAIs.ISK', '>', 0)
                                 ->first();
                             $presentase = $data->persentase;
                         }
@@ -118,4 +114,4 @@ class LajuVAP extends Page implements HasTable
             ->striped()
             ->defaultPaginationPageOption(25);
     }
-}
+} 
