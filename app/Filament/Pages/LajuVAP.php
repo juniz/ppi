@@ -23,7 +23,7 @@ class LajuVAP extends Page implements HasTable
     use InteractsWithTable;
 
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
-    protected static ?string $navigationGroup = 'Laporan';
+    protected static ?string $navigationGroup = 'Laporan HAIs';
     protected static ?string $navigationLabel = 'Laju VAP';
     protected static ?int $navigationSort = 3;
     protected static string $view = 'filament.pages.laju-vap';

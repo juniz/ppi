@@ -24,7 +24,7 @@ class HaisPerBangsal extends Page implements HasTable
     use InteractsWithTable;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
-    protected static ?string $navigationGroup = 'Laporan';
+    protected static ?string $navigationGroup = 'Laporan HAIs';
     protected static ?string $navigationLabel = 'HAIs Per Bangsal';
     protected static ?int $navigationSort = 2;
     protected static string $view = 'filament.pages.hais-per-bangsal';

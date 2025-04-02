@@ -26,7 +26,7 @@ class HaisHarian extends Page implements HasTable
 {
     use InteractsWithTable;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationGroup = 'Laporan';
+    protected static ?string $navigationGroup = 'Laporan HAIs';
     protected static ?string $navigationLabel = 'HAIs Harian';
     protected static ?int $navigationSort = 0;
 
