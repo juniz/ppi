@@ -15,6 +15,7 @@ use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Dflydev\DotAccessData\Data;
+use Illuminate\Support\HtmlString;
 
 class LajuISK extends Page implements HasTable
 {
@@ -45,7 +46,7 @@ class LajuISK extends Page implements HasTable
                     ->select([
                         'bangsal.nm_bangsal',
                         DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.UC != 0 THEN data_HAIs.no_rawat END) as numerator'),
-                        DB::raw('SUM(data_HAIs.UC) as hari_infus'),
+                        DB::raw('SUM(data_HAIs.UC) as hari_uc'),
                         DB::raw('SUM(data_HAIs.ISK) as denumerator'),
                         DB::raw('ROUND((SUM(data_HAIs.ISK)/NULLIF(SUM(data_HAIs.UC),0))*1000) as laju_isk'),
                         DB::raw('CONCAT(ROUND((SUM(data_HAIs.ISK)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.UC != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
@@ -80,14 +81,15 @@ class LajuISK extends Page implements HasTable
                     ->weight('bold')
                     ->grow(false),
                 TextColumn::make('numerator')
-                    ->label('JUMLAH PASIEN')
+                    ->label(fn () => new HtmlString('JUMLAH PASIEN<br>TERPASANG UC'))
                     ->alignCenter()
                     ->summarize(Sum::make()->label('Total Pasien'))
                     ->badge()
                     ->color('primary')
                     ->grow(false),
-                TextColumn::make('hari_infus')
-                    ->label('HARI INFUS')
+                TextColumn::make('hari_uc')
+                    ->label(new HtmlString('<div style="line-height: 1.2">JUMLAH HARI<br>TERPASANG UC</div>'))
+                    ->html()
                     ->alignCenter()
                     ->summarize(Sum::make()->label('Total Hari'))
                     ->badge()

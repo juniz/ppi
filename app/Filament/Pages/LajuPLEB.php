@@ -15,7 +15,7 @@ use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Dflydev\DotAccessData\Data;
-
+use Illuminate\Support\HtmlString;
 class LajuPLEB extends Page implements HasTable
 {
     use InteractsWithTable;
@@ -80,14 +80,15 @@ class LajuPLEB extends Page implements HasTable
                     ->weight('bold')
                     ->grow(false),
                 TextColumn::make('numerator')
-                    ->label('JUMLAH PASIEN')
+                    ->label(fn () => new HtmlString('JUMLAH PASIEN<br>TERPASANG INFUS'))
                     ->alignCenter()
                     ->summarize(Sum::make()->label('Total Pasien'))
                     ->badge()
                     ->color('primary')
                     ->grow(false),
                 TextColumn::make('hari_infus')
-                    ->label('HARI INFUS')
+                    ->label(fn () => new HtmlString('JUMLAH HARI<br>TERPASANG INFUS'))
+                    ->html()
                     ->alignCenter()
                     ->summarize(Sum::make()->label('Total Hari'))
                     ->badge()
