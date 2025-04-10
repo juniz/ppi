@@ -14,7 +14,7 @@ use Filament\Tables\Filters\Filter;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use Dflydev\DotAccessData\Data;
+use Illuminate\Support\HtmlString;
 
 class LajuILO extends Page implements HasTable
 {
@@ -44,12 +44,13 @@ class LajuILO extends Page implements HasTable
                     ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
                     ->select([
                         'bangsal.nm_bangsal',
-                        DB::raw('COUNT(DISTINCT data_HAIs.no_rawat) as numerator'),
-                        DB::raw('SUM(data_HAIs.ILO) as denumerator'),
-                        DB::raw('ROUND((COUNT(DISTINCT data_HAIs.no_rawat)/SUM(data_HAIs.ILO))*1000,2) as laju_ilo'),
+                        DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.ILO != 0 THEN data_HAIs.no_rawat END) as numerator'),
+                        DB::raw('SUM(data_HAIs.ILO) as hari_operasi'),
+                        DB::raw('COUNT(CASE WHEN data_HAIs.ILO > 0 THEN 1 END) as denumerator'),
+                        DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.ILO > 0 THEN 1 END)/NULLIF(SUM(data_HAIs.ILO),0))*1000), ' ‰') as laju_ilo"),
+                        DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.ILO > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.ILO != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
                     ])
-                    ->where('data_HAIs.ILO', '>', 0)
-                    ->groupBy('bangsal.kd_bangsal', 'bangsal.kd_bangsal')
+                    ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
             )
             ->filters([
                 DateRangeFilter::make('tanggal')
@@ -58,13 +59,15 @@ class LajuILO extends Page implements HasTable
                     ->endDate(Carbon::now())
                     ->modifyQueryUsing(
                         function (Builder $query, ?Carbon $startDate, ?Carbon $endDate, $dateString) {
-                            $this->startDate = $startDate?->format('Y-m-d');
-                            $this->endDate = $endDate?->format('Y-m-d');
-                            $query->when(
-                                !empty($dateString),
-                                fn(Builder $query, $date): Builder =>
-                                $query->whereBetween('data_HAIs.tanggal', [$startDate, $endDate])
-                            );
+                            if ($startDate && $endDate) {
+                                $this->startDate = $startDate->format('Y-m-d');
+                                $this->endDate = $endDate->format('Y-m-d');
+                                
+                                $query->whereBetween('data_HAIs.tanggal', [
+                                    $startDate->startOfDay(),
+                                    $endDate->endOfDay(),
+                                ]);
+                            }
                         }
                     )
                     ->autoApply(),
@@ -73,45 +76,51 @@ class LajuILO extends Page implements HasTable
                 TextColumn::make('nm_bangsal')
                     ->label('KAMAR/BANGSAL')
                     ->sortable()
-                    ->searchable(),
+                    ->searchable()
+                    ->weight('bold')
+                    ->grow(false),
                 TextColumn::make('numerator')
-                    ->label('JUMLAH PASIEN (NUMERATOR)')
+                    ->label(fn () => new HtmlString('JUMLAH PASIEN<br>OPERASI'))
                     ->alignCenter()
-                    ->summarize(Sum::make()),
+                    ->summarize(Sum::make()->label('Total Pasien'))
+                    ->badge()
+                    ->color('primary')
+                    ->grow(false),
+                TextColumn::make('hari_operasi')
+                    ->label(fn () => new HtmlString('JUMLAH<br>OPERASI'))
+                    ->alignCenter()
+                    ->summarize(Sum::make()->label('Total Operasi'))
+                    ->badge()
+                    ->color('info')
+                    ->grow(false),
                 TextColumn::make('denumerator')
-                    ->label('JUMLAH HARI (DENUMERATOR)')
+                    ->label('ILO')
                     ->alignCenter()
-                    ->summarize(Sum::make()),
+                    ->summarize(Sum::make()->label('Total'))
+                    ->badge()
+                    ->color('warning')
+                    ->grow(false),
                 TextColumn::make('laju_ilo')
                     ->label('LAJU ILO')
-                    ->alignCenter(),
-                TextColumn::make('persentase')
-                    ->label('PERSENTASE ILO (%)')
                     ->alignCenter()
-                    ->state(function ($record) {
-                        $presentase = 0;
-                        if ($this->startDate != null || $this->endDate != null) {
-                            $data = DataHais::query()
-                                ->select([
-                                    DB::raw('ROUND(100/(SELECT COUNT(DISTINCT data_HAIs.kd_kamar)),2) as persentase')
-                                ])
-                                ->where('data_HAIs.ILO', '>', 0)
-                                ->whereBetween('data_HAIs.tanggal', [$this->startDate, $this->endDate])
-                                ->first();
-                            $presentase = $data->persentase;
-                        } else {
-                            $data = DataHais::query()
-                                ->select([
-                                    DB::raw('ROUND(100/(SELECT COUNT(DISTINCT data_HAIs.kd_kamar)),2) as persentase')
-                                ])
-                                ->where('data_HAIs.ILO', '>', 0)
-                                ->first();
-                            $presentase = $data->persentase;
-                        }
-                        return $presentase  . ' %';
-                    }),
+                    ->badge()
+                    ->color('success')
+                    ->grow(false),
+                TextColumn::make('persentase')
+                    ->label('PERSENTASE')
+                    ->alignCenter()
+                    ->badge()
+                    ->color('danger')
+                    ->grow(false),
             ])
             ->striped()
-            ->defaultPaginationPageOption(25);
+            ->defaultPaginationPageOption(25)
+            ->contentGrid([
+                'md' => 2,
+                'xl' => 6,
+            ])
+            ->paginated([25, 50, 100])
+            ->poll('10s')
+            ->defaultSort('nm_bangsal', 'asc');
     }
 } 

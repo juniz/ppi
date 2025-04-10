@@ -48,7 +48,7 @@ class LajuISK extends Page implements HasTable
                         DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.UC != 0 THEN data_HAIs.no_rawat END) as numerator'),
                         DB::raw('SUM(data_HAIs.UC) as hari_uc'),
                         DB::raw('SUM(data_HAIs.ISK) as denumerator'),
-                        DB::raw('ROUND((SUM(data_HAIs.ISK)/NULLIF(SUM(data_HAIs.UC),0))*1000) as laju_isk'),
+                        DB::raw("CONCAT(ROUND((SUM(data_HAIs.ISK)/NULLIF(SUM(data_HAIs.UC),0))*1000), ' ‰') as laju_isk"),
                         DB::raw('CONCAT(ROUND((SUM(data_HAIs.ISK)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.UC != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
                     ])
                     ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
