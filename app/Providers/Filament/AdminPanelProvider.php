@@ -31,6 +31,7 @@ use App\Filament\Pages\LajuPLEB;
 use App\Filament\Pages\LajuISK;
 use App\Filament\Pages\LajuILO;
 use App\Filament\Pages\LajuHAP;
+use App\Filament\Pages\LajuHAIs;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -57,10 +58,26 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->colors([
                 'primary' => Color::Amber,
+                'danger' => Color::Rose,
+                'gray' => Color::Slate,
+                'info' => Color::Blue,
+                'success' => Color::Emerald,
+                'warning' => Color::Orange,
             ])
+            ->navigationGroups([
+                'Dashboard',
+                'Pelayanan', 
+                'Pengawasan',
+                'Laporan',
+                'Pengaturan'
+            ])
+            ->sidebarCollapsibleOnDesktop()
+            ->brandName('SIMRS - HAIs')
+            ->darkMode(false)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->pages([
                 Dashboard::class,
+                LajuHAIs::class,
                 LajuIAD::class,
                 HaisPerPasien::class,
                 LajuPLEB::class,
