@@ -22,11 +22,6 @@ class AuditEtikaBatukResource extends Resource
     protected static ?string $navigationGroup = 'Audit';
     protected static ?string $navigationBadgeColor = 'warning';
 
-    public static function getNavigationBadge(): ?string
-    {
-        return 'Audit';
-    }
-
     public static function form(Form $form): Form
     {
         return $form
