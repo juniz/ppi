@@ -20,7 +20,7 @@ class AuditPembuanganBendaTajamResource extends Resource
 {
     protected static ?string $model = AuditPembuanganBendaTajam::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-scissors';
     protected static ?string $navigationGroup = 'Audit';
 
     public static function form(Form $form): Form
