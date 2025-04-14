@@ -124,4 +124,9 @@ class LajuPLEB extends Page implements HasTable
             ->poll('10s')
             ->defaultSort('nm_bangsal', 'asc');
     }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 } 

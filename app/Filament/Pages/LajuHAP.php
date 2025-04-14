@@ -25,6 +25,12 @@ class LajuHAP extends Page implements HasTable
     protected static ?string $slug = 'laju-hap';
     protected static ?string $navigationGroup = 'Laporan HAIs';
     protected static ?int $navigationSort = 9;
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     protected static string $view = 'filament.pages.laju-hap';
 
     public $startDate;
