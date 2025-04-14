@@ -14,18 +14,19 @@ use Filament\Tables\Filters\Filter;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Dflydev\DotAccessData\Data;
 use Illuminate\Support\HtmlString;
 
-class LajuVAP extends Page implements HasTable
+class LajuISK extends Page implements HasTable
 {
     use InteractsWithTable;
 
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
+    protected static ?string $title = 'Laju ISK';
+    protected static ?string $slug = 'laju-isk';
     protected static ?string $navigationGroup = 'Laporan HAIs';
-    protected static ?string $navigationLabel = 'Laju VAP';
-    protected static ?string $title = 'Laju VAP';
-    protected static ?int $navigationSort = 3;
-    protected static string $view = 'filament.pages.laju-vap';
+    protected static ?int $navigationSort = 7;
+    protected static string $view = 'filament.pages.laju-isk';
 
     public $startDate;
     public $endDate;
@@ -44,11 +45,11 @@ class LajuVAP extends Page implements HasTable
                     ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
                     ->select([
                         'bangsal.nm_bangsal',
-                        DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.VAP != 0 THEN data_HAIs.no_rawat END) as numerator'),
-                        DB::raw('SUM(data_HAIs.VAP) as hari_ventilator'),
-                        DB::raw('COUNT(CASE WHEN data_HAIs.VAP > 0 THEN 1 END) as denumerator'),
-                        DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.VAP > 0 THEN 1 END)/NULLIF(SUM(data_HAIs.VAP),0))*1000), ' ‰') as laju_vap"),
-                        DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.VAP > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.VAP != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
+                        DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.UC != 0 THEN data_HAIs.no_rawat END) as numerator'),
+                        DB::raw('SUM(data_HAIs.UC) as hari_uc'),
+                        DB::raw('SUM(data_HAIs.ISK) as denumerator'),
+                        DB::raw("CONCAT(ROUND((SUM(data_HAIs.ISK)/NULLIF(SUM(data_HAIs.UC),0))*1000), ' ‰') as laju_isk"),
+                        DB::raw('CONCAT(ROUND((SUM(data_HAIs.ISK)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.UC != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
                     ])
                     ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
             )
@@ -80,28 +81,29 @@ class LajuVAP extends Page implements HasTable
                     ->weight('bold')
                     ->grow(false),
                 TextColumn::make('numerator')
-                    ->label(fn () => new HtmlString('JUMLAH PASIEN<br>TERPASANG VENTILATOR'))
+                    ->label(fn () => new HtmlString('JUMLAH PASIEN<br>TERPASANG UC'))
                     ->alignCenter()
                     ->summarize(Sum::make()->label('Total Pasien'))
                     ->badge()
                     ->color('primary')
                     ->grow(false),
-                TextColumn::make('hari_ventilator')
-                    ->label(fn () => new HtmlString('JUMLAH HARI<br>TERPASANG VENTILATOR'))
+                TextColumn::make('hari_uc')
+                    ->label(new HtmlString('<div style="line-height: 1.2">JUMLAH HARI<br>TERPASANG UC</div>'))
+                    ->html()
                     ->alignCenter()
                     ->summarize(Sum::make()->label('Total Hari'))
                     ->badge()
                     ->color('info')
                     ->grow(false),
                 TextColumn::make('denumerator')
-                    ->label('VAP')
+                    ->label('ISK')
                     ->alignCenter()
                     ->summarize(Sum::make()->label('Total'))
                     ->badge()
                     ->color('warning')
                     ->grow(false),
-                TextColumn::make('laju_vap')
-                    ->label('LAJU VAP')
+                TextColumn::make('laju_isk')
+                    ->label('LAJU ISK')
                     ->alignCenter()
                     ->badge()
                     ->color('success')
@@ -128,4 +130,4 @@ class LajuVAP extends Page implements HasTable
     {
         return false;
     }
-}
+} 

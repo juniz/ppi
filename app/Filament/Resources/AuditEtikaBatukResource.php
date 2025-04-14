@@ -18,8 +18,9 @@ class AuditEtikaBatukResource extends Resource
 {
     protected static ?string $model = AuditEtikaBatuk::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-face-frown';
     protected static ?string $navigationGroup = 'Audit';
+    protected static ?string $navigationBadgeColor = 'warning';
 
     public static function form(Form $form): Form
     {

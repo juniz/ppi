@@ -9,10 +9,11 @@ class DataHais extends Model
 {
     use HasFactory;
 
-    protected $table = 'data_hais';
-    public $primaryKey = 'tanggal';
+    protected $table = 'data_HAIs';
+    protected $primaryKey = 'no_rawat';
     public $incrementing = false;
     public $timestamps = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'tanggal',
@@ -45,5 +46,10 @@ class DataHais extends Model
     public function regPeriksa()
     {
         return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat');
+    }
+
+    public function getKey()
+    {
+        return $this->no_rawat . '-' . $this->tanggal;
     }
 }

@@ -21,7 +21,7 @@ class AuditBundlePlabsiResource extends Resource
     protected static ?string $model = AuditBundlePlabsi::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationGroup = 'Laporan';
+    protected static ?string $navigationGroup = 'Laporan Bundle';
     protected static ?string $navigationLabel = 'Bundle Plabsi';
     protected static ?int $navigationSort = 4;
 

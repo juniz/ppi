@@ -22,7 +22,7 @@ class AuditBundleVapResource extends Resource
     protected static ?string $model = AuditBundleVap::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationGroup = 'Laporan';
+    protected static ?string $navigationGroup = 'Laporan Bundle';
     protected static ?string $navigationLabel = 'Bundle VAP';
     protected static ?int $navigationSort = 5;
 

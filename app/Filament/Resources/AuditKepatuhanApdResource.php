@@ -23,7 +23,7 @@ class AuditKepatuhanApdResource extends Resource
 {
     protected static ?string $model = AuditKepatuhanApd::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-shield-check';
     protected static ?string $navigationGroup = 'Audit';
 
     public static function form(Form $form): Form

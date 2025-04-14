@@ -19,7 +19,7 @@ class AuditBundleIdoResource extends Resource
     protected static ?string $model = AuditBundleIdo::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationGroup = 'Laporan';
+    protected static ?string $navigationGroup = 'Laporan Bundle';
     protected static ?string $navigationLabel = 'Bundle IDO';
     protected static ?int $navigationSort = 2;
 

@@ -18,21 +18,25 @@ use Illuminate\Support\Carbon;
 use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use App\Filament\Resources\DataHaisResource\Widgets\HaisHarianChart;
+use App\Filament\Resources\DataHaisResource\Widgets\HaisHarianInfeksiChart;
+use App\Filament\Resources\DataHaisResource\Widgets\HaisHarianAlatChart;
+use App\Models\DataHais;
 
 class HaisHarian extends Page implements HasTable
 {
     use InteractsWithTable;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationGroup = 'Laporan';
+    protected static ?string $navigationGroup = 'Laporan HAIs';
     protected static ?string $navigationLabel = 'HAIs Harian';
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 0;
 
     protected static string $view = 'filament.pages.hais-harian';
 
     protected function getHeaderWidgets(): array
     {
         return [
-            HaisHarianChart::class,
+            HaisHarianInfeksiChart::class,
+            HaisHarianAlatChart::class,
         ];
     }
 

@@ -8,6 +8,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Tables;
+use App\Models\KamarInap;
 use App\Models\RegPeriksa;
 use App\Models\Dokter;
 use App\Models\Poliklinik;
@@ -37,6 +38,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Placeholder;
 use Illuminate\Support\HtmlString;
 use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Radio;
 
 class Ranap extends Page implements HasTable
 {
@@ -52,31 +54,31 @@ class Ranap extends Page implements HasTable
     {
         return $table
             ->query(
-                RegPeriksa::query()
-                    ->select('reg_periksa.*')
-                    ->join('kamar_inap', 'reg_periksa.no_rawat', '=', 'kamar_inap.no_rawat')
-                    ->with(['pasien', 'poliklinik', 'penjab', 'kamarInap.kamar'])
-                    ->where('status_lanjut', 'Ranap')
+                KamarInap::query()
+                    ->join('reg_periksa', 'kamar_inap.no_rawat', '=', 'reg_periksa.no_rawat')
+                    ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+                    ->join('kamar', 'kamar_inap.kd_kamar', '=', 'kamar.kd_kamar')
+                    ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
+                    ->select([
+                        'reg_periksa.no_rkm_medis',
+                        'pasien.nm_pasien',
+                        'reg_periksa.no_rawat',
+                        'kamar_inap.kd_kamar',
+                        'kamar_inap.tgl_masuk',
+                        'kamar_inap.jam_masuk',
+                        'kamar_inap.tgl_keluar',
+                        'kamar_inap.jam_keluar',
+                        'kamar_inap.stts_pulang',
+                        'kamar_inap.diagnosa_awal',
+                        'kamar_inap.diagnosa_akhir',
+                        'bangsal.nm_bangsal',
+                        'kamar_inap.kd_kamar'
+                    ])
             )
             ->defaultSort('tgl_registrasi', 'desc')
             ->filters([
-                // Menonaktifkan filter tanggal registrasi dengan komentar
-                /*DateRangeFilter::make('tgl_registrasi')
-                    ->label('Tanggal Registrasi')
-                    ->startDate(Carbon::now())
-                    ->endDate(Carbon::now())
-                    ->modifyQueryUsing(
-                        fn(Builder $query, ?Carbon $startDate, ?Carbon $endDate, $dateString) =>
-                        $query->when(
-                            !empty($dateString),
-                            fn(Builder $query, $date): Builder =>
-                            $query->whereBetween('tgl_registrasi', [$startDate, $endDate])
-                        )
-                    )
-                    ->autoApply(),*/
-                SelectFilter::make('kd_kamar')
+                SelectFilter::make('kamar_inap.kd_kamar')
                     ->label('Kamar')
-                    // ->default(auth()->user()->kamar ?? '')
                     ->options(\App\Models\Kamar::join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')->pluck('nm_bangsal', 'kamar.kd_kamar'))
                     ->placeholder('Pilih Kamar'),
                 SelectFilter::make('stts_pulang')
@@ -98,9 +100,10 @@ class Ranap extends Page implements HasTable
                         'Lain-lain' => 'Lain-lain'
                     ])
                     ->multiple()
-                    ->default(['Pindah Kamar', '-'])
+                    ->default(['-'])
                     ->placeholder('Pilih Status Pulang'),
             ])
+            ->filtersFormColumns(1)
             ->columns([
                 TextColumn::make('no_rkm_medis')
                     ->label('No. RM')
@@ -108,13 +111,9 @@ class Ranap extends Page implements HasTable
                         return $query->where('reg_periksa.no_rkm_medis', 'like', "%{$search}%");
                     })
                     ->sortable(),
-                TextColumn::make('pasien.nm_pasien')
+                TextColumn::make('nm_pasien')
                     ->label('Nama Pasien')
-                    ->searchable(query: function (Builder $query, string $search): Builder {
-                        return $query->whereHas('pasien', function ($q) use ($search) {
-                            $q->where('nm_pasien', 'like', "%{$search}%");
-                        });
-                    })
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('no_rawat')
                     ->label('No. Rawat')
@@ -122,18 +121,22 @@ class Ranap extends Page implements HasTable
                         return $query->where('reg_periksa.no_rawat', 'like', "%{$search}%");
                     })
                     ->sortable(),
-                TextColumn::make('kamarInap.kamar.bangsal.nm_bangsal')
+                TextColumn::make('nm_bangsal')
                     ->label('Kamar')
                     ->sortable(),
-                TextColumn::make('kamarInap.tgl_masuk')
+                TextColumn::make('tgl_masuk')
                     ->label('Tgl Masuk')
-                    // ->date()
+                    ->date('d-m-Y')
                     ->sortable(),
-                TextColumn::make('kamarInap.tgl_keluar')
+                TextColumn::make('tgl_keluar')
                     ->label('Tgl Keluar')
-                    // ->date()
+                    ->formatStateUsing(function ($state) {
+                        return ($state && $state != '0000-00-00') 
+                            ? date('d-m-Y', strtotime($state))
+                            : '';
+                    })
                     ->sortable(),
-                TextColumn::make('kamarInap.stts_pulang')
+                TextColumn::make('stts_pulang')
                     ->label('Status Pulang')
                     ->sortable(),
                 IconColumn::make('has_hais_today')
@@ -154,211 +157,248 @@ class Ranap extends Page implements HasTable
             ])
             ->actions([
                 ActionGroup::make([
-                    Tables\Actions\EditAction::make('hais')
-                        ->label('Data HAIs')
-                        ->modalHeading('Data HAIs')
-                        ->mountUsing(function (Form $form, RegPeriksa $regPeriksa) {
-                            $data = \App\Models\DataHais::where('no_rawat', $regPeriksa->no_rawat)
-                                ->whereDate('tanggal', date('Y-m-d'))
-                                ->first();
-                            
-                            if ($data) {
-                                $form->fill([
-                                    ...$data->toArray(),
-                                    'tanggal' => date('Y-m-d H:i:s'),
-                                ]);
-                            } else {
-                                $form->fill([
-                                    'tanggal' => date('Y-m-d H:i:s'),
-                                    'DEKU' => 'TIDAK',
-                                    'SPUTUM' => '',
-                                    'DARAH' => '',
-                                    'URINE' => '',
-                                    'ETT' => 0,
-                                    'CVL' => 0,
-                                    'IVL' => 0,
-                                    'UC' => 0,
-                                    'VAP' => 0,
-                                    'IAD' => 0,
-                                    'PLEB' => 0,
-                                    'ISK' => 0,
-                                    'ILO' => 0,
-                                    'HAP' => 0,
-                                    'Tinea' => 0,
-                                    'Scabies' => 0,
-                                    'ANTIBIOTIK' => '',
-                                ]);
-                            }
-                        })
-                        ->action(function (array $data, RegPeriksa $regPeriksa) {
-                            try {
-                                $data['no_rawat'] = $regPeriksa->no_rawat;
-                                $kamar = \App\Models\KamarInap::where('no_rawat', $regPeriksa->no_rawat)->first();
-                                $data['kd_kamar'] = $kamar->kd_kamar;
-                                \App\Models\DataHais::updateOrCreate([
-                                    'no_rawat' => $regPeriksa->no_rawat,
-                                    'tanggal' => $data['tanggal'],
-                                ], $data);
+                    Action::make('input_hais')
+                        ->label('Input HAIs')
+                        ->icon('heroicon-o-clipboard-document-list')
+                        ->modalHeading(fn (KamarInap $record) => new HtmlString("
+                            <div>
+                                <h2 class='text-xl font-bold tracking-tight'>Input HAIs</h2>
+                                <p class='mt-1 text-gray-600'>
+                                    {$record->nm_pasien} (RM: {$record->no_rkm_medis})
+                                </p>
+                            </div>
+                        "))
+                        ->form([
+                            Grid::make([
+                                'default' => 1,    
+                                'sm' => 2,         
+                                'lg' => 4          // Ubah menjadi 4 kolom
+                            ])
+                            ->schema([
+                                // Kolom 1: Data Umum
+                                Section::make('Data Umum')
+                                    ->schema([
+                                        DatePicker::make('tanggal')
+                                            ->label('Tanggal')
+                                            ->default(now())
+                                            ->required(),
+                                        TextInput::make('ANTIBIOTIK')
+                                            ->label('Antibiotik')
+                                            ->default('-')
+                                            ->required(),
+                                        Select::make('DEKU')
+                                            ->label('Dekubitus')
+                                            ->options([
+                                                'TIDAK' => 'TIDAK',
+                                                'IYA' => 'IYA'
+                                            ])
+                                            ->default('TIDAK')
+                                            ->required(),
+                                        Grid::make(2)
+                                            ->schema([
+                                                Select::make('ETT')
+                                                    ->label('ETT')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('CVL')
+                                                    ->label('CVL')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('IVL')
+                                                    ->label('IVL')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('UC')
+                                                    ->label('UC')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                            ]),
+                                    ])
+                                    ->columnSpan(['lg' => 1]),
 
+                                // Kolom 2: Infeksi RS
+                                Section::make('Infeksi RS')
+                                    ->schema([
+                                        Grid::make(2)
+                                            ->schema([
+                                                Select::make('VAP')
+                                                    ->label('VAP')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('IAD')
+                                                    ->label('IAD')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('PLEB')
+                                                    ->label('PLEB')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('ISK')
+                                                    ->label('ISK')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('ILO')
+                                                    ->label('ILO')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('HAP')
+                                                    ->label('HAP')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('Tinea')
+                                                    ->label('Tinea')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                                Select::make('Scabies')
+                                                    ->label('Scabies')
+                                                    ->options([
+                                                        0 => 'TIDAK',
+                                                        1 => 'YA'
+                                                    ])
+                                                    ->default(0),
+                                            ]),
+                                    ])
+                                    ->columnSpan(['lg' => 1]),
+
+                                // Kolom 3: Kultur
+                                Section::make('Kultur')
+                                    ->schema([
+                                        TextInput::make('SPUTUM')
+                                            ->label('Sputum'),
+                                        TextInput::make('DARAH')
+                                            ->label('Darah'),
+                                        TextInput::make('URINE')
+                                            ->label('Urine'),
+                                    ])
+                                    ->columnSpan(['lg' => 1]),
+
+                                // Kolom 4: Status Pengisian HAIs
+                                Section::make('Status Pengisian HAIs')
+                                    ->schema([
+                                        Placeholder::make('status_hais')
+                                            ->content(function (KamarInap $record): HtmlString {
+                                                $tglMasuk = Carbon::parse($record->tgl_masuk);
+                                                $tglKeluar = $record->tgl_keluar && $record->tgl_keluar != '0000-00-00' 
+                                                    ? Carbon::parse($record->tgl_keluar)
+                                                    : Carbon::today();
+                                                
+                                                $html = '<div class="space-y-2">';
+                                                
+                                                // Loop dari tgl_masuk sampai tgl_keluar atau hari ini
+                                                for ($date = clone $tglMasuk; $date->lte($tglKeluar); $date->addDay()) {
+                                                    $isDataExist = \App\Models\DataHais::query()
+                                                        ->where('no_rawat', $record->no_rawat)
+                                                        ->whereDate('tanggal', $date->format('Y-m-d'))
+                                                        ->exists();
+                                                    
+                                                    if ($isDataExist) {
+                                                        $icon = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" style="color: #10b981;">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                                        </svg>';
+                                                        $textColor = 'text-success-600';
+                                                    } else {
+                                                        $icon = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" style="color: #ef4444;">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                                        </svg>';
+                                                        $textColor = 'text-danger-600';
+                                                    }
+                                                    
+                                                    $html .= '<div class="flex items-center gap-2">
+                                                        ' . $icon . '
+                                                        <span class="' . $textColor . '">' . $date->format('d/m/Y') . '</span>
+                                                    </div>';
+                                                }
+                                                
+                                                $html .= '</div>';
+                                                
+                                                return new HtmlString($html);
+                                            }),
+                                    ])
+                                    ->columnSpan(['lg' => 1]),
+                            ])
+                        ])
+                        ->action(function (array $data, KamarInap $record): void {
+                            try {
+                                // Siapkan data untuk insert/update
+                                $updateData = [
+                                    'ETT' => $data['ETT'] ?? 0,
+                                    'CVL' => $data['CVL'] ?? 0,
+                                    'IVL' => $data['IVL'] ?? 0,
+                                    'UC' => $data['UC'] ?? 0,
+                                    'VAP' => $data['VAP'] ?? 0,
+                                    'IAD' => $data['IAD'] ?? 0,
+                                    'PLEB' => $data['PLEB'] ?? 0,
+                                    'ISK' => $data['ISK'] ?? 0,
+                                    'ILO' => $data['ILO'] ?? 0,
+                                    'HAP' => $data['HAP'] ?? 0,
+                                    'Tinea' => $data['Tinea'] ?? 0,
+                                    'Scabies' => $data['Scabies'] ?? 0,
+                                    'DEKU' => $data['DEKU'] ?? 'TIDAK',
+                                    'SPUTUM' => $data['SPUTUM'] ?? null,
+                                    'DARAH' => $data['DARAH'] ?? null,
+                                    'URINE' => $data['URINE'] ?? null,
+                                    'ANTIBIOTIK' => $data['ANTIBIOTIK'] ?? '-',
+                                    'kd_kamar' => $record->kd_kamar,
+                                ];
+
+                                // Gunakan updateOrInsert untuk menangani duplicate entry
+                                \DB::table('data_HAIs')->updateOrInsert(
+                                    [
+                                        'no_rawat' => $record->no_rawat,
+                                        'tanggal' => $data['tanggal']
+                                    ],
+                                    $updateData
+                                );
+                                
                                 Notification::make()
                                     ->title('Data HAIs berhasil disimpan')
                                     ->success()
                                     ->send();
 
-                                // $this->redirect('/data-hais?tableSearch=' . $regPeriksa->no_rawat);
                             } catch (\Exception $e) {
-                                // dd($e->getMessage());
                                 Notification::make()
-                                    ->title('Data Pasien Gagal Disimpan')
-                                    ->body($e->getMessage())
+                                    ->title('Error')
+                                    ->body('Gagal menyimpan data HAIs: ' . $e->getMessage())
                                     ->danger()
                                     ->send();
                             }
                         })
-                        ->form([
-                            Split::make([
-                                Section::make([
-                                    DatePicker::make('tanggal')
-                                        ->label('Tanggal')
-                                        ->default(now())
-                                        ->required(),
-                                    Select::make('DEKU')
-                                        ->label('Dekubitus')
-                                        ->options([
-                                            'IYA' => 'IYA',
-                                            'TIDAK' => 'TIDAK'
-                                        ])
-                                        ->default('Tidak')
-                                        ->required(),
-                                    TextInput::make('ANTIBIOTIK')
-                                        ->label('Antibiotik')
-                                        ->default('')
-                                        ->required(),
-                                    Section::make('Hari Pemasangan Alat')
-                                        ->schema([
-                                            Select::make('ETT')
-                                                ->label('ETT')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya',
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('CVL')
-                                                ->label('CVL')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya',
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('IVL')
-                                                ->label('IVL')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya',
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('UC')
-                                                ->label('UC')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya',
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                        ])
-                                        ->columns(4),
-                                ]),
-                                Section::make([
-                                    Section::make('Infeksi RS')
-                                        ->schema([
-                                            Select::make('VAP')
-                                                ->label('VAP')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya'
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('IAD')
-                                                ->label('IAD')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya'
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('PLEB')
-                                                ->label('PLEB')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya'
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('ISK')
-                                                ->label('ISK')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya'
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('ILO')
-                                                ->label('ILO')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya'
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('HAP')
-                                                ->label('HAP')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya'
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('Tinea')
-                                                ->label('Tinea')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya'
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                            Select::make('Scabies')
-                                                ->label('Scabies')
-                                                ->options([
-                                                    '0' => 'Tidak',
-                                                    '1' => 'Ya'
-                                                ])
-                                                ->default('0')
-                                                ->required(),
-                                        ])
-                                        ->columns(4),
-                                    Section::make('Kultur')
-                                        ->schema([
-                                            TextInput::make('SPUTUM')
-                                                ->label('Sputum')
-                                                ->default(''),
-                                            TextInput::make('DARAH')
-                                                ->label('Darah')
-                                                ->default(''),
-                                            TextInput::make('URINE')
-                                                ->label('Urine')
-                                                ->default(''),
-                                        ]),
-                                ]),
-                            ])->from('md')
-                        ])
-                        ->modalWidth(MaxWidth::Full)
-                        // ->modalSubmitAction(false)
-                        ->modalCancelActionLabel('Batal')
-                        ->modalSubmitActionLabel('Simpan'),
+                        ->modalWidth(MaxWidth::SevenExtraLarge)
+                        ->modalSubmitActionLabel('Simpan')
+                        ->modalCancelActionLabel('Batal'),
                     Action::make('input_bundle_iadp')
                         ->label('Bundle IADP (Plebitis)')
                         ->icon('heroicon-o-clipboard-document-check')
@@ -451,7 +491,7 @@ class Ranap extends Page implements HasTable
                                 ->default('Ya')
                                 ->required(),
                         ])
-                        ->action(function (array $data, RegPeriksa $record): void {
+                        ->action(function (array $data, KamarInap $record): void {
                             try {
                                 // Set data untuk disimpan
                                 $data['tanggal'] = date('Y-m-d H:i:s');
@@ -544,7 +584,7 @@ class Ranap extends Page implements HasTable
                                 ->default('Ya')
                                 ->required(),
                         ])
-                        ->action(function (array $data, RegPeriksa $record): void {
+                        ->action(function (array $data, KamarInap $record): void {
                             try {
                                 // Set data untuk disimpan
                                 $data['tanggal'] = date('Y-m-d H:i:s');
@@ -613,7 +653,7 @@ class Ranap extends Page implements HasTable
                                 ->default('Ya')
                                 ->required(),
                         ])
-                        ->action(function (array $data, RegPeriksa $record): void {
+                        ->action(function (array $data, KamarInap $record): void {
                             try {
                                 $data['tanggal'] = date('Y-m-d H:i:s');
                                 $data['no_rawat'] = $record->no_rawat;
@@ -701,7 +741,7 @@ class Ranap extends Page implements HasTable
                                         ->required(),
                                 ]),
                         ])
-                        ->action(function (array $data, RegPeriksa $record): void {
+                        ->action(function (array $data, KamarInap $record): void {
                             try {
                                 $data['tanggal'] = date('Y-m-d H:i:s');
                                 $data['no_rawat'] = $record->no_rawat;
@@ -726,44 +766,101 @@ class Ranap extends Page implements HasTable
                         ->form([
                             Section::make('Informasi Pasien')
                                 ->schema([
-                                    TextInput::make('no_rkm_medis')
+                                    TextInput::make('no_rm')
                                         ->label('No. RM')
-                                        ->default(fn (RegPeriksa $record) => $record->no_rkm_medis)
+                                        ->default(fn ($record) => $record->no_rkm_medis)
                                         ->disabled(),
-                                    TextInput::make('nm_pasien')
+                                    TextInput::make('nama_pasien')
                                         ->label('Nama Pasien')
-                                        ->default(fn (RegPeriksa $record) => $record->pasien->nm_pasien)
+                                        ->default(fn ($record) => $record->nm_pasien)
                                         ->disabled(),
-                                ])
-                                ->columns(2),
-                                
+                                ]),
                             Section::make('Pindah Kamar')
                                 ->schema([
+                                    DateTimePicker::make('waktu_pindah')
+                                        ->label('Tanggal & Jam Pindah')
+                                        ->default(now())
+                                        ->required(),
                                     Select::make('kd_kamar')
                                         ->label('Pilih Kamar')
                                         ->options(function () {
                                             return \App\Models\Kamar::query()
                                                 ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
-                                                ->pluck('bangsal.nm_bangsal', 'kamar.kd_kamar')
-                                                ->toArray();
+                                                ->pluck('bangsal.nm_bangsal', 'kamar.kd_kamar');
                                         })
                                         ->required()
-                                ]),
+                                ])
                         ])
-                        ->action(function (array $data, RegPeriksa $record): void {
+                        ->action(function (array $data, KamarInap $record): void {
+                            // dd($record);
                             try {
+                                DB::beginTransaction();
+
+                                // 1. Update kamar lama - set status Pindah Kamar
+                                // KamarInap::where('no_rawat', $record->no_rawat)
+                                //          ->where('kd_kamar', $record->kd_kamar)
+                                //          ->where('tgl_masuk', $record->tgl_masuk)
+                                //          ->where('jam_masuk', $record->jam_masuk)
+                                //          ->update([
+                                //              'stts_pulang' => 'Pindah Kamar',
+                                //              'tgl_keluar' => date('Y-m-d', strtotime($data['waktu_pindah'])),
+                                //              'jam_keluar' => date('H:i:s', strtotime($data['waktu_pindah']))
+                                //          ]);
+
                                 DB::table('kamar_inap')
                                     ->where('no_rawat', $record->no_rawat)
+                                    ->where('kd_kamar', $record->kd_kamar)
+                                    ->where('tgl_masuk', $record->tgl_masuk)
+                                    ->where('jam_masuk', $record->jam_masuk)
+                                    ->where('stts_pulang', '-')
                                     ->update([
-                                        'kd_kamar' => $data['kd_kamar'],
-                                        'stts_pulang' => 'Pindah Kamar'
+                                        'stts_pulang' => 'Pindah Kamar',
+                                        'tgl_keluar' => date('Y-m-d', strtotime($data['waktu_pindah'])),
+                                        'jam_keluar' => date('H:i:s', strtotime($data['waktu_pindah']))
                                     ]);
+
+                                // 2. Insert kamar baru
+                                // $kamarBaru = new KamarInap();
+                                // $kamarBaru->no_rawat = $record->no_rawat;
+                                // $kamarBaru->kd_kamar = $data['kd_kamar'];
+                                // $kamarBaru->trf_kamar = \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->value('trf_kamar');
+                                // $kamarBaru->diagnosa_awal = $record->diagnosa_awal;
+                                // $kamarBaru->diagnosa_akhir = $record->diagnosa_akhir;
+                                // $kamarBaru->tgl_masuk = date('Y-m-d', strtotime($data['waktu_pindah']));
+                                // $kamarBaru->jam_masuk = date('H:i:s', strtotime($data['waktu_pindah']));
+                                // $kamarBaru->stts_pulang = '-';
+                                // $kamarBaru->save();
+
+                                DB::table('kamar_inap')
+                                    ->insert([
+                                        'no_rawat' => $record->no_rawat,
+                                        'kd_kamar' => $data['kd_kamar'],
+                                        'trf_kamar' => \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->value('trf_kamar'),
+                                        'diagnosa_awal' => $record->diagnosa_awal,
+                                        'diagnosa_akhir' => $record->diagnosa_akhir,
+                                        'tgl_masuk' => date('Y-m-d', strtotime($data['waktu_pindah'])),
+                                        'jam_masuk' => date('H:i:s', strtotime($data['waktu_pindah'])),
+                                        'tgl_keluar' => '0000-00-00',
+                                        'jam_keluar' => '00:00:00',
+                                        'stts_pulang' => '-',
+                                        'lama' => '1',
+                                        'ttl_biaya' => \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->value('trf_kamar'),
+                                    ]);
+
+                                // Update status kamar
+                                \App\Models\Kamar::where('kd_kamar', $record->kd_kamar)->update(['status' => 'KOSONG']);
+                                \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->update(['status' => 'ISI']);
+
+                                DB::commit();
 
                                 Notification::make()
                                     ->title('Berhasil pindah kamar')
                                     ->success()
                                     ->send();
+
                             } catch (\Exception $e) {
+                                DB::rollBack();
+                                
                                 Notification::make()
                                     ->title('Gagal pindah kamar')
                                     ->body($e->getMessage())
@@ -771,14 +868,12 @@ class Ranap extends Page implements HasTable
                                     ->send();
                             }
                         })
-                        ->modalHeading('Pindah Kamar')
-                        ->modalSubmitActionLabel('Simpan')
-                        ->modalCancelActionLabel('Batal'),
+                        ->modalWidth('xl'),
                     Action::make('pemulangan_pasien')
                         ->label('Pemulangan Pasien')
                         ->icon('heroicon-o-arrow-right-circle')
                         ->modalWidth(MaxWidth::SevenExtraLarge)
-                        ->modalHeading(fn (RegPeriksa $record): string => "Pemulangan Pasien: {$record->pasien->nm_pasien} ({$record->no_rawat})")
+                        ->modalHeading(fn (KamarInap $record): string => "Pemulangan Pasien: {$record->nm_pasien} ({$record->no_rawat})")
                         ->form([
                             Split::make([
                                 // Kolom Kiri
@@ -792,7 +887,7 @@ class Ranap extends Page implements HasTable
                                                     ->disabled(),
                                                 TextInput::make('nm_pasien')
                                                     ->label('Nama Pasien')
-                                                    ->default(fn ($record) => $record->pasien->nm_pasien)
+                                                    ->default(fn ($record) => $record->nm_pasien)
                                                     ->disabled(),
                                             ])
                                             ->columns(2),
@@ -832,23 +927,16 @@ class Ranap extends Page implements HasTable
                                 Section::make('Status Pengisian HAIs')
                                     ->schema([
                                         Placeholder::make('status_hais')
-                                            ->content(function (RegPeriksa $record): HtmlString {
-                                                $tglMasuk = Carbon::parse($record->kamarInap->tgl_masuk);
-                                                $today = Carbon::today();
+                                            ->content(function (KamarInap $record): HtmlString {
+                                                $tglMasuk = Carbon::parse($record->tgl_masuk);
+                                                $tglKeluar = $record->tgl_keluar && $record->tgl_keluar != '0000-00-00' 
+                                                    ? Carbon::parse($record->tgl_keluar)
+                                                    : Carbon::today();
                                                 
-                                                // Hitung total hari
-                                                $totalDays = $tglMasuk->diffInDays($today) + 1;
-                                                // Hitung jumlah kolom yang dibutuhkan (8 item per kolom)
-                                                $columns = ceil($totalDays / 8);
+                                                $html = '<div class="space-y-2">';
                                                 
-                                                $html = '<div class="grid grid-cols-' . $columns . ' gap-4">';
-                                                
-                                                // Array untuk menampung item per kolom
-                                                $columnItems = array_fill(0, $columns, '');
-                                                $currentColumn = 0;
-                                                $itemsInCurrentColumn = 0;
-                                                
-                                                for ($date = clone $tglMasuk; $date->lte($today); $date->addDay()) {
+                                                // Loop dari tgl_masuk sampai tgl_keluar atau hari ini
+                                                for ($date = clone $tglMasuk; $date->lte($tglKeluar); $date->addDay()) {
                                                     $isDataExist = \App\Models\DataHais::query()
                                                         ->where('no_rawat', $record->no_rawat)
                                                         ->whereDate('tanggal', $date->format('Y-m-d'))
@@ -866,25 +954,10 @@ class Ranap extends Page implements HasTable
                                                         $textColor = 'text-danger-600';
                                                     }
                                                     
-                                                    $item = '<div class="flex items-center gap-2">
+                                                    $html .= '<div class="flex items-center gap-2">
                                                         ' . $icon . '
                                                         <span class="' . $textColor . '">' . $date->format('d/m/Y') . '</span>
                                                     </div>';
-                                                    
-                                                    // Tambahkan item ke kolom saat ini
-                                                    $columnItems[$currentColumn] .= $item;
-                                                    $itemsInCurrentColumn++;
-                                                    
-                                                    // Pindah ke kolom berikutnya jika sudah mencapai 8 item
-                                                    if ($itemsInCurrentColumn >= 8) {
-                                                        $currentColumn++;
-                                                        $itemsInCurrentColumn = 0;
-                                                    }
-                                                }
-                                                
-                                                // Gabungkan semua kolom
-                                                foreach ($columnItems as $items) {
-                                                    $html .= '<div class="space-y-2">' . $items . '</div>';
                                                 }
                                                 
                                                 $html .= '</div>';
@@ -895,7 +968,7 @@ class Ranap extends Page implements HasTable
                                     ->columnSpan(['lg' => 1]),
                             ])->columns(['lg' => 2]),
                         ])
-                        ->action(function (array $data, RegPeriksa $record): void {
+                        ->action(function (array $data, KamarInap $record): void {
                             try {
                                 DB::table('kamar_inap')
                                     ->where('no_rawat', $record->no_rawat)
