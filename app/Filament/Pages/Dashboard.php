@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Filament\Resources\DataHaisResource\Widgets\HaisHarianAlatChart;
 use App\Filament\Resources\DataHaisResource\Widgets\HaisHarianInfeksiChart;
 use App\Filament\Widgets\StatsOverview;
+use App\Filament\Widgets\StatusInputHaisTable;
 use Filament\Pages\Page;
 
 class Dashboard extends Page
@@ -27,6 +28,7 @@ class Dashboard extends Page
         return [
             HaisHarianInfeksiChart::class,
             HaisHarianAlatChart::class,
+            StatusInputHaisTable::class,
         ];
     }
 } 
