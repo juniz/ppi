@@ -2,8 +2,8 @@
 
 namespace App\Filament\Pages;
 
-use App\Filament\Widgets\AlatTerpasangChart;
-use App\Filament\Widgets\BundleAuditChart;
+use App\Filament\Resources\DataHaisResource\Widgets\HaisHarianAlatChart;
+use App\Filament\Resources\DataHaisResource\Widgets\HaisHarianInfeksiChart;
 use App\Filament\Widgets\StatsOverview;
 use Filament\Pages\Page;
 
@@ -19,14 +19,14 @@ class Dashboard extends Page
     {
         return [
             StatsOverview::class,
-            BundleAuditChart::class,
         ];
     }
 
     public function getWidgets(): array
     {
         return [
-            AlatTerpasangChart::class
+            HaisHarianInfeksiChart::class,
+            HaisHarianAlatChart::class,
         ];
     }
 } 
