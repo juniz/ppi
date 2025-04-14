@@ -18,6 +18,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Components\Tab;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
+use Filament\Forms\Form;
 
 class ManagePasiens extends ManageRecords
 {
@@ -31,6 +32,12 @@ class ManagePasiens extends ManageRecords
                 ->modal('Pasien Baru')
                 ->icon('heroicon-o-plus-circle')
                 ->modalHeading('Pasien Baru')
+                ->mountUsing(function (Form $form, Pasien $pasien) {
+                    $form->fill([
+                        'tgl_lahir' => now(),
+                        'umur' => Pasien::calculateAge(now()),
+                    ]);
+                })
                 ->action(function (array $data): void {
                     try {
                         // $data['no_rkm_medis'] = Pasien::generateNoRm();
@@ -92,9 +99,10 @@ class ManagePasiens extends ManageRecords
                         ->reactive()
                         ->afterStateUpdated(function ($state, callable $set) {
                             $birthDate = \Carbon\Carbon::parse($state);
-                            $age = $birthDate->age;
-                            $month = $birthDate->month;
-                            $day = $birthDate->day;
+                            $today = \Carbon\Carbon::now();
+                            $age = $birthDate->diffInYears($today);
+                            $month = $birthDate->diffInMonths($today) % 12;
+                            $day = $birthDate->diffInDays($today) % 30;
                             $set('umur', $age . ' Th ' . $month . ' Bl ' . $day . ' Hr');
                         })
                         ->required(),

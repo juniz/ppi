@@ -95,9 +95,13 @@ class Pasien extends Model
     public static function calculateAge($tgl_lahir)
     {
         $birthDate = \Carbon\Carbon::parse($tgl_lahir);
-        $age = $birthDate->age;
-        $month = $birthDate->month;
-        $day = $birthDate->day;
+        $today = \Carbon\Carbon::now();
+        $age = $birthDate->diffInYears($today);
+        $month = $birthDate->diffInMonths($today) % 12;
+        $day = $birthDate->diffInDays($today) % 30;
+        // $age = $birthDate->age;
+        // $month = $birthDate->month;
+        // $day = $birthDate->day;
         return $age . ' Th ' . $month . ' Bl ' . $day . ' Hr';
     }
 
