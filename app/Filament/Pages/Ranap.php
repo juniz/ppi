@@ -792,60 +792,45 @@ class Ranap extends Page implements HasTable
                                 ])
                         ])
                         ->action(function (array $data, KamarInap $record): void {
-                            // dd($record);
                             try {
                                 DB::beginTransaction();
 
-                                // 1. Update kamar lama - set status Pindah Kamar
-                                // KamarInap::where('no_rawat', $record->no_rawat)
-                                //          ->where('kd_kamar', $record->kd_kamar)
-                                //          ->where('tgl_masuk', $record->tgl_masuk)
-                                //          ->where('jam_masuk', $record->jam_masuk)
-                                //          ->update([
-                                //              'stts_pulang' => 'Pindah Kamar',
-                                //              'tgl_keluar' => date('Y-m-d', strtotime($data['waktu_pindah'])),
-                                //              'jam_keluar' => date('H:i:s', strtotime($data['waktu_pindah']))
-                                //          ]);
+                                // Cek apakah pasien dengan No. RM yang sama masih dalam rawat inap
+                                $existingInap = KamarInap::query()
+                                    ->join('reg_periksa', 'kamar_inap.no_rawat', '=', 'reg_periksa.no_rawat')
+                                    ->join('pasien', 'reg_periksa.no_rkm_medis', '=', 'pasien.no_rkm_medis')
+                                    ->join('kamar', 'kamar_inap.kd_kamar', '=', 'kamar.kd_kamar')
+                                    ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
+                                    ->where('reg_periksa.no_rkm_medis', $record->no_rkm_medis)
+                                    ->where('kamar_inap.stts_pulang', '-')
+                                    ->where('kamar_inap.no_rawat', '!=', $record->no_rawat)
+                                    ->first();
 
-                                DB::table('kamar_inap')
-                                    ->where('no_rawat', $record->no_rawat)
-                                    ->where('kd_kamar', $record->kd_kamar)
-                                    ->where('tgl_masuk', $record->tgl_masuk)
-                                    ->where('jam_masuk', $record->jam_masuk)
-                                    ->where('stts_pulang', '-')
+                                if ($existingInap) {
+                                    throw new \Exception("Pasien dengan No. RM {$record->no_rkm_medis} masih dalam perawatan di ruang {$existingInap->nm_bangsal}");
+                                }
+
+                                // Update record lama
+                                KamarInap::withCompositeKey($record->no_rawat, $record->tgl_masuk, $record->jam_masuk)
                                     ->update([
                                         'stts_pulang' => 'Pindah Kamar',
                                         'tgl_keluar' => date('Y-m-d', strtotime($data['waktu_pindah'])),
                                         'jam_keluar' => date('H:i:s', strtotime($data['waktu_pindah']))
                                     ]);
 
-                                // 2. Insert kamar baru
-                                // $kamarBaru = new KamarInap();
-                                // $kamarBaru->no_rawat = $record->no_rawat;
-                                // $kamarBaru->kd_kamar = $data['kd_kamar'];
-                                // $kamarBaru->trf_kamar = \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->value('trf_kamar');
-                                // $kamarBaru->diagnosa_awal = $record->diagnosa_awal;
-                                // $kamarBaru->diagnosa_akhir = $record->diagnosa_akhir;
-                                // $kamarBaru->tgl_masuk = date('Y-m-d', strtotime($data['waktu_pindah']));
-                                // $kamarBaru->jam_masuk = date('H:i:s', strtotime($data['waktu_pindah']));
-                                // $kamarBaru->stts_pulang = '-';
-                                // $kamarBaru->save();
-
-                                DB::table('kamar_inap')
-                                    ->insert([
-                                        'no_rawat' => $record->no_rawat,
-                                        'kd_kamar' => $data['kd_kamar'],
-                                        'trf_kamar' => \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->value('trf_kamar'),
-                                        'diagnosa_awal' => $record->diagnosa_awal,
-                                        'diagnosa_akhir' => $record->diagnosa_akhir,
-                                        'tgl_masuk' => date('Y-m-d', strtotime($data['waktu_pindah'])),
-                                        'jam_masuk' => date('H:i:s', strtotime($data['waktu_pindah'])),
-                                        'tgl_keluar' => '0000-00-00',
-                                        'jam_keluar' => '00:00:00',
-                                        'stts_pulang' => '-',
-                                        'lama' => '1',
-                                        'ttl_biaya' => \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->value('trf_kamar'),
-                                    ]);
+                                // Insert record baru
+                                KamarInap::create([
+                                    'no_rawat' => $record->no_rawat,
+                                    'kd_kamar' => $data['kd_kamar'],
+                                    'trf_kamar' => \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->value('trf_kamar'),
+                                    'diagnosa_awal' => $record->diagnosa_awal,
+                                    'diagnosa_akhir' => $record->diagnosa_akhir,
+                                    'tgl_masuk' => date('Y-m-d', strtotime($data['waktu_pindah'])),
+                                    'jam_masuk' => date('H:i:s', strtotime($data['waktu_pindah'])),
+                                    'stts_pulang' => '-',
+                                    'lama' => '1',
+                                    'ttl_biaya' => \App\Models\Kamar::where('kd_kamar', $data['kd_kamar'])->value('trf_kamar'),
+                                ]);
 
                                 // Update status kamar
                                 \App\Models\Kamar::where('kd_kamar', $record->kd_kamar)->update(['status' => 'KOSONG']);
