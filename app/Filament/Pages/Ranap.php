@@ -975,6 +975,50 @@ class Ranap extends Page implements HasTable
                                     ->send();
                             }
                         }),
+                        Action::make('ubah_status')
+                            ->label('Ubah Status')
+                            ->icon('heroicon-o-pencil-square')
+                            ->modalHeading(fn (KamarInap $record) => new HtmlString("
+                                <div>
+                                    <h2 class='text-xl font-bold tracking-tight'>Ubah Status Pulang</h2>
+                                    <p class='mt-1 text-gray-600'>
+                                        {$record->nm_pasien} (RM: {$record->no_rkm_medis})<br>
+                                        No. Rawat: {$record->no_rawat}
+                                    </p>
+                                </div>
+                            "))
+                            ->form([
+                                Select::make('stts_pulang')
+                                    ->label('Status Pulang')
+                                    ->options([
+                                        '-' => '-',
+                                        'Pindah Kamar' => 'Pindah Kamar',
+                                        'Sehat' => 'Sehat',
+                                        'Rujuk' => 'Rujuk',
+                                        'APS' => 'APS',
+                                        '+' => '+',
+                                        'Meninggal' => 'Meninggal',
+                                        'Membaik' => 'Membaik',
+                                        'Pulang Paksa' => 'Pulang Paksa',
+                                        'Status Belum Lengkap' => 'Status Belum Lengkap',
+                                        'Atas Persetujuan Dokter' => 'Atas Persetujuan Dokter',
+                                        'Atas Permintaan Sendiri' => 'Atas Permintaan Sendiri',
+                                        'Isoman' => 'Isoman',
+                                        'Lain-lain' => 'Lain-lain'
+                                    ])
+                                    ->required()
+                            ])
+                            ->action(function (array $data, KamarInap $record): void {
+                                DB::table('kamar_inap')
+                                    ->where('no_rawat', $record->no_rawat)
+                                    ->where('kd_kamar', $record->kd_kamar)
+                                    ->update(['stts_pulang' => $data['stts_pulang']]);
+
+                                Notification::make()
+                                    ->title('Status pulang berhasil diubah')
+                                    ->success()
+                                    ->send();
+                            }),
                 ])
             ], position: ActionsPosition::BeforeColumns);
     }
