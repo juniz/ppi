@@ -69,13 +69,10 @@ class Ranap extends Page implements HasTable
                         'kamar_inap.tgl_keluar',
                         'kamar_inap.jam_keluar',
                         'kamar_inap.stts_pulang',
-                        'kamar_inap.diagnosa_awal',
-                        'kamar_inap.diagnosa_akhir',
                         'bangsal.nm_bangsal',
-                        'kamar_inap.kd_kamar'
-                    ])
+                    ])->actions([])
+                    ->orderBy('kamar_inap.tgl_masuk', 'desc')
             )
-            ->defaultSort('tgl_registrasi', 'desc')
             ->filters([
                 SelectFilter::make('kamar_inap.kd_kamar')
                     ->label('Kamar')
@@ -157,6 +154,7 @@ class Ranap extends Page implements HasTable
             ])
             ->actions([
                 ActionGroup::make([
+
                     Action::make('input_hais')
                         ->label('Input HAIs')
                         ->icon('heroicon-o-clipboard-document-list')
@@ -375,7 +373,7 @@ class Ranap extends Page implements HasTable
                                 ];
 
                                 // Gunakan updateOrInsert untuk menangani duplicate entry
-                                \DB::table('data_HAIs')->updateOrInsert(
+                                DB::table('data_HAIs')->updateOrInsert(
                                     [
                                         'no_rawat' => $record->no_rawat,
                                         'tanggal' => $data['tanggal']
@@ -456,7 +454,7 @@ class Ranap extends Page implements HasTable
                         ->form([
                             Forms\Components\Select::make('id_ruang')
                                 ->label('Ruang')
-                                ->options(\DB::table('ruang_audit_kepatuhan')->pluck('nama_ruang', 'id_ruang'))
+                                ->options(DB::table('ruang_audit_kepatuhan')->pluck('nama_ruang', 'id_ruang'))
                                 ->required(),
                             Forms\Components\Select::make('pencukuran_rambut')
                                 ->label('Pencukuran Rambut Yang Mengganggu Jalanya Operasi')
@@ -517,7 +515,7 @@ class Ranap extends Page implements HasTable
                         ->form([
                             Forms\Components\Select::make('id_ruang')
                                 ->label('Ruang')
-                                ->options(\DB::table('ruang_audit_kepatuhan')->pluck('nama_ruang', 'id_ruang'))
+                                ->options(DB::table('ruang_audit_kepatuhan')->pluck('nama_ruang', 'id_ruang'))
                                 ->required(),
                             Forms\Components\Select::make('pemasangan_sesuai_indikasi')
                                 ->label('1. Pemasangan Sesuai Indikasi')
@@ -610,7 +608,7 @@ class Ranap extends Page implements HasTable
                         ->form([
                             Forms\Components\Select::make('id_ruang')
                                 ->label('Ruang')
-                                ->options(\DB::table('ruang_audit_kepatuhan')->pluck('nama_ruang', 'id_ruang'))
+                                ->options(DB::table('ruang_audit_kepatuhan')->pluck('nama_ruang', 'id_ruang'))
                                 ->required(),
                             Forms\Components\Select::make('posisi_kepala')
                                 ->label('1. Posisi Kepala 30 derajat s/d 45 derajat')
@@ -678,7 +676,7 @@ class Ranap extends Page implements HasTable
                         ->form([
                             Forms\Components\Select::make('id_ruang')
                                 ->label('Ruang')
-                                ->options(\DB::table('ruang_audit_kepatuhan')->pluck('nama_ruang', 'id_ruang'))
+                                ->options(DB::table('ruang_audit_kepatuhan')->pluck('nama_ruang', 'id_ruang'))
                                 ->required(),
                             
                             Forms\Components\Section::make('Saat Pemasangan')
@@ -1020,6 +1018,6 @@ class Ranap extends Page implements HasTable
                                     ->send();
                             }),
                 ])
-            ], position: ActionsPosition::BeforeColumns);
+            ])->position(ActionsPosition::BeforeColumns);
     }
 }
