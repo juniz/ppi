@@ -70,7 +70,7 @@ class Ranap extends Page implements HasTable
                         'kamar_inap.jam_keluar',
                         'kamar_inap.stts_pulang',
                         'bangsal.nm_bangsal',
-                    ])->actions([])
+                    ])
                     ->orderBy('kamar_inap.tgl_masuk', 'desc')
             )
             ->filters([
@@ -1018,6 +1018,6 @@ class Ranap extends Page implements HasTable
                                     ->send();
                             }),
                 ])
-            ])->position(ActionsPosition::BeforeColumns);
+            ], position: ActionsPosition::BeforeColumns);
     }
 }
