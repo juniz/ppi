@@ -1,13 +1,10 @@
 <x-filament-panels::page>
-    <x-filament-widgets::widgets
-        :columns="[
-            'default' => 3,
-            'sm' => 1,
-            'md' => 2,
-            'lg' => 3,
-            '2xl' => 3,
-        ]"
-        :widgets="$this->getWidgets()"
-        class="filament-dashboard-widgets-container"
-    />
-</x-filament-panels::page> 
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="h-[400px]">
+            @livewire('\App\Filament\Resources\DataHaisResource\Widgets\HaisHarianInfeksiChart')
+        </div>
+        <div class="h-[400px]">
+            @livewire('\App\Filament\Resources\DataHaisResource\Widgets\HaisHarianAlatChart')
+        </div>
+    </div>
+</x-filament-panels::page>
