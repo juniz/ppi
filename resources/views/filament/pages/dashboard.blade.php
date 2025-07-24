@@ -7,4 +7,8 @@
             @livewire('\App\Filament\Resources\DataHaisResource\Widgets\HaisHarianAlatChart')
         </div>
     </div>
+    
+    <div class="mt-8">
+        @livewire('\App\Filament\Widgets\StatusInputHaisTable')
+    </div>
 </x-filament-panels::page>
