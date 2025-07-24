@@ -11,6 +11,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Concerns\InteractsWithForms;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Filament\Actions\Action;
 
 class LajuHAIs extends Page implements HasForms
 {
@@ -39,6 +41,16 @@ class LajuHAIs extends Page implements HasForms
         $this->tanggal_selesai = Carbon::now()->format('Y-m-d');
         $this->ruangan = 'all';
         $this->loadData();
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('export')
+                ->label('Export PDF')
+                ->icon('heroicon-o-document-arrow-down')
+                ->action('exportPDF')
+        ];
     }
 
     public function form(Form $form): Form
@@ -76,82 +88,102 @@ class LajuHAIs extends Page implements HasForms
             $baseQuery->where('bangsal.kd_bangsal', $this->ruangan);
         }
 
-        // Load HAP Data
-        $this->dataHAP = $baseQuery->clone()
+        // Query untuk HAP
+        $this->dataHAP = (clone $baseQuery)
             ->select([
                 'bangsal.nm_bangsal',
-                DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.HAP != 0 THEN data_HAIs.no_rawat END) as jumlah_pasien'),
+                DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.HAP != 0 THEN data_HAIs.no_rawat END) as numerator'),
                 DB::raw('SUM(data_HAIs.HAP) as hari_rawat'),
-                DB::raw('COUNT(CASE WHEN data_HAIs.HAP > 0 THEN 1 END) as hap'),
+                DB::raw('COUNT(CASE WHEN data_HAIs.HAP > 0 THEN 1 END) as denumerator'),
                 DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.HAP > 0 THEN 1 END)/NULLIF(SUM(data_HAIs.HAP),0))*1000), ' ‰') as laju"),
                 DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.HAP > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.HAP != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
             ])
             ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
             ->get();
 
-        // Load IAD Data dengan format yang sama
-        $this->dataIAD = $baseQuery->clone()
+        // Query untuk IAD
+        $this->dataIAD = (clone $baseQuery)
             ->select([
                 'bangsal.nm_bangsal',
-                DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.IAD != 0 THEN data_HAIs.no_rawat END) as jumlah_pasien'),
+                DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.IAD != 0 THEN data_HAIs.no_rawat END) as numerator'),
                 DB::raw('SUM(data_HAIs.IAD) as hari_terpasang'),
-                DB::raw('COUNT(CASE WHEN data_HAIs.IAD > 0 THEN 1 END) as iad'),
+                DB::raw('COUNT(CASE WHEN data_HAIs.IAD > 0 THEN 1 END) as denumerator'),
                 DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.IAD > 0 THEN 1 END)/NULLIF(SUM(data_HAIs.IAD),0))*1000), ' ‰') as laju"),
                 DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.IAD > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.IAD != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
             ])
             ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
             ->get();
 
-        // Load ILO Data
-        $this->dataILO = $baseQuery->clone()
+        // Query untuk ILO
+        $this->dataILO = (clone $baseQuery)
             ->select([
                 'bangsal.nm_bangsal',
-                DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.ILO != 0 THEN data_HAIs.no_rawat END) as jumlah_pasien'),
+                DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.ILO != 0 THEN data_HAIs.no_rawat END) as numerator'),
                 DB::raw('SUM(data_HAIs.ILO) as hari_operasi'),
-                DB::raw('COUNT(CASE WHEN data_HAIs.ILO > 0 THEN 1 END) as ilo'),
+                DB::raw('COUNT(CASE WHEN data_HAIs.ILO > 0 THEN 1 END) as denumerator'),
                 DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.ILO > 0 THEN 1 END)/NULLIF(SUM(data_HAIs.ILO),0))*1000), ' ‰') as laju"),
                 DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.ILO > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.ILO != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
             ])
             ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
             ->get();
 
-        // Load ISK Data
-        $this->dataISK = $baseQuery->clone()
+        // Query untuk ISK
+        $this->dataISK = (clone $baseQuery)
             ->select([
                 'bangsal.nm_bangsal',
-                DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.UC != 0 THEN data_HAIs.no_rawat END) as jumlah_pasien'),
-                DB::raw('SUM(data_HAIs.UC) as hari_uc'),
-                DB::raw('SUM(data_HAIs.ISK) as isk'),
-                DB::raw("CONCAT(ROUND((SUM(data_HAIs.ISK)/NULLIF(SUM(data_HAIs.UC),0))*1000), ' ‰') as laju"),
-                DB::raw('CONCAT(ROUND((SUM(data_HAIs.ISK)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.UC != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
+                DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.ISK != 0 THEN data_HAIs.no_rawat END) as numerator'),
+                DB::raw('SUM(data_HAIs.ISK) as hari_kateter'),
+                DB::raw('COUNT(CASE WHEN data_HAIs.ISK > 0 THEN 1 END) as denumerator'),
+                DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.ISK > 0 THEN 1 END)/NULLIF(SUM(data_HAIs.ISK),0))*1000), ' ‰') as laju"),
+                DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.ISK > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.ISK != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
             ])
             ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
             ->get();
 
-        // Load PLEBITIS Data
-        $this->dataPLEB = $baseQuery->clone()
+        // Query untuk PLEB
+        $this->dataPLEB = (clone $baseQuery)
             ->select([
                 'bangsal.nm_bangsal',
-                DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.IVL != 0 THEN data_HAIs.no_rawat END) as jumlah_pasien'),
+                DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.IVL != 0 THEN data_HAIs.no_rawat END) as numerator'),
                 DB::raw('SUM(data_HAIs.IVL) as hari_infus'),
-                DB::raw('SUM(data_HAIs.PLEB) as pleb'),
+                DB::raw('SUM(data_HAIs.PLEB) as denumerator'),
                 DB::raw("CONCAT(ROUND((SUM(data_HAIs.PLEB)/NULLIF(SUM(data_HAIs.IVL),0))*1000), ' ‰') as laju"),
                 DB::raw('CONCAT(ROUND((SUM(data_HAIs.PLEB)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.IVL != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
             ])
             ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
             ->get();
 
-        // Load VAP Data
-        $this->dataVAP = $baseQuery->clone()
+        // Query untuk VAP
+        $this->dataVAP = (clone $baseQuery)
             ->select([
                 'bangsal.nm_bangsal',
-                DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.VAP != 0 THEN data_HAIs.no_rawat END) as jumlah_pasien'),
+                DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.VAP != 0 THEN data_HAIs.no_rawat END) as numerator'),
                 DB::raw('SUM(data_HAIs.VAP) as hari_ventilator'),
-                DB::raw('COUNT(CASE WHEN data_HAIs.VAP > 0 THEN 1 END) as vap'),
+                DB::raw('COUNT(CASE WHEN data_HAIs.VAP > 0 THEN 1 END) as denumerator'),
                 DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.VAP > 0 THEN 1 END)/NULLIF(SUM(data_HAIs.VAP),0))*1000), ' ‰') as laju"),
                 DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.VAP > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.VAP != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
             ])
             ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
             ->get();
     }
-} 
+
+    public function exportPDF()
+    {
+        $data = [
+            'tanggal_mulai' => $this->tanggal_mulai,
+            'tanggal_selesai' => $this->tanggal_selesai,
+            'ruangan' => $this->ruangan === 'all' ? 'Semua Ruangan' : Bangsal::where('kd_bangsal', $this->ruangan)->value('nm_bangsal'),
+            'dataHAP' => $this->dataHAP,
+            'dataIAD' => $this->dataIAD,
+            'dataILO' => $this->dataILO,
+            'dataISK' => $this->dataISK,
+            'dataPLEB' => $this->dataPLEB,
+            'dataVAP' => $this->dataVAP,
+        ];
+
+        $pdf = Pdf::loadView('filament.pages.pdf.laju-hais', $data);
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'laporan-laju-hais.pdf');
+    }
+}

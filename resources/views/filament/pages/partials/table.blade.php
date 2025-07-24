@@ -43,35 +43,17 @@
                 <td class="p-3 text-gray-900 font-medium">{{ $item->nm_bangsal }}</td>
                 <td class="p-3 text-center">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                        {{ $item->jumlah_pasien }}
+                        {{ $item->numerator }}
                     </span>
                 </td>
                 <td class="p-3 text-center">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-info-100 text-info-800">
-                        {{ $item->{$type == 'HAP' ? 'hari_rawat' : ($type == 'IAD' ? 'hari_terpasang' : ($type == 'ILO' ? 'hari_operasi' : ($type == 'ISK' ? 'hari_uc' : ($type == 'PLEB' ? 'hari_infus' : 'hari_ventilator'))))} }}
+                        {{ $item->{$type == 'HAP' ? 'hari_rawat' : ($type == 'IAD' ? 'hari_terpasang' : ($type == 'ILO' ? 'hari_operasi' : ($type == 'ISK' ? 'hari_kateter' : ($type == 'PLEB' ? 'hari_infus' : 'hari_ventilator'))))} }}
                     </span>
                 </td>
                 <td class="p-3 text-center">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning-100 text-warning-800">
-                        @switch($type)
-                            @case('HAP')
-                                {{ $item->hap }}
-                                @break
-                            @case('IAD')
-                                {{ $item->iad }}
-                                @break
-                            @case('ILO')
-                                {{ $item->ilo }}
-                                @break
-                            @case('ISK')
-                                {{ $item->isk }}
-                                @break
-                            @case('PLEB')
-                                {{ $item->pleb }}
-                                @break
-                            @default
-                                {{ $item->vap }}
-                        @endswitch
+                        {{ $item->denumerator }}
                     </span>
                 </td>
                 <td class="p-3 text-center">
@@ -93,4 +75,4 @@
             </tr>
         @endforelse
     </tbody>
-</table> 
+</table>
