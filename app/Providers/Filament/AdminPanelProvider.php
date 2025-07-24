@@ -42,6 +42,10 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->registration()
+            ->passwordReset()
+            ->emailVerification()
+            ->profile()
             ->renderHook(
                 'panels::auth.login.form.after',
                 fn() => view('auth.socialite.google')
