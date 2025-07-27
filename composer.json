@@ -20,6 +20,7 @@
         "malzariey/filament-daterangepicker-filter": "^3.1",
         "robsontenorio/mary": "^1.41",
         "solution-forest/filament-scaffold": "^0.0.7",
+        "spatie/browsershot": "^5.0",
         "swisnl/filament-backgrounds": "^1.1",
         "thiagoprz/eloquent-composite-key": "^1.0"
     },

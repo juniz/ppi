@@ -1,6 +1,7 @@
 <table class="w-full">
     <thead>
         <tr class="bg-gray-50 border-b border-gray-200">
+            <th class="p-3 text-left font-medium text-gray-600">Bulan</th>
             <th class="p-3 text-left font-medium text-gray-600">Ruangan</th>
             <th class="p-3 text-center font-medium text-gray-600">
                 @if($type == 'HAP')
@@ -40,6 +41,15 @@
     <tbody class="divide-y divide-gray-200">
         @forelse($data as $item)
             <tr class="hover:bg-gray-50 transition-colors">
+                <td class="p-3 text-gray-900 font-medium">
+                    @if(isset($item->nama_bulan) && isset($item->tahun) && !empty($item->nama_bulan) && !empty($item->tahun))
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {{ $item->nama_bulan }} {{ $item->tahun }}
+                        </span>
+                    @else
+                        <span class="text-gray-400">-</span>
+                    @endif
+                </td>
                 <td class="p-3 text-gray-900 font-medium">{{ $item->nm_bangsal }}</td>
                 <td class="p-3 text-center">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
@@ -69,7 +79,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="6" class="p-3 text-center text-gray-500">
+                <td colspan="7" class="p-3 text-center text-gray-500">
                     Tidak ada data
                 </td>
             </tr>

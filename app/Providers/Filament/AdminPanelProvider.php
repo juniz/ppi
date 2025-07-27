@@ -32,6 +32,7 @@ use App\Filament\Pages\LajuISK;
 use App\Filament\Pages\LajuILO;
 use App\Filament\Pages\LajuHAP;
 use App\Filament\Pages\LajuHAIs;
+use App\Filament\Pages\AnalisaLajuHAIs;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -82,6 +83,7 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Dashboard::class,
                 LajuHAIs::class,
+                AnalisaLajuHAIs::class,
                 LajuIAD::class,
                 HaisPerPasien::class,
                 LajuPLEB::class,

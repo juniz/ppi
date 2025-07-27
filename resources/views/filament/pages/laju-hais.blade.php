@@ -113,4 +113,4 @@
             @apply p-3;
         }
     </style>
-</x-filament-panels::page> 
+</x-filament-panels::page>
