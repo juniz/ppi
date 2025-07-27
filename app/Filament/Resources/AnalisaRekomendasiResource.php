@@ -21,9 +21,9 @@ class AnalisaRekomendasiResource extends Resource
 {
     protected static ?string $model = AnalisaRekomendasi::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationGroup = 'Laporan HAIs';
-    protected static ?string $navigationLabel = 'Data Analisa & Rekomendasi';
+    // Menghapus konfigurasi navigasi agar tidak muncul di sidebar
+    protected static bool $shouldRegisterNavigation = false;
+    
     protected static ?string $modelLabel = 'Analisa & Rekomendasi';
     protected static ?string $pluralModelLabel = 'Data Analisa & Rekomendasi';
     protected static ?int $navigationSort = 2;

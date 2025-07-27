@@ -46,6 +46,7 @@ class AnalisaLajuHAIs extends Page implements HasForms, HasTable
     public $analisa;
     public $rekomendasi;
     public $showPreviewModal = false;
+    public $isLoading = false;
     public $dataHAP = [];
     public $dataIAD = [];
     public $dataILO = [];
@@ -73,10 +74,25 @@ class AnalisaLajuHAIs extends Page implements HasForms, HasTable
         $this->tanggal_mulai = Carbon::now()->startOfMonth()->format('Y-m-d');
         $this->tanggal_selesai = Carbon::now()->endOfMonth()->format('Y-m-d');
         $this->ruangan = 'all'; // Set default ruangan
-        // Memuat data saat pertama kali halaman dibuka
-        $this->loadData();
-        $this->loadAnalisaRekomendasi();
+        
+        // Inisialisasi form dengan nilai default
+        $this->form->fill([
+            'tanggal_mulai' => $this->tanggal_mulai,
+            'tanggal_selesai' => $this->tanggal_selesai,
+            'ruangan' => $this->ruangan,
+        ]);
+        
+        // Inisialisasi data kosong - data akan dimuat saat klik "Terapkan Filter"
+        $this->dataHAP = collect();
+        $this->dataIAD = collect();
+        $this->dataILO = collect();
+        $this->dataISK = collect();
+        $this->dataPLEB = collect();
+        $this->dataVAP = collect();
+        
+        // Hanya update session tanpa memuat data
         $this->updateChartSession();
+        $this->loadAnalisaRekomendasi();
     }
 
     public function loadData()
@@ -296,6 +312,9 @@ class AnalisaLajuHAIs extends Page implements HasForms, HasTable
         }
     }
 
+    // Hapus atau comment properti showPreviewModal karena tidak diperlukan lagi
+    // public $showPreviewModal = false;
+
     public function showPreview(): void
     {
         Log::info('showPreview called', [
@@ -373,72 +392,211 @@ class AnalisaLajuHAIs extends Page implements HasForms, HasTable
         ];
     }
 
+    public function saveAnalisaRekomendasi(): void
+    {
+        try {
+            $this->isLoading = true;
+            Log::info('saveAnalisaRekomendasi method called');
+            
+            // Validasi input yang lebih komprehensif
+            $errors = [];
+            
+            if (empty($this->ruangan)) {
+                $errors[] = 'Silakan pilih ruangan terlebih dahulu.';
+            }
+            
+            if (empty(trim($this->analisa))) {
+                $errors[] = 'Analisis tidak boleh kosong.';
+            }
+            
+            if (empty(trim($this->rekomendasi))) {
+                $errors[] = 'Rekomendasi tidak boleh kosong.';
+            }
+            
+            // Validasi minimal panjang teks
+            if (strlen(trim($this->analisa)) < 10) {
+                $errors[] = 'Analisis minimal harus 10 karakter.';
+            }
+            
+            if (strlen(trim($this->rekomendasi)) < 10) {
+                $errors[] = 'Rekomendasi minimal harus 10 karakter.';
+            }
+            
+            if (!empty($errors)) {
+                NotificationAlias::make()
+                    ->warning()
+                    ->title('Validasi Gagal')
+                    ->body(implode(' ', $errors))
+                    ->send();
+                return;
+            }
+
+            // Langsung simpan tanpa preview
+            // Siapkan data summary laju untuk disimpan
+            $summaryLaju = $this->prepareSummaryLaju();
+
+            // Bersihkan data sebelum disimpan
+            $cleanDataHAP = $this->cleanDataForSaving($this->dataHAP);
+            $cleanDataIAD = $this->cleanDataForSaving($this->dataIAD);
+            $cleanDataILO = $this->cleanDataForSaving($this->dataILO);
+            $cleanDataISK = $this->cleanDataForSaving($this->dataISK);
+            $cleanDataPLEB = $this->cleanDataForSaving($this->dataPLEB);
+            $cleanDataVAP = $this->cleanDataForSaving($this->dataVAP);
+
+            // Hitung summary data untuk setiap jenis HAI
+            $hapSummary = $this->calculateSummaryData($this->dataHAP, 'numerator', 'hari_rawat');
+            $iadSummary = $this->calculateSummaryData($this->dataIAD, 'numerator', 'hari_terpasang');
+            $iloSummary = $this->calculateSummaryData($this->dataILO, 'numerator', 'hari_operasi');
+            $iskSummary = $this->calculateSummaryData($this->dataISK, 'numerator', 'hari_kateter');
+            $plebitisSummary = $this->calculateSummaryData($this->dataPLEB, 'numerator', 'hari_infus');
+            $vapSummary = $this->calculateSummaryData($this->dataVAP, 'numerator', 'hari_ventilator');
+
+            // Selalu buat record baru alih-alih update
+            $analisaRekomendasi = AnalisaRekomendasi::create([
+                'tanggal_mulai' => $this->tanggal_mulai,
+                'tanggal_selesai' => $this->tanggal_selesai,
+                'ruangan' => $this->ruangan,
+                'analisa' => $this->analisa,
+                'rekomendasi' => $this->rekomendasi,
+                'data_hap' => $cleanDataHAP,
+                'data_iad' => $cleanDataIAD,
+                'data_ilo' => $cleanDataILO,
+                'data_isk' => $cleanDataISK,
+                'data_plebitis' => $cleanDataPLEB,
+                'data_vap' => $cleanDataVAP,
+                'summary_laju' => $summaryLaju,
+                // Summary fields yang mudah dibaca
+                'total_hap_kasus' => $hapSummary['kasus'],
+                'total_hap_hari_rawat' => $hapSummary['denominator'],
+                'rata_hap_laju' => $hapSummary['rata_laju'],
+                'total_iad_kasus' => $iadSummary['kasus'],
+                'total_iad_hari_terpasang' => $iadSummary['denominator'],
+                'rata_iad_laju' => $iadSummary['rata_laju'],
+                'total_ilo_kasus' => $iloSummary['kasus'],
+                'total_ilo_hari_operasi' => $iloSummary['denominator'],
+                'rata_ilo_laju' => $iloSummary['rata_laju'],
+                'total_isk_kasus' => $iskSummary['kasus'],
+                'total_isk_hari_kateter' => $iskSummary['denominator'],
+                'rata_isk_laju' => $iskSummary['rata_laju'],
+                'total_plebitis_kasus' => $plebitisSummary['kasus'],
+                'total_plebitis_hari_infus' => $plebitisSummary['denominator'],
+                'rata_plebitis_laju' => $plebitisSummary['rata_laju'],
+                'total_vap_kasus' => $vapSummary['kasus'],
+                'total_vap_hari_ventilator' => $vapSummary['denominator'],
+                'rata_vap_laju' => $vapSummary['rata_laju'],
+            ]);
+
+            // Reset form setelah berhasil simpan
+            $this->analisa = '';
+            $this->rekomendasi = '';
+
+            // Dispatch event untuk trigger penyimpanan chart
+            $this->dispatch('analisa-saved', ['id' => $analisaRekomendasi->id]);
+
+            NotificationAlias::make()
+                ->success()
+                ->title('Berhasil Disimpan!')
+                ->body('Data analisis dan rekomendasi berhasil disimpan. Grafik sedang diproses dan akan tersimpan otomatis.')
+                ->send();
+
+        } catch (\Exception $e) {
+            Log::error('Error in saveAnalisaRekomendasi: ' . $e->getMessage());
+            
+            NotificationAlias::make()
+                ->danger()
+                ->title('Error')
+                ->body('Terjadi kesalahan: ' . $e->getMessage())
+                ->send();
+        } finally {
+            $this->isLoading = false;
+        }
+    }
+
     public function confirmSave(): void
     {
-        // Siapkan data summary laju untuk disimpan
-        $summaryLaju = $this->prepareSummaryLaju();
+        try {
+            $this->isLoading = true;
+            
+            // Siapkan data summary laju untuk disimpan
+            $summaryLaju = $this->prepareSummaryLaju();
 
-        // Bersihkan data sebelum disimpan
-        $cleanDataHAP = $this->cleanDataForSaving($this->dataHAP);
-        $cleanDataIAD = $this->cleanDataForSaving($this->dataIAD);
-        $cleanDataILO = $this->cleanDataForSaving($this->dataILO);
-        $cleanDataISK = $this->cleanDataForSaving($this->dataISK);
-        $cleanDataPLEB = $this->cleanDataForSaving($this->dataPLEB);
-        $cleanDataVAP = $this->cleanDataForSaving($this->dataVAP);
+            // Bersihkan data sebelum disimpan
+            $cleanDataHAP = $this->cleanDataForSaving($this->dataHAP);
+            $cleanDataIAD = $this->cleanDataForSaving($this->dataIAD);
+            $cleanDataILO = $this->cleanDataForSaving($this->dataILO);
+            $cleanDataISK = $this->cleanDataForSaving($this->dataISK);
+            $cleanDataPLEB = $this->cleanDataForSaving($this->dataPLEB);
+            $cleanDataVAP = $this->cleanDataForSaving($this->dataVAP);
 
-        // Hitung summary data untuk setiap jenis HAI
-        $hapSummary = $this->calculateSummaryData($this->dataHAP, 'numerator', 'hari_rawat');
-        $iadSummary = $this->calculateSummaryData($this->dataIAD, 'numerator', 'hari_terpasang');
-        $iloSummary = $this->calculateSummaryData($this->dataILO, 'numerator', 'hari_operasi');
-        $iskSummary = $this->calculateSummaryData($this->dataISK, 'numerator', 'hari_kateter');
-        $plebitisSummary = $this->calculateSummaryData($this->dataPLEB, 'numerator', 'hari_infus');
-        $vapSummary = $this->calculateSummaryData($this->dataVAP, 'numerator', 'hari_ventilator');
+            // Hitung summary data untuk setiap jenis HAI
+            $hapSummary = $this->calculateSummaryData($this->dataHAP, 'numerator', 'hari_rawat');
+            $iadSummary = $this->calculateSummaryData($this->dataIAD, 'numerator', 'hari_terpasang');
+            $iloSummary = $this->calculateSummaryData($this->dataILO, 'numerator', 'hari_operasi');
+            $iskSummary = $this->calculateSummaryData($this->dataISK, 'numerator', 'hari_kateter');
+            $plebitisSummary = $this->calculateSummaryData($this->dataPLEB, 'numerator', 'hari_infus');
+            $vapSummary = $this->calculateSummaryData($this->dataVAP, 'numerator', 'hari_ventilator');
 
-        // Selalu buat record baru alih-alih update
-        $analisaRekomendasi = AnalisaRekomendasi::create([
-            'tanggal_mulai' => $this->tanggal_mulai,
-            'tanggal_selesai' => $this->tanggal_selesai,
-            'ruangan' => $this->ruangan,
-            'analisa' => $this->analisa,
-            'rekomendasi' => $this->rekomendasi,
-            'data_hap' => $cleanDataHAP,
-            'data_iad' => $cleanDataIAD,
-            'data_ilo' => $cleanDataILO,
-            'data_isk' => $cleanDataISK,
-            'data_plebitis' => $cleanDataPLEB,
-            'data_vap' => $cleanDataVAP,
-            'summary_laju' => $summaryLaju,
-            // Summary fields yang mudah dibaca
-            'total_hap_kasus' => $hapSummary['kasus'],
-            'total_hap_hari_rawat' => $hapSummary['denominator'],
-            'rata_hap_laju' => $hapSummary['rata_laju'],
-            'total_iad_kasus' => $iadSummary['kasus'],
-            'total_iad_hari_terpasang' => $iadSummary['denominator'],
-            'rata_iad_laju' => $iadSummary['rata_laju'],
-            'total_ilo_kasus' => $iloSummary['kasus'],
-            'total_ilo_hari_operasi' => $iloSummary['denominator'],
-            'rata_ilo_laju' => $iloSummary['rata_laju'],
-            'total_isk_kasus' => $iskSummary['kasus'],
-            'total_isk_hari_kateter' => $iskSummary['denominator'],
-            'rata_isk_laju' => $iskSummary['rata_laju'],
-            'total_plebitis_kasus' => $plebitisSummary['kasus'],
-            'total_plebitis_hari_infus' => $plebitisSummary['denominator'],
-            'rata_plebitis_laju' => $plebitisSummary['rata_laju'],
-            'total_vap_kasus' => $vapSummary['kasus'],
-            'total_vap_hari_ventilator' => $vapSummary['denominator'],
-            'rata_vap_laju' => $vapSummary['rata_laju'],
-        ]);
+            // Selalu buat record baru alih-alih update
+            $analisaRekomendasi = AnalisaRekomendasi::create([
+                'tanggal_mulai' => $this->tanggal_mulai,
+                'tanggal_selesai' => $this->tanggal_selesai,
+                'ruangan' => $this->ruangan,
+                'analisa' => $this->analisa,
+                'rekomendasi' => $this->rekomendasi,
+                'data_hap' => $cleanDataHAP,
+                'data_iad' => $cleanDataIAD,
+                'data_ilo' => $cleanDataILO,
+                'data_isk' => $cleanDataISK,
+                'data_plebitis' => $cleanDataPLEB,
+                'data_vap' => $cleanDataVAP,
+                'summary_laju' => $summaryLaju,
+                // Summary fields yang mudah dibaca
+                'total_hap_kasus' => $hapSummary['kasus'],
+                'total_hap_hari_rawat' => $hapSummary['denominator'],
+                'rata_hap_laju' => $hapSummary['rata_laju'],
+                'total_iad_kasus' => $iadSummary['kasus'],
+                'total_iad_hari_terpasang' => $iadSummary['denominator'],
+                'rata_iad_laju' => $iadSummary['rata_laju'],
+                'total_ilo_kasus' => $iloSummary['kasus'],
+                'total_ilo_hari_operasi' => $iloSummary['denominator'],
+                'rata_ilo_laju' => $iloSummary['rata_laju'],
+                'total_isk_kasus' => $iskSummary['kasus'],
+                'total_isk_hari_kateter' => $iskSummary['denominator'],
+                'rata_isk_laju' => $iskSummary['rata_laju'],
+                'total_plebitis_kasus' => $plebitisSummary['kasus'],
+                'total_plebitis_hari_infus' => $plebitisSummary['denominator'],
+                'rata_plebitis_laju' => $plebitisSummary['rata_laju'],
+                'total_vap_kasus' => $vapSummary['kasus'],
+                'total_vap_hari_ventilator' => $vapSummary['denominator'],
+                'rata_vap_laju' => $vapSummary['rata_laju'],
+            ]);
 
-        $this->showPreviewModal = false;
+            $this->showPreviewModal = false;
 
-        // Dispatch event untuk trigger penyimpanan chart
-        $this->dispatch('analisa-saved', ['id' => $analisaRekomendasi->id]);
+            // Reset form setelah berhasil simpan
+            $this->analisa = '';
+            $this->rekomendasi = '';
 
-        NotificationAlias::make()
-            ->success()
-            ->title('Berhasil')
-            ->body('Data analisis, rekomendasi, dan data grafik berhasil disimpan sebagai arsip baru.')
-            ->send();
+            // Dispatch event untuk trigger penyimpanan chart
+            $this->dispatch('analisa-saved', ['id' => $analisaRekomendasi->id]);
+
+            NotificationAlias::make()
+                ->success()
+                ->title('Berhasil Disimpan!')
+                ->body('Data analisis dan rekomendasi berhasil disimpan. Grafik sedang diproses dan akan tersimpan otomatis.')
+                ->send();
+                
+        } catch (\Exception $e) {
+            Log::error('Error in confirmSave: ' . $e->getMessage());
+            
+            NotificationAlias::make()
+                ->danger()
+                ->title('Error')
+                ->body('Terjadi kesalahan saat menyimpan: ' . $e->getMessage())
+                ->send();
+        } finally {
+            $this->isLoading = false;
+        }
     }
 
     public function cancelPreview(): void
@@ -498,51 +656,29 @@ class AnalisaLajuHAIs extends Page implements HasForms, HasTable
         return $count > 0 ? round($totalLaju / $count, 2) : 0;
     }
 
-    public function saveAnalisaRekomendasi(): void
+    // Menambahkan method untuk redirect ke halaman Data Analisa & Rekomendasi
+    public function redirectToDataAnalisa(): void
     {
-        try {
-            Log::info('saveAnalisaRekomendasi method called');
-            
-            // Validasi input
-            if (empty($this->analisa) || empty($this->rekomendasi)) {
-                NotificationAlias::make()
-                    ->warning()
-                    ->title('Peringatan')
-                    ->body('Analisis dan rekomendasi tidak boleh kosong.')
-                    ->send();
-                return;
-            }
-
-            // Tampilkan preview
-            $this->showPreview();
-
-        } catch (\Exception $e) {
-            Log::error('Error in saveAnalisaRekomendasi: ' . $e->getMessage());
-            
-            NotificationAlias::make()
-                ->danger()
-                ->title('Error')
-                ->body('Terjadi kesalahan: ' . $e->getMessage())
-                ->send();
-        }
+        $this->redirect('/admin/analisa-rekomendasis');
     }
 
     protected function getHeaderActions(): array
     {
         return [
-            PageAction::make('saveAnalisa')
-                ->label('Simpan Analisis dan Rekomendasi')
-                ->icon('heroicon-o-check')
-                ->color('success')
-                ->action(function () {
-                    Log::info('Filament Action called');
-                    $this->saveAnalisaRekomendasi();
-                })
-                ->requiresConfirmation()
-                ->modalHeading('Konfirmasi Simpan')
-                ->modalDescription('Apakah Anda yakin ingin menyimpan analisis dan rekomendasi ini?')
-                ->modalSubmitActionLabel('Ya, Simpan'),
+            // Tombol header dihapus
         ];
+    }
+
+    protected function updateChartSession(): void
+    {
+        session([
+            'tanggal_mulai' => $this->tanggal_mulai,
+            'tanggal_selesai' => $this->tanggal_selesai,
+            'ruangan' => $this->ruangan
+        ]);
+        
+        // Force session save
+        session()->save();
     }
 
     public function table(Table $table): Table
@@ -570,27 +706,38 @@ class AnalisaLajuHAIs extends Page implements HasForms, HasTable
             ]);
     }
 
-    protected function updateChartSession(): void
-    {
-        session([
-            'tanggal_mulai' => $this->tanggal_mulai,
-            'tanggal_selesai' => $this->tanggal_selesai,
-            'ruangan' => $this->ruangan
-        ]);
-        
-        // Force session save
-        session()->save();
-    }
-
     public function resetFilters(): void
     {
         $this->tanggal_mulai = Carbon::now()->startOfMonth()->format('Y-m-d');
         $this->tanggal_selesai = Carbon::now()->endOfMonth()->format('Y-m-d');
         $this->ruangan = 'all'; // Set default ruangan
-        // Memuat data saat pertama kali halaman dibuka
-        $this->loadData();
-        $this->loadAnalisaRekomendasi();
+        
+        // Update form dengan nilai yang direset
+        $this->form->fill([
+            'tanggal_mulai' => $this->tanggal_mulai,
+            'tanggal_selesai' => $this->tanggal_selesai,
+            'ruangan' => $this->ruangan,
+        ]);
+        
+        // Reset data menjadi kosong - pengguna harus klik "Terapkan Filter" untuk memuat data
+        $this->dataHAP = collect();
+        $this->dataIAD = collect();
+        $this->dataILO = collect();
+        $this->dataISK = collect();
+        $this->dataPLEB = collect();
+        $this->dataVAP = collect();
+        
         $this->updateChartSession();
+        $this->loadAnalisaRekomendasi();
+        
+        // Emit event untuk refresh widget
+        $this->dispatch('refreshCharts');
+        
+        NotificationAlias::make()
+            ->success()
+            ->title('Filter Direset')
+            ->body('Filter telah direset. Klik "Terapkan Filter" untuk memuat data.')
+            ->send();
     }
 
     public function applyFilters(): void
@@ -598,8 +745,9 @@ class AnalisaLajuHAIs extends Page implements HasForms, HasTable
         $formData = $this->form->getState();
         $this->tanggal_mulai = $formData['tanggal_mulai'];
         $this->tanggal_selesai = $formData['tanggal_selesai'];
-        $this->ruangan = $formData['ruangan'];
+        $this->ruangan = $formData['ruangan'] ?? 'all';
         
+        // Memuat data hanya saat tombol "Terapkan Filter" diklik
         $this->loadData();
         $this->loadAnalisaRekomendasi();
         $this->updateChartSession();
@@ -610,7 +758,7 @@ class AnalisaLajuHAIs extends Page implements HasForms, HasTable
         NotificationAlias::make()
             ->success()
             ->title('Filter Diterapkan')
-            ->body('Data grafik telah diperbarui sesuai filter yang dipilih.')
+            ->body('Data laju HAIs telah dimuat sesuai filter yang dipilih.')
             ->send();
     }
 

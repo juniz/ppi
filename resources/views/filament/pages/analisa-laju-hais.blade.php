@@ -174,84 +174,41 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    {{-- Save Section --}}
-    <div class="mb-8 p-6 bg-white rounded-xl shadow-sm border border-gray-200 border-l-4 border-l-green-600">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-900">Simpan Analisis dan Rekomendasi</h3>
-                    <p class="text-sm text-gray-600">Pastikan analisis dan rekomendasi sudah lengkap sebelum menyimpan</p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-4">
-                <button 
-                    wire:click.prevent="saveAnalisaRekomendasi"
-                    class="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-                >
-                    <x-heroicon-o-check class="w-5 h-5 mr-2"/>
+        
+        {{-- Tombol Simpan dan Data Analisa di bagian bawah --}}
+        <div class="mt-8 flex flex-col sm:flex-row justify-end gap-3">
+            {{-- Tombol Data Analisa & Rekomendasi --}}
+            <button 
+                wire:click="redirectToDataAnalisa"
+                type="button" 
+                class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-sm font-semibold rounded-lg shadow-sm bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 ease-in-out"
+            >
+                <x-heroicon-o-document-text class="w-5 h-5 mr-2" />
+                Data Analisa & Rekomendasi
+            </button>
+            
+            {{-- Tombol Simpan dengan Loading State --}}
+            <button 
+                wire:click="saveAnalisaRekomendasi"
+                type="button" 
+                class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-semibold rounded-lg shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+                wire:loading.attr="disabled"
+                wire:target="saveAnalisaRekomendasi"
+            >
+                <div wire:loading.remove wire:target="saveAnalisaRekomendasi" class="flex items-center">
+                    <x-heroicon-o-check class="w-5 h-5 mr-2" />
                     Simpan Analisis dan Rekomendasi
-                </button>
-            </div>
+                </div>
+                <div wire:loading wire:target="saveAnalisaRekomendasi" class="flex items-center">
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Menyimpan...
+                </div>
+            </button>
         </div>
     </div>
-    
-    {{-- Modal Preview --}}
-    @if($showPreviewModal)
-    <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <div class="sm:flex sm:items-start">
-                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-                            <x-heroicon-o-eye class="h-6 w-6 text-blue-600" />
-                        </div>
-                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                                Preview Data yang Akan Disimpan
-                            </h3>
-                            <div class="mt-4 space-y-3">
-                                <div class="bg-gray-50 p-3 rounded-md">
-                                    <h4 class="font-medium text-gray-700 mb-2">Informasi Filter:</h4>
-                                    <p class="text-sm text-gray-600">Tanggal Mulai: {{ $tanggal_mulai }}</p>
-                                    <p class="text-sm text-gray-600">Tanggal Selesai: {{ $tanggal_selesai }}</p>
-                                    <p class="text-sm text-gray-600">Ruangan: {{ $ruangan ? \App\Models\Bangsal::where('kd_bangsal', $ruangan)->first()?->nm_bangsal : 'Semua Ruangan' }}</p>
-                                </div>
-                                <div class="bg-blue-50 p-3 rounded-md">
-                                    <h4 class="font-medium text-gray-700 mb-2">Analisis:</h4>
-                                    <p class="text-sm text-gray-600">{{ Str::limit($analisa, 100) }}</p>
-                                </div>
-                                <div class="bg-green-50 p-3 rounded-md">
-                                    <h4 class="font-medium text-gray-700 mb-2">Rekomendasi:</h4>
-                                    <p class="text-sm text-gray-600">{{ Str::limit($rekomendasi, 100) }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button 
-                        wire:click="confirmSave"
-                        type="button" 
-                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-                    >
-                        Konfirmasi Simpan
-                    </button>
-                    <button 
-                        wire:click="cancelPreview"
-                        type="button" 
-                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                    >
-                        Batal
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
 
     {{-- Tambahkan CSS kustom --}}
     <style>
