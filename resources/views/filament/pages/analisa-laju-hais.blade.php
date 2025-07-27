@@ -175,42 +175,45 @@
             </div>
         </div>
         
-        {{-- Tombol Simpan dan Data Analisa di bagian bawah --}}
-        <div class="mt-8 flex flex-col sm:flex-row justify-end gap-3">
-            {{-- Tombol Data Analisa & Rekomendasi --}}
-            <button 
-                wire:click="redirectToDataAnalisa"
-                type="button" 
-                class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-sm font-semibold rounded-lg shadow-sm bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 ease-in-out"
-            >
-                <x-heroicon-o-document-text class="w-5 h-5 mr-2" />
-                Data Analisa & Rekomendasi
-            </button>
-            
-            {{-- Tombol Simpan dengan Loading State --}}
-            <button 
-                wire:click="saveAnalisaRekomendasi"
-                type="button" 
-                class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-semibold rounded-lg shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
-                wire:loading.attr="disabled"
-                wire:target="saveAnalisaRekomendasi"
-            >
-                <div wire:loading.remove wire:target="saveAnalisaRekomendasi" class="flex items-center">
-                    <x-heroicon-o-check class="w-5 h-5 mr-2" />
-                    Simpan Analisis dan Rekomendasi
-                </div>
-                <div wire:loading wire:target="saveAnalisaRekomendasi" class="flex items-center">
-                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Menyimpan...
-                </div>
-            </button>
+        {{-- Tombol Simpan dan Data Analisa di bagian bawah dengan jarak yang lebih baik --}}
+        <div class="mt-12 pt-6 border-t border-gray-200">
+            <div class="flex flex-col sm:flex-row justify-end gap-4">
+                {{-- Tombol Data Analisa & Rekomendasi --}}
+                <button 
+                    wire:click="redirectToDataAnalisa"
+                    type="button" 
+                    class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-sm font-semibold rounded-lg shadow-sm bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 ease-in-out"
+                >
+                    <x-heroicon-o-document-text class="w-5 h-5 mr-2" />
+                    Data Analisa & Rekomendasi
+                </button>
+                
+                {{-- Tombol Simpan dengan styling yang diperbaiki --}}
+                <button 
+                    wire:click="saveAnalisaRekomendasi"
+                    type="button" 
+                    class="inline-flex items-center justify-center px-8 py-3 border-0 text-sm font-semibold rounded-lg shadow-lg transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+                    style="background-color: #ea580c !important; color: white !important;"
+                    wire:loading.attr="disabled"
+                    wire:target="saveAnalisaRekomendasi"
+                >
+                    <div wire:loading.remove wire:target="saveAnalisaRekomendasi" class="flex items-center">
+                        <x-heroicon-o-check class="w-5 h-5 mr-2" style="color: white !important;" />
+                        <span style="color: white !important;">Simpan Analisis dan Rekomendasi</span>
+                    </div>
+                    <div wire:loading wire:target="saveAnalisaRekomendasi" class="flex items-center">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5" style="color: white !important;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span style="color: white !important;">Menyimpan...</span>
+                    </div>
+                </button>
+            </div>
         </div>
     </div>
 
-    {{-- Tambahkan CSS kustom --}}
+    {{-- Tambahkan CSS kustom yang diperbaiki --}}
     <style>
         .filament-tables-table-container {
             @apply rounded-xl shadow-sm border border-gray-200;
@@ -226,6 +229,31 @@
 
         .filament-tables-cell {
             @apply p-3;
+        }
+
+        /* Perbaikan khusus untuk tombol simpan */
+        button[wire\:click="saveAnalisaRekomendasi"] {
+            background-color: #ea580c !important;
+            color: white !important;
+            border: none !important;
+        }
+
+        button[wire\:click="saveAnalisaRekomendasi"]:hover {
+            background-color: #c2410c !important;
+            color: white !important;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px rgba(234, 88, 12, 0.3) !important;
+        }
+
+        button[wire\:click="saveAnalisaRekomendasi"]:focus {
+            background-color: #ea580c !important;
+            color: white !important;
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.3) !important;
+        }
+
+        button[wire\:click="saveAnalisaRekomendasi"] * {
+            color: white !important;
         }
     </style>
 
