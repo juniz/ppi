@@ -8,6 +8,10 @@ Route::get('/auth/{provider}/redirect', [SocialiteController::class, 'redirect']
     ->name('socialite.redirect');
 Route::get('/auth/{provider}/callback', [SocialiteController::class, 'callback'])
     ->name('socialite.callback');
+Route::get('/auth/google/complete-profile', [SocialiteController::class, 'showCompleteProfile'])
+    ->name('socialite.complete-profile.show');
+Route::post('/auth/google/complete-profile', [SocialiteController::class, 'storeCompleteProfile'])
+    ->name('socialite.complete-profile.store');
 
 Route::get('/', function () {
     return redirect('/admin/dashboard');

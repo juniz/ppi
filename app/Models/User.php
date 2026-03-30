@@ -4,6 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -22,7 +24,7 @@ class User extends Authenticatable
         'email',
         'password',
         'nip',
-        'kamar',
+        'id_ruang',
         'google_id',
     ];
 
@@ -46,8 +48,27 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function bangsal()
+    public function userBangsal(): HasOne
     {
-        return $this->belongsTo(Bangsal::class, 'kamar', 'kd_bangsal');
+        return $this->hasOne(UserBangsal::class);
+    }
+
+    public function ruangAuditKepatuhan(): BelongsTo
+    {
+        return $this->belongsTo(RuangAuditKepatuhan::class, 'id_ruang', 'id_ruang');
+    }
+
+    public function ruangAuditAssignment(): HasOne
+    {
+        return $this->hasOne(UserRuangAuditKepatuhan::class);
+    }
+
+    public function hasCompleteGoogleProfile(): bool
+    {
+        return filled($this->nip) && (
+            filled($this->id_ruang)
+            || $this->ruangAuditAssignment()->exists()
+            || $this->userBangsal()->exists()
+        );
     }
 }

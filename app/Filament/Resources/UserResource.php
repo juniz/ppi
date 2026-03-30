@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
+use App\Models\RuangAuditKepatuhan;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -41,11 +42,14 @@ class UserResource extends Resource
                         $petugas = Pegawai::where('nik', $state)->first();
                         $set('name', $petugas->nama ?? '');
                     }),
-                Forms\Components\Select::make('kamar')
-                    ->label('Kamar')
+                Forms\Components\Select::make('id_ruang')
+                    ->label('Ruang PPI')
                     ->options(
-                        \App\Models\Bangsal::where('status', '1')->pluck('nm_bangsal', 'kd_bangsal')->toArray()
-                    ),
+                        RuangAuditKepatuhan::pluck('nama_ruang', 'id_ruang')->toArray()
+                    )
+                    ->searchable()
+                    ->preload()
+                    ->required(),
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
@@ -66,7 +70,7 @@ class UserResource extends Resource
         return $table
             ->query(
                 User::query()
-                    ->with('bangsal')
+                    ->with('ruangAuditKepatuhan')
                     ->orderBy('created_at', 'desc')
             )
             ->columns([
@@ -79,8 +83,8 @@ class UserResource extends Resource
                 Tables\Columns\TextColumn::make('nip')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('bangsal.nm_bangsal')
-                    ->label('Kamar')
+                Tables\Columns\TextColumn::make('ruangAuditKepatuhan.nama_ruang')
+                    ->label('Ruang PPI')
                     ->searchable()
                     ->sortable(),
             ])
