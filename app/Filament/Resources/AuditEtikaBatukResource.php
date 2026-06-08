@@ -3,15 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\AuditEtikaBatukResource\Pages;
-use App\Filament\Resources\AuditEtikaBatukResource\RelationManagers;
 use App\Models\AuditEtikaBatuk;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
 
 class AuditEtikaBatukResource extends Resource
@@ -20,11 +17,22 @@ class AuditEtikaBatukResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-face-frown';
     protected static ?string $navigationGroup = 'Audit';
+    protected static ?string $navigationLabel = 'Audit Etika Batuk';
     protected static ?string $navigationBadgeColor = 'warning';
+
+    private const AUDIT_LABELS = [
+        'audit1' => '1. Metode batuk menutup lengan bagian atas',
+        'audit2' => '2. Metode batuk menggunakan tissue',
+        'audit3' => '3. Metode batuk menggunakan masker',
+        'audit4' => '4. Tissue dibuang di tempat sampah kuning',
+        'audit5' => '5. Masker dibuang di tempat sampah kuning',
+        'audit6' => '6. Lakukan hand hygiene',
+    ];
 
     public static function form(Form $form): Form
     {
         return $form
+            ->columns(1)
             ->schema([
                 Forms\Components\Select::make('nik')
                     ->label('Pegawai')
@@ -32,41 +40,7 @@ class AuditEtikaBatukResource extends Resource
                     ->getOptionLabelFromRecordUsing(fn($record) => $record->nama)
                     ->searchable(['nama'])
                     ->required(),
-                Forms\Components\Select::make('tutup_mulut')
-                    ->options([
-                        'Ya' => 'Ya',
-                        'Tidak' => 'Tidak',
-                    ])
-                    ->default('Ya')
-                    ->required(),
-                Forms\Components\Select::make('buang_tissue')
-                    ->options([
-                        'Ya' => 'Ya',
-                        'Tidak' => 'Tidak',
-                    ])
-                    ->default('Ya')
-                    ->required(),
-                Forms\Components\Select::make('tisue_tutup_siku')
-                    ->options([
-                        'Ya' => 'Ya',
-                        'Tidak' => 'Tidak',
-                    ])
-                    ->default('Ya')
-                    ->required(),
-                Forms\Components\Select::make('kebersihan_tangan')
-                    ->options([
-                        'Ya' => 'Ya',
-                        'Tidak' => 'Tidak',
-                    ])
-                    ->default('Ya')
-                    ->required(),
-                Forms\Components\Select::make('gunakan_masker')
-                    ->options([
-                        'Ya' => 'Ya',
-                        'Tidak' => 'Tidak',
-                    ])
-                    ->default('Ya')
-                    ->required(),
+                ...self::auditFormFields(),
             ]);
     }
 
@@ -77,7 +51,7 @@ class AuditEtikaBatukResource extends Resource
                 AuditEtikaBatuk::query()
                     ->with('pegawai')
                     ->orderBy('tanggal', 'desc')
-                    ->select('audit_etika_batuk.*', DB::raw('CONCAT(ROUND(((tutup_mulut = "Ya") + (buang_tissue = "Ya") + (tisue_tutup_siku = "Ya") + (kebersihan_tangan = "Ya") + (gunakan_masker = "Ya")) / 5 * 100, 2)) as ttl'))
+                    ->select('audit_etika_batuk.*', DB::raw(self::ttlExpression()))
             )
             ->columns([
                 Tables\Columns\TextColumn::make('tanggal')
@@ -86,14 +60,10 @@ class AuditEtikaBatukResource extends Resource
                 Tables\Columns\TextColumn::make('pegawai.nama')
                     ->label('Pegawai')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('tutup_mulut'),
-                Tables\Columns\TextColumn::make('buang_tissue'),
-                Tables\Columns\TextColumn::make('tisue_tutup_siku'),
-                Tables\Columns\TextColumn::make('kebersihan_tangan'),
-                Tables\Columns\TextColumn::make('gunakan_masker'),
                 Tables\Columns\TextColumn::make('ttl')
-                    ->label('TTL')
+                    ->label('Ttl. Nilai (%)')
                     ->sortable(),
+                ...self::auditTableColumns(),
             ])
             ->filters([
                 //
@@ -114,5 +84,42 @@ class AuditEtikaBatukResource extends Resource
         return [
             'index' => Pages\ManageAuditEtikaBatuks::route('/'),
         ];
+    }
+
+    private static function auditFormFields(): array
+    {
+        return array_map(
+            fn(string $column, string $label) => Forms\Components\Select::make($column)
+                ->label($label)
+                ->options([
+                    'Ya' => 'Ya',
+                    'Tidak' => 'Tidak',
+                    'Na' => 'Na',
+                ])
+                ->default('Ya')
+                ->required(),
+            array_keys(self::AUDIT_LABELS),
+            self::AUDIT_LABELS
+        );
+    }
+
+    private static function auditTableColumns(): array
+    {
+        return array_map(
+            fn(string $column, string $label) => Tables\Columns\TextColumn::make($column)
+                ->label($label)
+                ->toggleable(isToggledHiddenByDefault: true),
+            array_keys(self::AUDIT_LABELS),
+            self::AUDIT_LABELS
+        );
+    }
+
+    private static function ttlExpression(): string
+    {
+        $columns = array_keys(self::AUDIT_LABELS);
+        $yesCount = collect($columns)->map(fn(string $column) => "({$column} = \"Ya\")")->implode(' + ');
+        $validCount = collect($columns)->map(fn(string $column) => "({$column} != \"Na\")")->implode(' + ');
+
+        return "CASE WHEN ({$validCount}) = 0 THEN \"0%\" ELSE CONCAT(ROUND(({$yesCount}) / ({$validCount}) * 100, 2), \"%\") END as ttl";
     }
 }

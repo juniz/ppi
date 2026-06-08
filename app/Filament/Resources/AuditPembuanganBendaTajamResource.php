@@ -12,7 +12,6 @@ use Filament\Tables;
 use Filament\Tables\Columns\Summarizers\Count;
 use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Table;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
 
@@ -22,6 +21,27 @@ class AuditPembuanganBendaTajamResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-scissors';
     protected static ?string $navigationGroup = 'Audit';
+
+    private const TTL_EXPRESSION = 'CASE WHEN ((setiap_injeksi_needle_langsung_dimasukkan_safety_box != "Na") + (setiap_pemasangan_iv_canula_langsung_dimasukkan_safety_box != "Na") + (setiap_benda_tajam_jarum_dimasukkan_safety_box != "Na") + (safety_box_tigaperempat_diganti != "Na") + (safety_box_keadaan_bersih != "Na") + (saftey_box_tertutup_setelah_digunakan != "Na")) = 0 THEN "0%" ELSE CONCAT(ROUND(((setiap_injeksi_needle_langsung_dimasukkan_safety_box = "Ya") + (setiap_pemasangan_iv_canula_langsung_dimasukkan_safety_box = "Ya") + (setiap_benda_tajam_jarum_dimasukkan_safety_box = "Ya") + (safety_box_tigaperempat_diganti = "Ya") + (safety_box_keadaan_bersih = "Ya") + (saftey_box_tertutup_setelah_digunakan = "Ya")) / ((setiap_injeksi_needle_langsung_dimasukkan_safety_box != "Na") + (setiap_pemasangan_iv_canula_langsung_dimasukkan_safety_box != "Na") + (setiap_benda_tajam_jarum_dimasukkan_safety_box != "Na") + (safety_box_tigaperempat_diganti != "Na") + (safety_box_keadaan_bersih != "Na") + (saftey_box_tertutup_setelah_digunakan != "Na")) * 100, 2), "%") END as ttl';
+
+    private static function complianceSummarizers(string $column): array
+    {
+        return [
+            Count::make()->label('Ya')->query(fn($query) => $query->where($column, 'Ya')),
+            Count::make()->label('Tidak')->query(fn($query) => $query->where($column, 'Tidak')),
+            Summarizer::make()
+                ->label('Rata-rata')
+                ->using(function ($query) use ($column): float {
+                    $total = (clone $query)->where($column, '!=', 'Na')->count();
+
+                    if ($total === 0) {
+                        return 0;
+                    }
+
+                    return round((clone $query)->where($column, 'Ya')->count() / $total * 100, 2);
+                }),
+        ];
+    }
 
     public static function form(Form $form): Form
     {
@@ -85,7 +105,7 @@ class AuditPembuanganBendaTajamResource extends Resource
                 \App\Models\AuditPembuanganBendaTajam::query()
                     ->with('ruangAuditKepatuhan')
                     ->orderBy('tanggal', 'desc')
-                    ->select('audit_pembuangan_benda_tajam.*', DB::raw('CONCAT(ROUND(((setiap_injeksi_needle_langsung_dimasukkan_safety_box = "Ya") + (setiap_pemasangan_iv_canula_langsung_dimasukkan_safety_box = "Ya") + (setiap_benda_tajam_jarum_dimasukkan_safety_box = "Ya") + (safety_box_tigaperempat_diganti = "Ya") + (safety_box_keadaan_bersih = "Ya") + (saftey_box_tertutup_setelah_digunakan = "Ya")) / 6 * 100, 2), "%") as ttl'))
+                    ->select('audit_pembuangan_benda_tajam.*', DB::raw(self::TTL_EXPRESSION))
             )
             ->columns([
                 Tables\Columns\TextColumn::make('tanggal')
@@ -110,41 +130,17 @@ class AuditPembuanganBendaTajamResource extends Resource
                     ->label('Ttl. Nilai (%)')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('setiap_injeksi_needle_langsung_dimasukkan_safety_box')
-                    ->summarize([
-                        Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('setiap_injeksi_needle_langsung_dimasukkan_safety_box', 'Ya')),
-                        Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('setiap_injeksi_needle_langsung_dimasukkan_safety_box', 'Tidak')),
-                        Summarizer::make()->label('Rata-rata')->using(fn(Builder $query) => $query->where('setiap_injeksi_needle_langsung_dimasukkan_safety_box', 'Ya')->count() == 0 ? 0 : round($query->where('setiap_injeksi_needle_langsung_dimasukkan_safety_box', 'Ya')->count() / $query->count() * 100, 2)),
-                    ]),
+                    ->summarize(self::complianceSummarizers('setiap_injeksi_needle_langsung_dimasukkan_safety_box')),
                 Tables\Columns\TextColumn::make('setiap_pemasangan_iv_canula_langsung_dimasukkan_safety_box')
-                    ->summarize([
-                        Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('setiap_pemasangan_iv_canula_langsung_dimasukkan_safety_box', 'Ya')),
-                        Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('setiap_pemasangan_iv_canula_langsung_dimasukkan_safety_box', 'Tidak')),
-                        Summarizer::make()->label('Rata-rata')->using(fn(Builder $query) => $query->where('setiap_pemasangan_iv_canula_langsung_dimasukkan_safety_box', 'Ya')->count() == 0 ? 0 : round($query->where('setiap_pemasangan_iv_canula_langsung_dimasukkan_safety_box', 'Ya')->count() / $query->count() * 100, 2)),
-                    ]),
+                    ->summarize(self::complianceSummarizers('setiap_pemasangan_iv_canula_langsung_dimasukkan_safety_box')),
                 Tables\Columns\TextColumn::make('setiap_benda_tajam_jarum_dimasukkan_safety_box')
-                    ->summarize([
-                        Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('setiap_benda_tajam_jarum_dimasukkan_safety_box', 'Ya')),
-                        Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('setiap_benda_tajam_jarum_dimasukkan_safety_box', 'Tidak')),
-                        Summarizer::make()->label('Rata-rata')->using(fn(Builder $query) => $query->where('setiap_benda_tajam_jarum_dimasukkan_safety_box', 'Ya')->count() == 0 ? 0 : round(($query->where('setiap_benda_tajam_jarum_dimasukkan_safety_box', 'Ya')->count() / $query->count()) * 100, 2)),
-                    ]),
+                    ->summarize(self::complianceSummarizers('setiap_benda_tajam_jarum_dimasukkan_safety_box')),
                 Tables\Columns\TextColumn::make('safety_box_tigaperempat_diganti')
-                    ->summarize([
-                        Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('safety_box_tigaperempat_diganti', 'Ya')),
-                        Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('safety_box_tigaperempat_diganti', 'Tidak')),
-                        Summarizer::make()->label('Rata-rata')->using(fn(Builder $query) => $query->where('safety_box_tigaperempat_diganti', 'Ya')->count() == 0 ? 0 : round($query->where('safety_box_tigaperempat_diganti', 'Ya')->count() / $query->count() * 100, 2)),
-                    ]),
+                    ->summarize(self::complianceSummarizers('safety_box_tigaperempat_diganti')),
                 Tables\Columns\TextColumn::make('safety_box_keadaan_bersih')
-                    ->summarize([
-                        Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('safety_box_keadaan_bersih', 'Ya')),
-                        Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('safety_box_keadaan_bersih', 'Tidak')),
-                        Summarizer::make()->label('Rata-rata')->using(fn(Builder $query) => $query->where('safety_box_keadaan_bersih', 'Ya')->count() == 0 ? 0 : round($query->where('safety_box_keadaan_bersih', 'Ya')->count() / $query->count() * 100, 2)),
-                    ]),
+                    ->summarize(self::complianceSummarizers('safety_box_keadaan_bersih')),
                 Tables\Columns\TextColumn::make('saftey_box_tertutup_setelah_digunakan')
-                    ->summarize([
-                        Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('saftey_box_tertutup_setelah_digunakan', 'Ya')),
-                        Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('saftey_box_tertutup_setelah_digunakan', 'Tidak')),
-                        Summarizer::make()->label('Rata-rata')->using(fn(Builder $query) => $query->where('saftey_box_tertutup_setelah_digunakan', 'Ya')->count() == 0 ? 0 : round($query->where('saftey_box_tertutup_setelah_digunakan', 'Ya')->count() / $query->count() * 100, 2)),
-                    ]),
+                    ->summarize(self::complianceSummarizers('saftey_box_tertutup_setelah_digunakan')),
             ])
             ->filters([
                 //

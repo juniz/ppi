@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\AuditPembuanganLimbahResource\Pages;
-use App\Models\AuditPembuanganLimbah;
+use App\Filament\Resources\AuditInjeksiAmanResource\Pages;
+use App\Models\AuditInjeksiAman;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -11,28 +11,33 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
 
-class AuditPembuanganLimbahResource extends Resource
+class AuditInjeksiAmanResource extends Resource
 {
-    protected static ?string $model = AuditPembuanganLimbah::class;
+    protected static ?string $model = AuditInjeksiAman::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-trash';
+    protected static ?string $navigationIcon = 'heroicon-o-shield-check';
     protected static ?string $navigationGroup = 'Audit';
-    protected static ?string $navigationLabel = 'Audit Pengelolaan Limbah';
+    protected static ?string $navigationLabel = 'Audit Injeksi Aman';
 
     private const AUDIT_LABELS = [
-        'audit1' => '1. Limbah infeksius dibuang di tempat sampah kuning',
-        'audit2' => '2. Limbah non infeksius dibuang di tempat sampah hitam',
-        'audit3' => '3. Tidak ada sampah berserakan yang terkontaminasi',
-        'audit4' => '4. Sarana limbah infeksius IPAL berfungsi dengan baik',
-        'audit5' => '5. Jumlah tempat sampah memadai dan dalam kondisi baik',
-        'audit6' => '6. Tempat sampah menggunakan pedal',
-        'audit7' => '7. Sampah yang akan dibuang diikat dengan baik dan diberi label',
-        'audit8' => '8. Sampah tidak lebih dari 3/4 penuh',
-        'audit9' => '9. Tempat pembuangan sampah tertutup dan hanya dapat diakses oleh petugas',
-        'audit10' => '10. Sampah medis dan sampah domestik dipisahkan',
-        'audit11' => '11. Petugas yang menangani sampah telah mendapatkan pelatihan',
-        'audit12' => '12. Ada sampah terkontaminasi',
-        'audit13' => '13. Ada prosedur SPO pencucian alat terkena limbah infeksi',
+        'audit1' => '1. Melakukan cuci tangan',
+        'audit2' => '2. Menggunakan jarum dan spuit satu kali pakai untuk satu jenis obat',
+        'audit3' => '3. Melakukan pengoplosan obat di tempat khusus (aseptic dispensing)',
+        'audit4' => '4. Gunakan singledose untuk obat injeksi. Jika menggunakan obat multidose semua alat yang akan dipergunakan harus steril dan perlakukan penyimpanan obat sesuai aturan',
+        'audit5' => '5. Tidak memberikan obat-obat singledose kepada lebih dari satu pasien atau mencampur obat-obat sisa dari vial/ampul untuk pemberian berikutnya',
+        'audit6' => '6. Gunakan cairan pelarut hanya untuk satu kali dan satu pasien',
+        'audit7' => '7. Memeriksa obat sudah sesuai (tepat obat, tepat dosis, tepat pemberian, tepat waktu)',
+        'audit8' => '8. Memeriksa tepat pasien',
+        'audit9' => '9. Desinfeksi sebelum injeksi',
+        'audit10' => '10. Membuang sampah pada tempatnya',
+        'audit11' => '11. Tidak melakukan re-capping',
+        'audit12' => '12. Melepas APD jika memakai',
+        'audit13' => '13. Cuci tangan setelah melakukan injeksi',
+        'audit14' => '14. Tersedia hand rubs di troli',
+        'audit15' => '15. Tersedia tempat sampah infeksius troli',
+        'audit16' => '16. Tersedia tempat sampah non infeksius',
+        'audit17' => '17. Tersedia safety box troli',
+        'audit18' => '18. Tersedia alkohol swab untuk desinfeksi troli',
     ];
 
     public static function form(Form $form): Form
@@ -52,10 +57,10 @@ class AuditPembuanganLimbahResource extends Resource
     {
         return $table
             ->query(
-                AuditPembuanganLimbah::query()
+                AuditInjeksiAman::query()
                     ->with('ruangAuditKepatuhan')
                     ->orderBy('tanggal', 'desc')
-                    ->select('audit_pembuangan_limbah.*', DB::raw(self::ttlExpression()))
+                    ->select('audit_injeksi_aman.*', DB::raw(self::ttlExpression()))
             )
             ->columns([
                 Tables\Columns\TextColumn::make('tanggal')
@@ -86,7 +91,7 @@ class AuditPembuanganLimbahResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageAuditPembuanganLimbahs::route('/'),
+            'index' => Pages\ManageAuditInjeksiAmans::route('/'),
         ];
     }
 
@@ -121,8 +126,12 @@ class AuditPembuanganLimbahResource extends Resource
     private static function ttlExpression(): string
     {
         $columns = array_keys(self::AUDIT_LABELS);
-        $yesCount = collect($columns)->map(fn(string $column) => "({$column} = \"Ya\")")->implode(' + ');
-        $validCount = collect($columns)->map(fn(string $column) => "({$column} != \"Na\")")->implode(' + ');
+        $yesCount = collect($columns)
+            ->map(fn(string $column) => "({$column} = \"Ya\")")
+            ->implode(' + ');
+        $validCount = collect($columns)
+            ->map(fn(string $column) => "({$column} != \"Na\")")
+            ->implode(' + ');
 
         return "CASE WHEN ({$validCount}) = 0 THEN \"0%\" ELSE CONCAT(ROUND(({$yesCount}) / ({$validCount}) * 100, 2), \"%\") END as ttl";
     }

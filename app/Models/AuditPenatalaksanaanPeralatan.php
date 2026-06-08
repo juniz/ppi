@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
-class AuditPembuanganLimbah extends Model
+class AuditPenatalaksanaanPeralatan extends Model
 {
     use HasFactory;
 
-    protected $table = 'audit_pembuangan_limbah';
+    protected $table = 'audit_penatalaksanaan_peralatan';
     protected $primaryKey = 'tanggal';
     public $incrementing = false;
     public $timestamps = false;
@@ -31,21 +31,15 @@ class AuditPembuanganLimbah extends Model
         'audit11',
         'audit12',
         'audit13',
-        'pemisahan_limbah_oleh_penghasil_limbah',
-        'limbah_infeksius_dimasukkan_kantong_kuning',
-        'limbah_noninfeksius_dimasukkan_kantong_hitam',
-        'limbah_tigaperempat_diikat',
-        'limbah_segera_dibawa_kepembuangan_sementara',
-        'kotak_sampah_dalam_kondisi_bersih',
-        'pembersihan_tempat_sampah_dengan_desinfekten',
-        'pembersihan_penampungan_sementara_dengan_desinfekten',
+        'audit14',
+        'audit15',
+        'audit16',
     ];
 
     public function __construct(array $attributes = [])
     {
-        $this->setRawAttributes([
-            'tanggal' => Carbon::now()->format('Y-m-d H:i:s'),
-        ], true);
+        $this->setRawAttributes(['tanggal' => Carbon::now()->format('Y-m-d H:i:s')], true);
+
         parent::__construct($attributes);
     }
 

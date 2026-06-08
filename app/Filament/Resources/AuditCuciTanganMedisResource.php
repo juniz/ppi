@@ -10,7 +10,6 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Pegawai;
@@ -22,6 +21,8 @@ class AuditCuciTanganMedisResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-hand-raised';
     protected static ?string $navigationGroup = 'Audit';
+
+    private const TTL_EXPRESSION = 'CASE WHEN ((sebelum_menyentuh_pasien != "Na") + (sebelum_tehnik_aseptik != "Na") + (setelah_terpapar_cairan_tubuh_pasien != "Na") + (setelah_kontak_dengan_pasien != "Na") + (setelah_kontak_dengan_lingkungan_pasien != "Na")) = 0 THEN "0%" ELSE CONCAT(ROUND(((sebelum_menyentuh_pasien = "Ya") + (sebelum_tehnik_aseptik = "Ya") + (setelah_terpapar_cairan_tubuh_pasien = "Ya") + (setelah_kontak_dengan_pasien = "Ya") + (setelah_kontak_dengan_lingkungan_pasien = "Ya")) / ((sebelum_menyentuh_pasien != "Na") + (sebelum_tehnik_aseptik != "Na") + (setelah_terpapar_cairan_tubuh_pasien != "Na") + (setelah_kontak_dengan_pasien != "Na") + (setelah_kontak_dengan_lingkungan_pasien != "Na")) * 100, 2), "%") END as ttl';
 
     public static function form(Form $form): Form
     {
@@ -89,7 +90,7 @@ class AuditCuciTanganMedisResource extends Resource
                 AuditCuciTanganMedis::query()
                     ->with('pegawai')
                     ->orderBy('tanggal', 'desc')
-                    ->select('audit_cuci_tangan_medis.*', DB::raw('CONCAT(ROUND(((sebelum_menyentuh_pasien = "Ya") + (sebelum_tehnik_aseptik = "Ya") + (setelah_terpapar_cairan_tubuh_pasien = "Ya") + (setelah_kontak_dengan_pasien = "Ya") + (setelah_kontak_dengan_lingkungan_pasien = "Ya")) / (5-ROUND((sebelum_menyentuh_pasien = "Na") + (sebelum_tehnik_aseptik = "Na") + (setelah_terpapar_cairan_tubuh_pasien = "Na") + (setelah_kontak_dengan_pasien = "Na") + (setelah_kontak_dengan_lingkungan_pasien = "Na"))) * 100, 2), "%") as ttl'))
+                    ->select('audit_cuci_tangan_medis.*', DB::raw(self::TTL_EXPRESSION))
             )
             ->columns([
                 Tables\Columns\TextColumn::make('pegawai.nama')
