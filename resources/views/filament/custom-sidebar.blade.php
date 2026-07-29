@@ -13,14 +13,18 @@
         font-size: 0.925rem !important;
     }
     
-    /* Group headings - stronger and more distinct */
+    /* Group headings - stronger and more distinct with modern background */
     .fi-sidebar-group-label {
+        background-color: rgba(var(--primary-500), 0.08) !important;
         color: rgba(var(--primary-600), 1) !important;
         font-weight: 700 !important;
-        font-size: 0.8rem !important;
+        font-size: 0.75rem !important;
         letter-spacing: 0.05em;
         text-transform: uppercase;
-        margin-top: 0.75rem;
+        margin-top: 1rem !important;
+        padding: 0.5rem 0.75rem !important;
+        border-radius: 0.5rem !important;
+        border-left: 3px solid rgba(var(--primary-500), 0.6) !important;
     }
     
     /* Icon contrast */
