@@ -12,8 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('analisa_rekomendasi_hais', function (Blueprint $table) {
-            $table->string('chart_infeksi_image')->nullable()->after('rata_vap_laju');
-            $table->string('chart_pemasangan_image')->nullable()->after('chart_infeksi_image');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'chart_infeksi_image')) {
+                $table->string('chart_infeksi_image')->nullable()->after('rata_vap_laju');
+            }
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'chart_pemasangan_image')) {
+                $table->string('chart_pemasangan_image')->nullable()->after('chart_infeksi_image');
+            }
         });
     }
 
