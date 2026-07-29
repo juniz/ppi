@@ -21,19 +21,34 @@
         margin-top: 0 !important;
     }
     
-    /* Group headings - stronger and more distinct with modern background */
-    .fi-sidebar-group-label {
+    /* Style the group button to act as the colored pill enclosing the text and arrow */
+    .fi-sidebar-group-button {
+        display: flex !important;
+        width: 100% !important;
+        justify-content: space-between !important;
+        align-items: center;
         background-color: rgba(var(--primary-500), 0.08) !important;
+        padding: 0.35rem 0.5rem !important;
+        border-radius: 0.5rem !important;
+        border-left: 3px solid rgba(var(--primary-500), 0.6) !important;
+        margin-bottom: 0.15rem !important;
+    }
+    
+    /* Make sure the chevron arrow inside the button matches the color */
+    .fi-sidebar-group-button svg {
+        color: rgba(var(--primary-600), 1) !important;
+    }
+
+    /* Group headings text - remove background since it's now on the button */
+    .fi-sidebar-group-label {
         color: rgba(var(--primary-600), 1) !important;
         font-weight: 700 !important;
         font-size: 0.75rem !important;
         letter-spacing: 0.05em;
         text-transform: uppercase;
-        margin-top: 0 !important;
-        margin-bottom: 0.15rem !important;
-        padding: 0.35rem 0.5rem !important;
-        border-radius: 0.5rem !important;
-        border-left: 3px solid rgba(var(--primary-500), 0.6) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
     }
     
     /* Icon contrast */
