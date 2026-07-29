@@ -83,7 +83,7 @@ class AdminPanelProvider extends PanelProvider
                 'Pengaturan',
                 'Master Data'
             ])
-            ->sidebarCollapsibleOnDesktop()
+            ->sidebarFullyCollapsibleOnDesktop()
             ->brandName(env('APP_NAME', 'SI-HAIs'))
             ->darkMode(false)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')

@@ -88,7 +88,7 @@
                         <div class="p-2 rounded-lg bg-info-100">
                             <x-heroicon-o-flag class="w-6 h-6 text-info-600"/>
                         </div>
-                        <h2 class="text-lg font-bold text-gray-900">Laju ISK</h2>
+                        <h2 class="text-lg font-bold text-gray-900">Laju CAUTI</h2>
                     </div>
                     <div>
                         <x-heroicon-o-chevron-down x-show="!expanded" class="w-5 h-5 text-gray-500" />

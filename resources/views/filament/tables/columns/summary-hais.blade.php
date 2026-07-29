@@ -25,7 +25,7 @@
     <div class="flex gap-3 text-xs">
         <!-- ISK -->
         <div class="flex items-center gap-1 bg-red-50 px-2 py-1 rounded border">
-            <span class="font-semibold text-red-800">ISK:</span>
+            <span class="font-semibold text-red-800">CAUTI:</span>
             <span class="text-red-600">{{ $getRecord()->total_isk_kasus ?? 0 }}/{{ $getRecord()->total_isk_hari_kateter ?? 0 }} ({{ number_format($getRecord()->rata_isk_laju ?? 0, 2) }}‰)</span>
         </div>
 

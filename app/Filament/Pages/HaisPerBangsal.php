@@ -121,7 +121,7 @@ class HaisPerBangsal extends Page implements HasTable
                     ->alignCenter()
                     ->summarize(Sum::make()),
                 TextColumn::make('ISK')
-                    ->label('ISK')
+                    ->label('CAUTI')
                     ->alignCenter()
                     ->summarize(Sum::make()),
                 TextColumn::make('ILO')

@@ -102,7 +102,7 @@
     @include('filament.pages.pdf.partials.table', ['data' => $dataHAP, 'type' => 'HAP', 'title' => 'HAP (Healthcare-Associated Pneumonia)'])
     @include('filament.pages.pdf.partials.table', ['data' => $dataIAD, 'type' => 'IAD', 'title' => 'IAD (Infeksi Aliran Darah)'])
     @include('filament.pages.pdf.partials.table', ['data' => $dataILO, 'type' => 'ILO', 'title' => 'ILO (Infeksi Luka Operasi)'])
-    @include('filament.pages.pdf.partials.table', ['data' => $dataISK, 'type' => 'ISK', 'title' => 'ISK (Infeksi Saluran Kemih)'])
+    @include('filament.pages.pdf.partials.table', ['data' => $dataISK, 'type' => 'ISK', 'title' => 'CAUTI (Catheter-Associated Urinary Tract Infection)'])
     @include('filament.pages.pdf.partials.table', ['data' => $dataPLEB, 'type' => 'PLEB', 'title' => 'PLEBITIS'])
     @include('filament.pages.pdf.partials.table', ['data' => $dataVAP, 'type' => 'VAP', 'title' => 'VAP (Ventilator-Associated Pneumonia)'])
 

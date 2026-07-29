@@ -100,7 +100,7 @@
         <div>
             @if($getRecord()->data_isk)
                 <div class="mb-4">
-                    <h4 class="font-semibold text-red-800 mb-2 text-sm">Data Detail ISK (Infeksi Saluran Kemih)</h4>
+                    <h4 class="font-semibold text-red-800 mb-2 text-sm">Data Detail CAUTI (Catheter-Associated Urinary Tract Infection)</h4>
                     <div class="overflow-x-auto border rounded">
                         <table class="min-w-full divide-y divide-gray-200 text-sm">
                             <thead class="bg-gray-50">

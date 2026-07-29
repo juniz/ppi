@@ -48,7 +48,7 @@ class DataHaisResource extends Resource
                     ->numeric(),
                 Forms\Components\TextInput::make('PLEB')
                     ->numeric(),
-                Forms\Components\TextInput::make('ISK')
+                Forms\Components\TextInput::make('ISK')->label('CAUTI')
                     ->numeric(),
                 Forms\Components\TextInput::make('ILO')
                     ->required()
@@ -111,7 +111,7 @@ class DataHaisResource extends Resource
                 Tables\Columns\TextColumn::make('PLEB')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('ISK')
+                Tables\Columns\TextColumn::make('ISK')->label('CAUTI')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('ILO')

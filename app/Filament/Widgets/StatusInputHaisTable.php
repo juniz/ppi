@@ -48,31 +48,27 @@ class StatusInputHaisTable extends BaseWidget
                     ->label('RUANGAN')
                     ->sortable()
                     ->searchable()
-                    ->size('lg'),
+                    ->wrap(),
                 TextColumn::make('jumlah_pasien')
-                    ->label('JUMLAH PASIEN')
+                    ->label('TOTAL')
                     ->alignCenter()
                     ->sortable()
-                    ->size('lg')
                     ->badge(),
                 TextColumn::make('sudah_input')
-                    ->label('SUDAH INPUT')
+                    ->label('SUDAH')
                     ->alignCenter()
                     ->sortable()
-                    ->size('lg')
                     ->badge()
                     ->color('success'),
                 TextColumn::make('belum_input')
-                    ->label('BELUM INPUT')
+                    ->label('BELUM')
                     ->alignCenter()
                     ->sortable()
-                    ->size('lg')
                     ->badge()
                     ->color('danger'),
                 TextColumn::make('persentase')
-                    ->label('PERSENTASE')
+                    ->label('%')
                     ->alignCenter()
-                    ->size('lg')
                     ->state(function ($record) {
                         if ($record->jumlah_pasien > 0) {
                             $persentase = ($record->sudah_input / $record->jumlah_pasien) * 100;
@@ -95,11 +91,7 @@ class StatusInputHaisTable extends BaseWidget
             ->searchable()
             ->paginated([20, 50, 100, 'all'])
             ->defaultPaginationPageOption(20)
-            ->poll('10s')
-            ->contentGrid([
-                'md' => 2,
-                'xl' => 3,
-            ]);
+            ->poll('10s');
     }
 
     public function getTableRecordKey(mixed $record): string

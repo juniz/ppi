@@ -253,7 +253,7 @@ class Ranap extends Page implements HasTable
                                                     ])
                                                     ->default(0),
                                                 Select::make('ISK')
-                                                    ->label('ISK')
+                                                    ->label('CAUTI')
                                                     ->options([
                                                         0 => 'TIDAK',
                                                         1 => 'YA'

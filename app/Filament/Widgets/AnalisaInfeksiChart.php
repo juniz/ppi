@@ -101,7 +101,7 @@ class AnalisaInfeksiChart extends ApexChartWidget
                     'data' => $plebData,
                 ],
                 [
-                    'name' => 'ISK',
+                    'name' => 'CAUTI',
                     'data' => $iskData,
                 ],
                 [

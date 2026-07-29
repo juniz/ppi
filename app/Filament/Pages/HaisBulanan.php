@@ -108,7 +108,7 @@ class HaisBulanan extends Page implements HasTable
                 Tables\Columns\TextColumn::make('PLEB')
                     ->label('PLEB'),
                 Tables\Columns\TextColumn::make('ISK')
-                    ->label('ISK'),
+                    ->label('CAUTI'),
                 Tables\Columns\TextColumn::make('ILO')
                     ->label('ILO'),
                 Tables\Columns\TextColumn::make('HAP')
@@ -172,7 +172,7 @@ class HaisBulanan extends Page implements HasTable
                         Sum::make(),
                     ]),
                 Tables\Columns\TextColumn::make('ISK')
-                    ->label('ISK')
+                    ->label('CAUTI')
                     ->summarize([
                         Sum::make(),
                     ]),

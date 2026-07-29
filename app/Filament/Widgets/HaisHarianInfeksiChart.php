@@ -40,7 +40,7 @@ class HaisHarianInfeksiChart extends ChartWidget
                     ],
                 ],
             ],
-            'labels' => ['VAP', 'IAD', 'PLEB', 'ISK', 'ILO', 'HAP'],
+            'labels' => ['VAP', 'IAD', 'PLEB', 'CAUTI', 'ILO', 'HAP'],
         ];
     }
 

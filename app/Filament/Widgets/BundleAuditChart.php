@@ -76,7 +76,7 @@ class BundleAuditChart extends ChartWidget
                     ],
                 ],
             ],
-            'labels' => ['IAD', 'PLEB', 'ISK', 'ILO', 'HAP'],
+            'labels' => ['IAD', 'PLEB', 'CAUTI', 'ILO', 'HAP'],
         ];
     }
 

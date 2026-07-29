@@ -295,14 +295,14 @@
         @endif
 
         @if(!empty($dataIsk))
-        <div class="table-title">Data ISK (Infeksi Saluran Kemih)</div>
+        <div class="table-title">Data CAUTI (Catheter-Associated Urinary Tract Infection)</div>
         <table>
             <thead>
                 <tr>
                     <th>Ruangan</th>
                     <th>Jumlah Pasien</th>
                     <th>Hari Kateter</th>
-                    <th>ISK</th>
+                    <th>CAUTI</th>
                     <th>Laju</th>
                     <th>Persentase</th>
                 </tr>

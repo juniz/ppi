@@ -9,6 +9,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\ColumnGroup;
 use Filament\Tables\Table;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -112,7 +113,8 @@ class AuditBundleIskResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('ruangAuditKepatuhan.nama_ruang')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('pemasangan_1_indikasi')
+                ColumnGroup::make('Pemasangan')->columns([
+                Tables\Columns\TextColumn::make('pemasangan_1_indikasi')->label('1. Indikasi pemasangan kateter urin menetap sesuai kebutuhan')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('pemasangan_1_indikasi', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('pemasangan_1_indikasi', 'Tidak')),
@@ -123,7 +125,7 @@ class AuditBundleIskResource extends Resource
                             return round($total == 0 ? 0 : ($ya / $total) * 100, 2);
                         })
                     ]),
-                Tables\Columns\TextColumn::make('pemasangan_2_hand_hygiene')
+                Tables\Columns\TextColumn::make('pemasangan_2_hand_hygiene')->label('2. Hand hygiene dilakukan sebelum dan sesudah tindakan')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('pemasangan_2_hand_hygiene', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('pemasangan_2_hand_hygiene', 'Tidak')),
@@ -134,7 +136,7 @@ class AuditBundleIskResource extends Resource
                             return round($total == 0 ? 0 : ($ya / $total) * 100, 2);
                         })
                     ]),
-                Tables\Columns\TextColumn::make('pemasangan_3_teknik_aseptik')
+                Tables\Columns\TextColumn::make('pemasangan_3_teknik_aseptik')->label('3. Menggunakan teknik aseptik')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('pemasangan_3_teknik_aseptik', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('pemasangan_3_teknik_aseptik', 'Tidak')),
@@ -145,7 +147,7 @@ class AuditBundleIskResource extends Resource
                             return round($total == 0 ? 0 : ($ya / $total) * 100, 2);
                         })
                     ]),
-                Tables\Columns\TextColumn::make('pemasangan_4_alat_steril')
+                Tables\Columns\TextColumn::make('pemasangan_4_alat_steril')->label('4. Menggunakan alat steril, pelumas steril, dan area kerja bersih')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('pemasangan_4_alat_steril', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('pemasangan_4_alat_steril', 'Tidak')),
@@ -156,7 +158,9 @@ class AuditBundleIskResource extends Resource
                             return round($total == 0 ? 0 : ($ya / $total) * 100, 2);
                         })
                     ]),
-                Tables\Columns\TextColumn::make('perawatan_1_hand_hygiene')
+                            ]),
+            ColumnGroup::make('Perawatan')->columns([
+                Tables\Columns\TextColumn::make('perawatan_1_hand_hygiene')->label('1. Hand hygiene sebelum dan sesudah memanipulasi kateter/perangkat')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('perawatan_1_hand_hygiene', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('perawatan_1_hand_hygiene', 'Tidak')),
@@ -167,7 +171,7 @@ class AuditBundleIskResource extends Resource
                             return round($total == 0 ? 0 : ($ya / $total) * 100, 2);
                         })
                     ]),
-                Tables\Columns\TextColumn::make('perawatan_2_genitalia_dibersihkan')
+                Tables\Columns\TextColumn::make('perawatan_2_genitalia_dibersihkan')->label('2. Daerah genitalia dibersihkan')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('perawatan_2_genitalia_dibersihkan', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('perawatan_2_genitalia_dibersihkan', 'Tidak')),
@@ -178,7 +182,7 @@ class AuditBundleIskResource extends Resource
                             return round($total == 0 ? 0 : ($ya / $total) * 100, 2);
                         })
                     ]),
-                Tables\Columns\TextColumn::make('perawatan_3_fiksasi_kateter')
+                Tables\Columns\TextColumn::make('perawatan_3_fiksasi_kateter')->label('3. Kateter diberikan fiksasi dengan baik')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('perawatan_3_fiksasi_kateter', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('perawatan_3_fiksasi_kateter', 'Tidak')),
@@ -189,7 +193,7 @@ class AuditBundleIskResource extends Resource
                             return round($total == 0 ? 0 : ($ya / $total) * 100, 2);
                         })
                     ]),
-                Tables\Columns\TextColumn::make('perawatan_4_tidak_diganti_rutin')
+                Tables\Columns\TextColumn::make('perawatan_4_tidak_diganti_rutin')->label('4. Tidak dilakukan penggantian kateter secara rutin kecuali terjadi infeksi')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('perawatan_4_tidak_diganti_rutin', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('perawatan_4_tidak_diganti_rutin', 'Tidak')),
@@ -200,7 +204,7 @@ class AuditBundleIskResource extends Resource
                             return round($total == 0 ? 0 : ($ya / $total) * 100, 2);
                         })
                     ]),
-                Tables\Columns\TextColumn::make('perawatan_5_aliran_steril_tertutup')
+                Tables\Columns\TextColumn::make('perawatan_5_aliran_steril_tertutup')->label('5. Sistem aliran urin dipertahankan steril dan tertutup')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('perawatan_5_aliran_steril_tertutup', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('perawatan_5_aliran_steril_tertutup', 'Tidak')),
@@ -211,7 +215,7 @@ class AuditBundleIskResource extends Resource
                             return round($total == 0 ? 0 : ($ya / $total) * 100, 2);
                         })
                     ]),
-                Tables\Columns\TextColumn::make('perawatan_6_hubungan_kateter_tertutup')
+                Tables\Columns\TextColumn::make('perawatan_6_hubungan_kateter_tertutup')->label('6. Hubungan kateter dengan pipa drainase tidak dibuka kecuali atas indikasi')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('perawatan_6_hubungan_kateter_tertutup', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('perawatan_6_hubungan_kateter_tertutup', 'Tidak')),
@@ -222,7 +226,7 @@ class AuditBundleIskResource extends Resource
                             return round($total == 0 ? 0 : ($ya / $total) * 100, 2);
                         })
                     ]),
-                Tables\Columns\TextColumn::make('perawatan_7_urine_bag_tidak_di_lantai')
+                Tables\Columns\TextColumn::make('perawatan_7_urine_bag_tidak_di_lantai')->label('7. Urine bag tidak diletakkan di lantai')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('perawatan_7_urine_bag_tidak_di_lantai', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('perawatan_7_urine_bag_tidak_di_lantai', 'Tidak')),
@@ -233,7 +237,7 @@ class AuditBundleIskResource extends Resource
                             return round($total == 0 ? 0 : ($ya / $total) * 100, 2);
                         })
                     ]),
-                Tables\Columns\TextColumn::make('perawatan_8_selang_tidak_terlipat')
+                Tables\Columns\TextColumn::make('perawatan_8_selang_tidak_terlipat')->label('8. Selang tidak terlipat/tertekuk')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('perawatan_8_selang_tidak_terlipat', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('perawatan_8_selang_tidak_terlipat', 'Tidak')),
@@ -244,7 +248,7 @@ class AuditBundleIskResource extends Resource
                             return round($total == 0 ? 0 : ($ya / $total) * 100, 2);
                         })
                     ]),
-                Tables\Columns\TextColumn::make('perawatan_10_segera_dilepas')
+                Tables\Columns\TextColumn::make('perawatan_10_segera_dilepas')->label('9. Kateter segera dilepas jika sudah tidak dibutuhkan')
                     ->summarize([
                         Count::make()->label('Ya')->query(fn(Builder $query) => $query->where('perawatan_10_segera_dilepas', 'Ya')),
                         Count::make()->label('Tidak')->query(fn(Builder $query) => $query->where('perawatan_10_segera_dilepas', 'Tidak')),
@@ -255,6 +259,7 @@ class AuditBundleIskResource extends Resource
                             return round($total == 0 ? 0 : ($ya / $total) * 100, 2);
                         })
                     ]),
+                            ]),
                 Tables\Columns\TextColumn::make('ttl')
                     ->label('Ttl. Nilai (%)')
                     ->summarize([

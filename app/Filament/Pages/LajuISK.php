@@ -22,7 +22,7 @@ class LajuISK extends Page implements HasTable
     use InteractsWithTable;
 
     protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-line';
-    protected static ?string $title = 'Laju ISK';
+    protected static ?string $title = 'Laju CAUTI';
     protected static ?string $slug = 'laju-isk';
     protected static ?string $navigationGroup = 'Laporan HAIs';
     protected static ?int $navigationSort = 7;
@@ -96,14 +96,14 @@ class LajuISK extends Page implements HasTable
                     ->color('info')
                     ->grow(false),
                 TextColumn::make('denumerator')
-                    ->label('ISK')
+                    ->label('CAUTI')
                     ->alignCenter()
                     ->summarize(Sum::make()->label('Total'))
                     ->badge()
                     ->color('warning')
                     ->grow(false),
                 TextColumn::make('laju_isk')
-                    ->label('LAJU ISK')
+                    ->label('LAJU CAUTI')
                     ->alignCenter()
                     ->badge()
                     ->color('success')

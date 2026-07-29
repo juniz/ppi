@@ -58,7 +58,7 @@
                     data: @json($data['series']['PLEB'])
                 },
                 {
-                    name: 'ISK',
+                    name: 'CAUTI',
                     data: @json($data['series']['ISK'])
                 },
                 {
