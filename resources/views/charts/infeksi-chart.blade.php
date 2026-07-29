@@ -13,15 +13,17 @@
             background: white;
         }
         .chart-container {
-            width: 800px;
-            height: 400px;
+            width: 100%;
+            max-width: 900px;
             margin: 0 auto;
+            /* keep a good aspect ratio on mobile */
+            aspect-ratio: 16 / 9;
         }
         .chart-title {
             text-align: center;
             font-size: 18px;
             font-weight: bold;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
             color: #374151;
         }
     </style>
@@ -37,8 +39,6 @@
         var options = {
             chart: {
                 type: 'line',
-                height: 400,
-                width: 800,
                 background: '#ffffff',
                 toolbar: {
                     show: false
@@ -101,8 +101,27 @@
             }
         };
 
-        var chart = new ApexCharts(document.querySelector("#chart"), options);
+        var chartEl = document.querySelector("#chart");
+
+        // compute an initial height based on container width
+        function computeHeight() {
+            var w = chartEl.clientWidth || 600;
+            return Math.max(280, Math.round(w * 0.5));
+        }
+
+        options.chart.height = computeHeight();
+
+        var chart = new ApexCharts(chartEl, options);
         chart.render();
+
+        // resize handler to keep chart responsive
+        var resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                chart.updateOptions({ chart: { height: computeHeight() } }, false, true);
+            }, 150);
+        });
 
         // Function to convert chart to image and save
         function saveChartAsImage() {
@@ -112,9 +131,6 @@
             }
 
             chart.dataURI().then((uri) => {
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-                const filename = `chart_infeksi_${timestamp}.png`;
-                
                 // Send to server to save
                 fetch('/chart/save-image', {
                     method: 'POST',
@@ -132,7 +148,6 @@
                 .then(data => {
                     if (data.success) {
                         console.log('Chart saved successfully:', data.path);
-                        // Notify parent window if in iframe
                         if (window.parent !== window) {
                             window.parent.postMessage({
                                 type: 'chart-saved',
@@ -149,14 +164,8 @@
             });
         }
 
-        // Auto save when chart is rendered
-        chart.addEventListener('dataPointSelection', function() {
-            // Chart is ready, save it
-            setTimeout(saveChartAsImage, 1000);
-        });
-
-        // Also save after a delay to ensure chart is fully rendered
-        setTimeout(saveChartAsImage, 2000);
+        // Also save after a short delay to ensure chart is rendered
+        setTimeout(saveChartAsImage, 1500);
     </script>
 </body>
 </html>

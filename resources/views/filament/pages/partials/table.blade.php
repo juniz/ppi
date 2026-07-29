@@ -1,7 +1,24 @@
+@php
+    $data = collect($data);
+    $dayField = $type === 'HAP' ? 'hari_rawat' : ($type === 'IAD' ? 'hari_terpasang' : ($type === 'ILO' ? 'hari_operasi' : ($type === 'ISK' ? 'hari_kateter' : ($type === 'PLEB' ? 'hari_infus' : 'hari_ventilator'))));
+    $totalNumerator = $data->sum('numerator');
+    $totalDays = $data->sum($dayField);
+    $totalDenumerator = $data->sum('denumerator');
+    $totalLaju = '0 ‰';
+    $totalPersentase = '0 %';
+
+    if ($totalDays > 0) {
+        $totalLaju = number_format(round(($totalDenumerator / $totalDays) * 1000), 0, '.', ',') . ' ‰';
+    }
+
+    if ($totalNumerator > 0) {
+        $totalPersentase = number_format(round(($totalDenumerator / $totalNumerator) * 100, 2), 2, '.', ',') . ' %';
+    }
+@endphp
+
 <table class="w-full">
     <thead>
-        <tr class="bg-gray-50 border-b border-gray-200">
-            <th class="p-3 text-left font-medium text-gray-600">Bulan</th>
+        <tr class="bg-gray-100 border-b border-gray-300">
             <th class="p-3 text-left font-medium text-gray-600">Ruangan</th>
             <th class="p-3 text-center font-medium text-gray-600">
                 @if($type == 'HAP')
@@ -38,18 +55,9 @@
             <th class="p-3 text-center font-medium text-gray-600">Persentase</th>
         </tr>
     </thead>
-    <tbody class="divide-y divide-gray-200">
+    <tbody x-show="expanded" class="divide-y divide-gray-200">
         @forelse($data as $item)
-            <tr class="hover:bg-gray-50 transition-colors">
-                <td class="p-3 text-gray-900 font-medium">
-                    @if(isset($item->nama_bulan) && isset($item->tahun) && !empty($item->nama_bulan) && !empty($item->tahun))
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {{ $item->nama_bulan }} {{ $item->tahun }}
-                        </span>
-                    @else
-                        <span class="text-gray-400">-</span>
-                    @endif
-                </td>
+            <tr class="even:bg-gray-50/50 hover:bg-gray-100 transition-colors">
                 <td class="p-3 text-gray-900 font-medium">{{ $item->nm_bangsal }}</td>
                 <td class="p-3 text-center">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
@@ -79,10 +87,40 @@
             </tr>
         @empty
             <tr>
-                <td colspan="7" class="p-3 text-center text-gray-500">
+                <td colspan="6" class="p-3 text-center text-gray-500">
                     Tidak ada data
                 </td>
             </tr>
         @endforelse
     </tbody>
+    <tfoot class="bg-gray-100 border-t border-gray-300">
+        <tr>
+            <td class="p-3 text-right font-bold text-gray-900">Total / Rata-rata</td>
+            <td class="p-3 text-center">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary-100 text-primary-800">
+                    {{ $totalNumerator }}
+                </span>
+            </td>
+            <td class="p-3 text-center">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-info-100 text-info-800">
+                    {{ $totalDays }}
+                </span>
+            </td>
+            <td class="p-3 text-center">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-warning-100 text-warning-800">
+                    {{ $totalDenumerator }}
+                </span>
+            </td>
+            <td class="p-3 text-center">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-success-100 text-success-800">
+                    {{ $totalLaju }}
+                </span>
+            </td>
+            <td class="p-3 text-center">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-danger-100 text-danger-800">
+                    {{ $totalPersentase }}
+                </span>
+            </td>
+        </tr>
+    </tfoot>
 </table>

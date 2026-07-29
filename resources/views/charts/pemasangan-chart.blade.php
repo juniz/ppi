@@ -6,9 +6,13 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Grafik Garis Pemasangan Alat</title>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: white; }
+        .chart-container { width: 100%; max-width: 1200px; margin: 0 auto; aspect-ratio: 16/9; }
+    </style>
 </head>
 <body>
-    <div id="chart" style="width: 1200px; height: 600px;"></div>
+    <div id="chart" class="chart-container"></div>
 
     <script>
         const chartData = @json($data);
@@ -17,14 +21,9 @@
         const options = {
             series: chartData.series,
             chart: {
-                height: 600,
                 type: 'line',
-                zoom: {
-                    enabled: false
-                },
-                animations: {
-                    enabled: false
-                }
+                zoom: { enabled: false },
+                animations: { enabled: false }
             },
             dataLabels: {
                 enabled: false
@@ -64,12 +63,27 @@
             }
         };
 
-        const chart = new ApexCharts(document.querySelector("#chart"), options);
+        const chartEl = document.querySelector("#chart");
+
+        function computeHeight() {
+            const w = chartEl.clientWidth || 800;
+            return Math.max(300, Math.round(w * 0.5));
+        }
+
+        options.chart.height = computeHeight();
+
+        const chart = new ApexCharts(chartEl, options);
         chart.render().then(() => {
-            // Tunggu sebentar untuk memastikan chart sudah ter-render sempurna
-            setTimeout(() => {
-                saveChartAsImage();
-            }, 1000);
+            setTimeout(() => saveChartAsImage(), 800);
+        });
+
+        // responsive resize
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                chart.updateOptions({ chart: { height: computeHeight() } }, false, true);
+            }, 150);
         });
 
         function saveChartAsImage() {

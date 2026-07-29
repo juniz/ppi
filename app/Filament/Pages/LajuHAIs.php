@@ -59,20 +59,14 @@ class LajuHAIs extends Page implements HasForms
             ->schema([
                 DatePicker::make('tanggal_mulai')
                     ->label('Tanggal Mulai')
-                    ->required()
-                    ->live()
-                    ->afterStateUpdated(fn () => $this->loadData()),
+                    ->required(),
                 DatePicker::make('tanggal_selesai')
                     ->label('Tanggal Selesai')
-                    ->required()
-                    ->live()
-                    ->afterStateUpdated(fn () => $this->loadData()),
+                    ->required(),
                 Select::make('ruangan')
                     ->label('Ruangan')
                     ->options(Bangsal::pluck('nm_bangsal', 'kd_bangsal'))
                     ->placeholder('Semua Ruangan')
-                    ->live()
-                    ->afterStateUpdated(fn () => $this->loadData())
             ])
             ->columns(3);
     }

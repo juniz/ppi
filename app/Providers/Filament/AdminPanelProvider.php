@@ -77,7 +77,7 @@ class AdminPanelProvider extends PanelProvider
                 'Pengaturan'
             ])
             ->sidebarCollapsibleOnDesktop()
-            ->brandName('SIMRS - HAIs')
+            ->brandName(env('APP_NAME', 'SI-HAIs'))
             ->darkMode(false)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->pages([
