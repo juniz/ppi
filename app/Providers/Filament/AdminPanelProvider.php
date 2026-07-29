@@ -51,6 +51,10 @@ class AdminPanelProvider extends PanelProvider
                 'panels::auth.login.form.after',
                 fn() => view('auth.socialite.google')
             )
+            ->renderHook(
+                'panels::head.end',
+                fn() => view('filament.custom-sidebar')
+            )
             ->plugins([
                 FilamentApexChartsPlugin::make(),
                 FilamentScaffoldPlugin::make(),
