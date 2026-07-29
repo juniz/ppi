@@ -93,8 +93,8 @@ class StatusInputHaisTable extends BaseWidget
             ->defaultSort('persentase', 'desc')
             ->striped()
             ->searchable()
-            ->paginated()
-            ->paginationPageOptions([5])
+            ->paginated([20, 50, 100, 'all'])
+            ->defaultPaginationPageOption(20)
             ->poll('10s')
             ->contentGrid([
                 'md' => 2,
