@@ -23,41 +23,11 @@ class ViewAnalisaRekomendasi extends ViewRecord
                 ->label('Export PDF')
                 ->icon('heroicon-o-document-arrow-down')
                 ->color('success')
-                ->action('exportPDF'),
+                ->url(fn () => route('export.analisa-rekomendasi.pdf', $this->getRecord()->id))
+                ->openUrlInNewTab(),
             Actions\EditAction::make()
                 ->visible(false), // Disable edit untuk read-only
         ];
-    }
-
-    public function exportPDF()
-    {
-        $record = $this->getRecord();
-        
-        // Decode JSON data
-        $dataHap = is_string($record->data_hap) ? json_decode($record->data_hap, true) : $record->data_hap;
-        $dataIad = is_string($record->data_iad) ? json_decode($record->data_iad, true) : $record->data_iad;
-        $dataIlo = is_string($record->data_ilo) ? json_decode($record->data_ilo, true) : $record->data_ilo;
-        $dataIsk = is_string($record->data_isk) ? json_decode($record->data_isk, true) : $record->data_isk;
-        $dataPlebitis = is_string($record->data_plebitis) ? json_decode($record->data_plebitis, true) : $record->data_plebitis;
-        $dataVap = is_string($record->data_vap) ? json_decode($record->data_vap, true) : $record->data_vap;
-
-        $data = [
-            'record' => $record,
-            'dataHap' => $dataHap ?? [],
-            'dataIad' => $dataIad ?? [],
-            'dataIlo' => $dataIlo ?? [],
-            'dataIsk' => $dataIsk ?? [],
-            'dataPlebitis' => $dataPlebitis ?? [],
-            'dataVap' => $dataVap ?? [],
-        ];
-
-        $pdf = Pdf::loadView('filament.pages.pdf.analisa-rekomendasi', $data);
-        
-        $filename = 'analisa-rekomendasi-' . $record->tanggal_mulai . '-' . $record->tanggal_selesai . '.pdf';
-        
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
-        }, $filename);
     }
 
     public function infolist(Infolist $infolist): Infolist

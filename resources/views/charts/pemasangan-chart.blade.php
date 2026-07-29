@@ -18,8 +18,16 @@
         const chartData = @json($data);
         const analisaId = @json($analisaId ?? null);
 
+        // Ubah format object menjadi array of objects yang dibutuhkan ApexCharts
+        const seriesData = Object.keys(chartData.series).map(key => {
+            return {
+                name: key,
+                data: chartData.series[key]
+            };
+        });
+
         const options = {
-            series: chartData.series,
+            series: seriesData,
             chart: {
                 type: 'line',
                 zoom: { enabled: false },

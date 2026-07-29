@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\SocialiteController;
 use App\Http\Controllers\ChartController;
+use App\Http\Controllers\ExportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/auth/{provider}/redirect', [SocialiteController::class, 'redirect'])
@@ -21,3 +22,6 @@ Route::get('/', function () {
 Route::get('/chart/infeksi', [ChartController::class, 'infeksiChart'])->name('chart.infeksi');
 Route::get('/chart/pemasangan', [ChartController::class, 'pemasanganChart'])->name('chart.pemasangan');
 Route::post('/chart/save-image', [ChartController::class, 'saveChartImage'])->name('chart.save-image');
+
+// Export routes
+Route::get('/export/analisa-rekomendasi/{id}/pdf', [ExportController::class, 'exportPdfAnalisaRekomendasi'])->name('export.analisa-rekomendasi.pdf');

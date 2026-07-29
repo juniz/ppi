@@ -38,6 +38,7 @@ class AnalisaLajuHAIs extends Page implements HasForms, HasTable
     protected static ?string $navigationGroup = 'Laporan HAIs';
     protected static ?string $navigationLabel = 'Analisis dan Rekomendasi';
     protected static ?string $title = 'Analisis dan Rekomendasi Laju HAIs';
+    protected static ?int $navigationSort = 99;
 
     public $tanggal_mulai;
     public $tanggal_selesai;
@@ -110,186 +111,78 @@ class AnalisaLajuHAIs extends Page implements HasForms, HasTable
         $this->dataHAP = (clone $baseQuery)
             ->select([
                 'bangsal.nm_bangsal',
-                DB::raw('DATE_FORMAT(data_HAIs.tanggal, "%Y-%m") as bulan'),
-                DB::raw('CASE 
-                    WHEN MONTH(data_HAIs.tanggal) = 1 THEN "Januari"
-                    WHEN MONTH(data_HAIs.tanggal) = 2 THEN "Februari" 
-                    WHEN MONTH(data_HAIs.tanggal) = 3 THEN "Maret"
-                    WHEN MONTH(data_HAIs.tanggal) = 4 THEN "April"
-                    WHEN MONTH(data_HAIs.tanggal) = 5 THEN "Mei"
-                    WHEN MONTH(data_HAIs.tanggal) = 6 THEN "Juni"
-                    WHEN MONTH(data_HAIs.tanggal) = 7 THEN "Juli"
-                    WHEN MONTH(data_HAIs.tanggal) = 8 THEN "Agustus"
-                    WHEN MONTH(data_HAIs.tanggal) = 9 THEN "September"
-                    WHEN MONTH(data_HAIs.tanggal) = 10 THEN "Oktober"
-                    WHEN MONTH(data_HAIs.tanggal) = 11 THEN "November"
-                    WHEN MONTH(data_HAIs.tanggal) = 12 THEN "Desember"
-                END as nama_bulan'),
-                DB::raw('YEAR(data_HAIs.tanggal) as tahun'),
                 DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.HAP != 0 THEN data_HAIs.no_rawat END) as numerator'),
                 DB::raw('SUM(data_HAIs.HAP) as hari_rawat'),
                 DB::raw('COUNT(CASE WHEN data_HAIs.HAP > 0 THEN 1 END) as denumerator'),
                 DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.HAP > 0 THEN 1 END)/NULLIF(SUM(data_HAIs.HAP),0))*1000), ' ‰') as laju"),
                 DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.HAP > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.HAP != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
             ])
-            ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal', DB::raw('DATE_FORMAT(data_HAIs.tanggal, "%Y-%m")'), DB::raw('YEAR(data_HAIs.tanggal)'), DB::raw('MONTH(data_HAIs.tanggal)'))
-            ->orderBy('tahun')
-            ->orderBy(DB::raw('MONTH(data_HAIs.tanggal)'))
+            ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
             ->get();
 
         // Query untuk IAD (menggunakan CVL untuk hari terpasang)
         $this->dataIAD = (clone $baseQuery)
             ->select([
                 'bangsal.nm_bangsal',
-                DB::raw('DATE_FORMAT(data_HAIs.tanggal, "%Y-%m") as bulan'),
-                DB::raw('CASE 
-                    WHEN MONTH(data_HAIs.tanggal) = 1 THEN "Januari"
-                    WHEN MONTH(data_HAIs.tanggal) = 2 THEN "Februari" 
-                    WHEN MONTH(data_HAIs.tanggal) = 3 THEN "Maret"
-                    WHEN MONTH(data_HAIs.tanggal) = 4 THEN "April"
-                    WHEN MONTH(data_HAIs.tanggal) = 5 THEN "Mei"
-                    WHEN MONTH(data_HAIs.tanggal) = 6 THEN "Juni"
-                    WHEN MONTH(data_HAIs.tanggal) = 7 THEN "Juli"
-                    WHEN MONTH(data_HAIs.tanggal) = 8 THEN "Agustus"
-                    WHEN MONTH(data_HAIs.tanggal) = 9 THEN "September"
-                    WHEN MONTH(data_HAIs.tanggal) = 10 THEN "Oktober"
-                    WHEN MONTH(data_HAIs.tanggal) = 11 THEN "November"
-                    WHEN MONTH(data_HAIs.tanggal) = 12 THEN "Desember"
-                END as nama_bulan'),
-                DB::raw('YEAR(data_HAIs.tanggal) as tahun'),
                 DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.CVL != 0 THEN data_HAIs.no_rawat END) as numerator'),
                 DB::raw('SUM(data_HAIs.CVL) as hari_terpasang'),
                 DB::raw('COUNT(CASE WHEN data_HAIs.IAD > 0 THEN 1 END) as denumerator'),
                 DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.IAD > 0 THEN 1 END)/NULLIF(SUM(data_HAIs.CVL),0))*1000), ' ‰') as laju"),
                 DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.IAD > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.CVL != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
             ])
-            ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal', DB::raw('DATE_FORMAT(data_HAIs.tanggal, "%Y-%m")'), DB::raw('YEAR(data_HAIs.tanggal)'), DB::raw('MONTH(data_HAIs.tanggal)'))
-            ->orderBy('tahun')
-            ->orderBy(DB::raw('MONTH(data_HAIs.tanggal)'))
+            ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
             ->get();
 
         // Query untuk ILO
         $this->dataILO = (clone $baseQuery)
             ->select([
                 'bangsal.nm_bangsal',
-                DB::raw('DATE_FORMAT(data_HAIs.tanggal, "%Y-%m") as bulan'),
-                DB::raw('CASE 
-                    WHEN MONTH(data_HAIs.tanggal) = 1 THEN "Januari"
-                    WHEN MONTH(data_HAIs.tanggal) = 2 THEN "Februari" 
-                    WHEN MONTH(data_HAIs.tanggal) = 3 THEN "Maret"
-                    WHEN MONTH(data_HAIs.tanggal) = 4 THEN "April"
-                    WHEN MONTH(data_HAIs.tanggal) = 5 THEN "Mei"
-                    WHEN MONTH(data_HAIs.tanggal) = 6 THEN "Juni"
-                    WHEN MONTH(data_HAIs.tanggal) = 7 THEN "Juli"
-                    WHEN MONTH(data_HAIs.tanggal) = 8 THEN "Agustus"
-                    WHEN MONTH(data_HAIs.tanggal) = 9 THEN "September"
-                    WHEN MONTH(data_HAIs.tanggal) = 10 THEN "Oktober"
-                    WHEN MONTH(data_HAIs.tanggal) = 11 THEN "November"
-                    WHEN MONTH(data_HAIs.tanggal) = 12 THEN "Desember"
-                END as nama_bulan'),
-                DB::raw('YEAR(data_HAIs.tanggal) as tahun'),
                 DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.ILO != 0 THEN data_HAIs.no_rawat END) as numerator'),
                 DB::raw('SUM(data_HAIs.ILO) as hari_operasi'),
                 DB::raw('COUNT(CASE WHEN data_HAIs.ILO > 0 THEN 1 END) as denumerator'),
                 DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.ILO > 0 THEN 1 END)/NULLIF(SUM(data_HAIs.ILO),0))*1000), ' ‰') as laju"),
                 DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.ILO > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.ILO != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
             ])
-            ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal', DB::raw('DATE_FORMAT(data_HAIs.tanggal, "%Y-%m")'), DB::raw('YEAR(data_HAIs.tanggal)'), DB::raw('MONTH(data_HAIs.tanggal)'))
-            ->orderBy('tahun')
-            ->orderBy(DB::raw('MONTH(data_HAIs.tanggal)'))
+            ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
             ->get();
 
         // Query untuk ISK (menggunakan UC untuk hari kateter)
         $this->dataISK = (clone $baseQuery)
             ->select([
                 'bangsal.nm_bangsal',
-                DB::raw('DATE_FORMAT(data_HAIs.tanggal, "%Y-%m") as bulan'),
-                DB::raw('CASE 
-                    WHEN MONTH(data_HAIs.tanggal) = 1 THEN "Januari"
-                    WHEN MONTH(data_HAIs.tanggal) = 2 THEN "Februari" 
-                    WHEN MONTH(data_HAIs.tanggal) = 3 THEN "Maret"
-                    WHEN MONTH(data_HAIs.tanggal) = 4 THEN "April"
-                    WHEN MONTH(data_HAIs.tanggal) = 5 THEN "Mei"
-                    WHEN MONTH(data_HAIs.tanggal) = 6 THEN "Juni"
-                    WHEN MONTH(data_HAIs.tanggal) = 7 THEN "Juli"
-                    WHEN MONTH(data_HAIs.tanggal) = 8 THEN "Agustus"
-                    WHEN MONTH(data_HAIs.tanggal) = 9 THEN "September"
-                    WHEN MONTH(data_HAIs.tanggal) = 10 THEN "Oktober"
-                    WHEN MONTH(data_HAIs.tanggal) = 11 THEN "November"
-                    WHEN MONTH(data_HAIs.tanggal) = 12 THEN "Desember"
-                END as nama_bulan'),
-                DB::raw('YEAR(data_HAIs.tanggal) as tahun'),
                 DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.UC != 0 THEN data_HAIs.no_rawat END) as numerator'),
                 DB::raw('SUM(data_HAIs.UC) as hari_kateter'),
                 DB::raw('COUNT(CASE WHEN data_HAIs.ISK > 0 THEN 1 END) as denumerator'),
                 DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.ISK > 0 THEN 1 END)/NULLIF(SUM(data_HAIs.UC),0))*1000), ' ‰') as laju"),
                 DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.ISK > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.UC != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
             ])
-            ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal', DB::raw('DATE_FORMAT(data_HAIs.tanggal, "%Y-%m")'), DB::raw('YEAR(data_HAIs.tanggal)'), DB::raw('MONTH(data_HAIs.tanggal)'))
-            ->orderBy('tahun')
-            ->orderBy(DB::raw('MONTH(data_HAIs.tanggal)'))
+            ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
             ->get();
 
         // Query untuk PLEB
         $this->dataPLEB = (clone $baseQuery)
             ->select([
                 'bangsal.nm_bangsal',
-                DB::raw('DATE_FORMAT(data_HAIs.tanggal, "%Y-%m") as bulan'),
-                DB::raw('CASE 
-                    WHEN MONTH(data_HAIs.tanggal) = 1 THEN "Januari"
-                    WHEN MONTH(data_HAIs.tanggal) = 2 THEN "Februari" 
-                    WHEN MONTH(data_HAIs.tanggal) = 3 THEN "Maret"
-                    WHEN MONTH(data_HAIs.tanggal) = 4 THEN "April"
-                    WHEN MONTH(data_HAIs.tanggal) = 5 THEN "Mei"
-                    WHEN MONTH(data_HAIs.tanggal) = 6 THEN "Juni"
-                    WHEN MONTH(data_HAIs.tanggal) = 7 THEN "Juli"
-                    WHEN MONTH(data_HAIs.tanggal) = 8 THEN "Agustus"
-                    WHEN MONTH(data_HAIs.tanggal) = 9 THEN "September"
-                    WHEN MONTH(data_HAIs.tanggal) = 10 THEN "Oktober"
-                    WHEN MONTH(data_HAIs.tanggal) = 11 THEN "November"
-                    WHEN MONTH(data_HAIs.tanggal) = 12 THEN "Desember"
-                END as nama_bulan'),
-                DB::raw('YEAR(data_HAIs.tanggal) as tahun'),
                 DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.IVL != 0 THEN data_HAIs.no_rawat END) as numerator'),
                 DB::raw('SUM(data_HAIs.IVL) as hari_infus'),
-                DB::raw('SUM(data_HAIs.PLEB) as denumerator'),
-                DB::raw("CONCAT(ROUND((SUM(data_HAIs.PLEB)/NULLIF(SUM(data_HAIs.IVL),0))*1000), ' ‰') as laju"),
-                DB::raw('CONCAT(ROUND((SUM(data_HAIs.PLEB)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.IVL != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
+                DB::raw('COUNT(CASE WHEN data_HAIs.PLEB > 0 THEN 1 END) as denumerator'),
+                DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.PLEB > 0 THEN 1 END)/NULLIF(SUM(data_HAIs.IVL),0))*1000), ' ‰') as laju"),
+                DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.PLEB > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.IVL != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
             ])
-            ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal', DB::raw('DATE_FORMAT(data_HAIs.tanggal, "%Y-%m")'), DB::raw('YEAR(data_HAIs.tanggal)'), DB::raw('MONTH(data_HAIs.tanggal)'))
-            ->orderBy('tahun')
-            ->orderBy(DB::raw('MONTH(data_HAIs.tanggal)'))
+            ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
             ->get();
 
         // Query untuk VAP (menggunakan ETT untuk hari ventilator)
         $this->dataVAP = (clone $baseQuery)
             ->select([
                 'bangsal.nm_bangsal',
-                DB::raw('DATE_FORMAT(data_HAIs.tanggal, "%Y-%m") as bulan'),
-                DB::raw('CASE 
-                    WHEN MONTH(data_HAIs.tanggal) = 1 THEN "Januari"
-                    WHEN MONTH(data_HAIs.tanggal) = 2 THEN "Februari" 
-                    WHEN MONTH(data_HAIs.tanggal) = 3 THEN "Maret"
-                    WHEN MONTH(data_HAIs.tanggal) = 4 THEN "April"
-                    WHEN MONTH(data_HAIs.tanggal) = 5 THEN "Mei"
-                    WHEN MONTH(data_HAIs.tanggal) = 6 THEN "Juni"
-                    WHEN MONTH(data_HAIs.tanggal) = 7 THEN "Juli"
-                    WHEN MONTH(data_HAIs.tanggal) = 8 THEN "Agustus"
-                    WHEN MONTH(data_HAIs.tanggal) = 9 THEN "September"
-                    WHEN MONTH(data_HAIs.tanggal) = 10 THEN "Oktober"
-                    WHEN MONTH(data_HAIs.tanggal) = 11 THEN "November"
-                    WHEN MONTH(data_HAIs.tanggal) = 12 THEN "Desember"
-                END as nama_bulan'),
-                DB::raw('YEAR(data_HAIs.tanggal) as tahun'),
-                DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.ETT != 0 THEN data_HAIs.no_rawat END) as numerator'),
-                DB::raw('SUM(data_HAIs.ETT) as hari_ventilator'),
+                DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.VAP != 0 THEN data_HAIs.no_rawat END) as numerator'),
+                DB::raw('SUM(data_HAIs.VAP) as hari_ventilator'),
                 DB::raw('COUNT(CASE WHEN data_HAIs.VAP > 0 THEN 1 END) as denumerator'),
-                DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.VAP > 0 THEN 1 END)/NULLIF(SUM(data_HAIs.ETT),0))*1000), ' ‰') as laju"),
-                DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.VAP > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.ETT != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
+                DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.VAP > 0 THEN 1 END)/NULLIF(SUM(data_HAIs.VAP),0))*1000), ' ‰') as laju"),
+                DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.VAP > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.VAP != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
             ])
-            ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal', DB::raw('DATE_FORMAT(data_HAIs.tanggal, "%Y-%m")'), DB::raw('YEAR(data_HAIs.tanggal)'), DB::raw('MONTH(data_HAIs.tanggal)'))
-            ->orderBy('tahun')
-            ->orderBy(DB::raw('MONTH(data_HAIs.tanggal)'))
+            ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
             ->get();
     }
 
@@ -536,13 +429,16 @@ class AnalisaLajuHAIs extends Page implements HasForms, HasTable
             $plebitisSummary = $this->calculateSummaryData($this->dataPLEB, 'numerator', 'hari_infus');
             $vapSummary = $this->calculateSummaryData($this->dataVAP, 'numerator', 'hari_ventilator');
 
-            // Selalu buat record baru alih-alih update
-            $analisaRekomendasi = AnalisaRekomendasi::create([
-                'tanggal_mulai' => $this->tanggal_mulai,
-                'tanggal_selesai' => $this->tanggal_selesai,
-                'ruangan' => $this->ruangan,
-                'analisa' => $this->analisa,
-                'rekomendasi' => $this->rekomendasi,
+            // Gunakan updateOrCreate untuk menghindari error duplicate entry
+            $analisaRekomendasi = AnalisaRekomendasi::updateOrCreate(
+                [
+                    'tanggal_mulai' => \Carbon\Carbon::parse($this->tanggal_mulai)->format('Y-m-d'),
+                    'tanggal_selesai' => \Carbon\Carbon::parse($this->tanggal_selesai)->format('Y-m-d'),
+                    'ruangan' => $this->ruangan ?? 'all',
+                ],
+                [
+                    'analisa' => $this->analisa,
+                    'rekomendasi' => $this->rekomendasi,
                 'data_hap' => $cleanDataHAP,
                 'data_iad' => $cleanDataIAD,
                 'data_ilo' => $cleanDataILO,

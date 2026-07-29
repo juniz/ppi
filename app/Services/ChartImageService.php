@@ -31,7 +31,7 @@ class ChartImageService
         ];
     }
     
-    private function getInfeksiChartData($tanggalMulai, $tanggalSelesai, $ruangan)
+    public function getInfeksiChartData($tanggalMulai, $tanggalSelesai, $ruangan)
     {
         $query = DB::table('data_HAIs')
             ->join('kamar', 'data_HAIs.kd_kamar', '=', 'kamar.kd_kamar')
@@ -93,7 +93,7 @@ class ChartImageService
         ];
     }
     
-    private function getPemasanganChartData($tanggalMulai, $tanggalSelesai, $ruangan)
+    public function getPemasanganChartData($tanggalMulai, $tanggalSelesai, $ruangan)
     {
         $query = DB::table('data_HAIs')
             ->join('kamar', 'data_HAIs.kd_kamar', '=', 'kamar.kd_kamar')

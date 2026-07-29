@@ -5,97 +5,75 @@
     <title>Laporan Analisa dan Rekomendasi HAIs</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-            font-size: 12px;
+            padding: 0;
+            color: #334155;
+            font-size: 11px;
             line-height: 1.4;
         }
         .header {
             text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 15px;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #2563eb;
         }
         .header h1 {
             margin: 0;
-            font-size: 18px;
-            color: #333;
+            color: #0f172a;
+            font-size: 20px;
+            text-transform: uppercase;
+        }
+        .header p {
+            margin: 4px 0 10px 0;
+            font-size: 11px;
+            color: #475569;
+        }
+        .header h2 {
+            margin: 0;
+            color: #1e3a8a;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         .info {
-            margin-bottom: 25px;
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
+            margin-bottom: 20px;
+            background-color: #f8fafc;
+            padding: 10px 15px;
+            border-radius: 6px;
+            border-left: 4px solid #3b82f6;
         }
         .info-row {
             display: flex;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
         .info-label {
             font-weight: bold;
-            width: 120px;
-            color: #555;
+            width: 80px;
+            color: #475569;
+            display: inline-block;
         }
         .section {
-            margin-bottom: 25px;
-            page-break-inside: avoid;
+            margin-bottom: 20px;
         }
         .section-title {
             font-size: 14px;
             font-weight: bold;
             margin-bottom: 10px;
-            color: #333;
-            border-bottom: 1px solid #ddd;
+            color: #0f172a;
+            border-bottom: 1px solid #e2e8f0;
             padding-bottom: 5px;
         }
         .analisa-content, .rekomendasi-content {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            border-left: 4px solid #007bff;
+            background-color: #f8fafc;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border-left: 4px solid #3b82f6;
             margin-bottom: 15px;
+            color: #334155;
         }
         .rekomendasi-content {
-            border-left-color: #28a745;
-        }
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .summary-card {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 12px;
-            background-color: #fff;
-        }
-        .summary-card h4 {
-            margin: 0 0 8px 0;
-            font-size: 12px;
-            color: #333;
-        }
-        .summary-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            font-size: 10px;
-        }
-        .stat-item {
-            text-align: center;
-            padding: 5px;
-            background-color: #f8f9fa;
-            border-radius: 3px;
-        }
-        .stat-label {
-            font-weight: bold;
-            color: #666;
-            margin-bottom: 2px;
-        }
-        .stat-value {
-            font-size: 11px;
-            color: #333;
+            border-left-color: #10b981;
         }
         table {
             width: 100%;
@@ -104,19 +82,25 @@
             font-size: 10px;
         }
         th, td {
-            border: 1px solid #ddd;
-            padding: 6px;
-            text-align: left;
+            border: 1px solid #e2e8f0;
+            padding: 6px 8px;
+            text-align: center;
         }
         th {
-            background-color: #f5f5f5;
+            background-color: #f1f5f9;
+            color: #475569;
             font-weight: bold;
+            text-transform: uppercase;
             font-size: 9px;
+            letter-spacing: 0.5px;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f8fafc;
         }
         .table-title {
             font-weight: bold;
-            margin: 15px 0 8px 0;
-            color: #333;
+            margin: 10px 0 5px 0;
+            color: #1e293b;
             font-size: 11px;
         }
         .page-break {
@@ -126,22 +110,55 @@
             margin-top: 30px;
             text-align: center;
             font-size: 10px;
-            color: #666;
-            border-top: 1px solid #ddd;
+            color: #94a3b8;
+            border-top: 1px solid #e2e8f0;
             padding-top: 10px;
         }
-        .hap-color { background-color: #e3f2fd; }
-        .iad-color { background-color: #e8f5e8; }
-        .ilo-color { background-color: #fff3e0; }
-        .isk-color { background-color: #f3e5f5; }
-        .plebitis-color { background-color: #ffebee; }
-        .vap-color { background-color: #e0f2f1; }
+        .chart-container {
+            width: 100%;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .chart-box {
+            margin-bottom: 15px;
+            page-break-inside: avoid;
+        }
+        .chart-box h4 {
+            margin: 0 0 8px 0;
+            color: #1e293b;
+            font-size: 12px;
+        }
+        .chart-box img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 5px;
+            background: #fff;
+        }
     </style>
 </head>
 <body>
+    @php
+        $setting = \App\Models\Setting::first();
+        $namaRuangan = $record->ruangan === 'all' 
+            ? 'Semua Ruangan' 
+            : (\App\Models\Bangsal::where('kd_bangsal', $record->ruangan)->value('nm_bangsal') ?? $record->ruangan);
+    @endphp
+
     <div class="header">
-        <h1>Laporan Analisa dan Rekomendasi HAIs</h1>
-        <p style="margin: 5px 0 0 0; color: #666;">Healthcare-Associated Infections Analysis & Recommendations</p>
+        @if($setting && $setting->nama_instansi)
+            <h1>{{ strtoupper($setting->nama_instansi) }}</h1>
+            <p>
+                {{ $setting->alamat_instansi ?? '' }} 
+                @if($setting->kabupaten) - {{ $setting->kabupaten }} @endif
+                @if($setting->propinsi) - {{ $setting->propinsi }} @endif
+                <br>
+                @if($setting->kontak) Telp: {{ $setting->kontak }} @endif
+                @if($setting->email) | Email: {{ $setting->email }} @endif
+            </p>
+        @endif
+        <h2>Laporan Analisa dan Rekomendasi HAIs</h2>
     </div>
 
     <div class="info">
@@ -151,7 +168,7 @@
         </div>
         <div class="info-row">
             <span class="info-label">Ruangan:</span>
-            <span>{{ $record->ruangan }}</span>
+            <span>{{ $namaRuangan }}</span>
         </div>
         <div class="info-row">
             <span class="info-label">Dibuat:</span>
@@ -159,140 +176,36 @@
         </div>
     </div>
 
+    @php
+        $infeksiPath = $record->chart_infeksi_image ? storage_path('app/public/' . $record->chart_infeksi_image) : null;
+        $infeksiBase64 = $infeksiPath && file_exists($infeksiPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($infeksiPath)) : null;
+
+        $pemasanganPath = $record->chart_pemasangan_image ? storage_path('app/public/' . $record->chart_pemasangan_image) : null;
+        $pemasanganBase64 = $pemasanganPath && file_exists($pemasanganPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($pemasanganPath)) : null;
+    @endphp
+
+    @if($infeksiBase64 || $pemasanganBase64)
     <div class="section">
-        <div class="section-title">Analisa</div>
-        <div class="analisa-content">
-            {!! nl2br(e($record->analisa)) !!}
-        </div>
-    </div>
+        <div class="section-title">Grafik HAIs</div>
+        <div class="chart-container" style="display: table; width: 100%;">
+            <div style="display: table-row;">
+                @if($infeksiBase64)
+                    <div class="chart-box" style="display: table-cell; width: 50%; padding-right: 10px; vertical-align: top;">
+                        <h4>Grafik Infeksi HAIs</h4>
+                        <img src="{{ $infeksiBase64 }}" alt="Grafik Infeksi HAIs">
+                    </div>
+                @endif
 
-    <div class="section">
-        <div class="section-title">Rekomendasi</div>
-        <div class="rekomendasi-content">
-            {!! nl2br(e($record->rekomendasi)) !!}
-        </div>
-    </div>
-
-    <div class="section">
-        <div class="section-title">Data HAIs</div>
-        <div class="summary-grid">
-            <!-- HAP -->
-            <div class="summary-card hap-color">
-                <h4>Hospital Acquired Pneumonia (HAP)</h4>
-                <div class="summary-stats">
-                    <div class="stat-item">
-                        <div class="stat-label">Total Kasus</div>
-                        <div class="stat-value">{{ $record->total_hap_kasus ?? 0 }}</div>
+                @if($pemasanganBase64)
+                    <div class="chart-box" style="display: table-cell; width: 50%; padding-left: 10px; vertical-align: top;">
+                        <h4>Grafik Pemasangan Alat</h4>
+                        <img src="{{ $pemasanganBase64 }}" alt="Grafik Pemasangan Alat">
                     </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Hari Rawat</div>
-                        <div class="stat-value">{{ $record->total_hap_hari_rawat ?? 0 }}</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Rata-rata Laju</div>
-                        <div class="stat-value">{{ number_format($record->rata_hap_laju ?? 0, 2) }}‰</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- IAD -->
-            <div class="summary-card iad-color">
-                <h4>Infeksi Aliran Darah (IAD)</h4>
-                <div class="summary-stats">
-                    <div class="stat-item">
-                        <div class="stat-label">Total Kasus</div>
-                        <div class="stat-value">{{ $record->total_iad_kasus ?? 0 }}</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Hari Terpasang</div>
-                        <div class="stat-value">{{ $record->total_iad_hari_terpasang ?? 0 }}</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Rata-rata Laju</div>
-                        <div class="stat-value">{{ number_format($record->rata_iad_laju ?? 0, 2) }}‰</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ILO -->
-            <div class="summary-card ilo-color">
-                <h4>Infeksi Luka Operasi (ILO)</h4>
-                <div class="summary-stats">
-                    <div class="stat-item">
-                        <div class="stat-label">Total Kasus</div>
-                        <div class="stat-value">{{ $record->total_ilo_kasus ?? 0 }}</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Hari Operasi</div>
-                        <div class="stat-value">{{ $record->total_ilo_hari_operasi ?? 0 }}</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Rata-rata Laju</div>
-                        <div class="stat-value">{{ number_format($record->rata_ilo_laju ?? 0, 2) }}%</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ISK -->
-            <div class="summary-card isk-color">
-                <h4>Infeksi Saluran Kemih (ISK)</h4>
-                <div class="summary-stats">
-                    <div class="stat-item">
-                        <div class="stat-label">Total Kasus</div>
-                        <div class="stat-value">{{ $record->total_isk_kasus ?? 0 }}</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Hari Kateter</div>
-                        <div class="stat-value">{{ $record->total_isk_hari_kateter ?? 0 }}</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Rata-rata Laju</div>
-                        <div class="stat-value">{{ number_format($record->rata_isk_laju ?? 0, 2) }}‰</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Plebitis -->
-            <div class="summary-card plebitis-color">
-                <h4>Plebitis</h4>
-                <div class="summary-stats">
-                    <div class="stat-item">
-                        <div class="stat-label">Total Kasus</div>
-                        <div class="stat-value">{{ $record->total_plebitis_kasus ?? 0 }}</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Hari Infus</div>
-                        <div class="stat-value">{{ $record->total_plebitis_hari_infus ?? 0 }}</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Rata-rata Laju</div>
-                        <div class="stat-value">{{ number_format($record->rata_plebitis_laju ?? 0, 2) }}‰</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VAP -->
-            <div class="summary-card vap-color">
-                <h4>Ventilator Associated Pneumonia (VAP)</h4>
-                <div class="summary-stats">
-                    <div class="stat-item">
-                        <div class="stat-label">Total Kasus</div>
-                        <div class="stat-value">{{ $record->total_vap_kasus ?? 0 }}</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Hari Ventilator</div>
-                        <div class="stat-value">{{ $record->total_vap_hari_ventilator ?? 0 }}</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Rata-rata Laju</div>
-                        <div class="stat-value">{{ number_format($record->rata_vap_laju ?? 0, 2) }}‰</div>
-                    </div>
-                </div>
+                @endif
             </div>
         </div>
     </div>
-
-    <div class="page-break"></div>
+    @endif
 
     <div class="section">
         <div class="section-title">Data Detail HAIs</div>
@@ -464,6 +377,20 @@
             </tbody>
         </table>
         @endif
+    </div>
+
+    <div class="section">
+        <div class="section-title">Buat Analisis dan Rekomendasi</div>
+        
+        <div class="analisa-content">
+            <h4 style="margin-top: 0; color: #333; margin-bottom: 8px;">Analisis</h4>
+            {!! nl2br(e($record->analisa)) !!}
+        </div>
+        
+        <div class="rekomendasi-content">
+            <h4 style="margin-top: 0; color: #333; margin-bottom: 8px;">Rekomendasi</h4>
+            {!! nl2br(e($record->rekomendasi)) !!}
+        </div>
     </div>
 
     <div class="footer">
