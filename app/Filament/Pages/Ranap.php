@@ -510,77 +510,74 @@ class Ranap extends Page implements HasTable
                             }
                         }),
                     Action::make('input_bundle_isk')
-                        ->label('Bundle ISK')
+                        ->label('Bundle CAUTI')
                         ->icon('heroicon-o-clipboard-document-check')
                         ->form([
                             Forms\Components\Select::make('id_ruang')
                                 ->label('Ruang')
                                 ->options(DB::table('ruang_audit_kepatuhan')->pluck('nama_ruang', 'id_ruang'))
-                                ->required(),
-                            Forms\Components\Select::make('pemasangan_sesuai_indikasi')
-                                ->label('1. Pemasangan Sesuai Indikasi')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
-                                ->default('Ya')
-                                ->required(),
-                            Forms\Components\Select::make('hand_hygiene')
-                                ->label('2. Hand Hygiene')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
-                                ->default('Ya')
-                                ->required(),
-                            Forms\Components\Select::make('menggunakan_apd_yang_tepat')
-                                ->label('3. Menggunakan APD yang Tepat')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
-                                ->default('Ya')
-                                ->required(),
-                            Forms\Components\Select::make('pemasangan_menggunakan_alat_steril')
-                                ->label('4. Pemasangan Menggunakan Alat Steril')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
-                                ->default('Ya')
-                                ->required(),
-                            Forms\Components\Select::make('segera_dilepas_setelah_tidak_diperlukan')
-                                ->label('5. Segera dilepas setelah tidak diperlukan')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
-                                ->default('Ya')
-                                ->required(),
-                            Forms\Components\Select::make('pengisian_balon_sesuai_petunjuk')
-                                ->label('6. Pengisian Balon Sesuai Petunjuk (20 ml)')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
-                                ->default('Ya')
-                                ->required(),
-                            Forms\Components\Select::make('fiksasi_kateter_dengan_plester')
-                                ->label('7. Fiksasi Kateter dengan Plester')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
-                                ->default('Ya')
-                                ->required(),
-                            Forms\Components\Select::make('urinebag_menggantung_tidak_menyentuh_lantai')
-                                ->label('8. Urinebag Menggantung Tidak Menyentuh Lantai')
-                                ->options([
-                                    'Ya' => 'Ya',
-                                    'Tidak' => 'Tidak',
-                                ])
-                                ->default('Ya')
-                                ->required(),
+                                ->required()
+                                ->columnSpanFull(),
+                            
+                            Forms\Components\Section::make('Pemasangan')
+                                ->schema([
+                                    Forms\Components\Select::make('pemasangan_1_indikasi')
+                                        ->label('1. Indikasi pemasangan kateter urin menetap sesuai kebutuhan')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak', 'NA' => 'NA'])
+                                        ->default('Ya')->required(),
+                                    Forms\Components\Select::make('pemasangan_2_hand_hygiene')
+                                        ->label('2. Hand hygiene dilakukan sebelum dan sesudah tindakan')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak', 'NA' => 'NA'])
+                                        ->default('Ya')->required(),
+                                    Forms\Components\Select::make('pemasangan_3_teknik_aseptik')
+                                        ->label('3. Menggunakan teknik aseptik')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak', 'NA' => 'NA'])
+                                        ->default('Ya')->required(),
+                                    Forms\Components\Select::make('pemasangan_4_alat_steril')
+                                        ->label('4. Menggunakan alat steril, pelumas steril, dan area kerja bersih')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak', 'NA' => 'NA'])
+                                        ->default('Ya')->required(),
+                                ])->columns(2),
+
+                            Forms\Components\Section::make('Perawatan')
+                                ->schema([
+                                    Forms\Components\Select::make('perawatan_1_hand_hygiene')
+                                        ->label('1. Hand hygiene sebelum dan sesudah memanipulasi kateter/perangkat')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak', 'NA' => 'NA'])
+                                        ->default('Ya')->required(),
+                                    Forms\Components\Select::make('perawatan_2_genitalia_dibersihkan')
+                                        ->label('2. Daerah genitalia dibersihkan')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak', 'NA' => 'NA'])
+                                        ->default('Ya')->required(),
+                                    Forms\Components\Select::make('perawatan_3_fiksasi_kateter')
+                                        ->label('3. Kateter diberikan fiksasi dengan baik')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak', 'NA' => 'NA'])
+                                        ->default('Ya')->required(),
+                                    Forms\Components\Select::make('perawatan_4_tidak_diganti_rutin')
+                                        ->label('4. Tidak dilakukan penggantian kateter secara rutin kecuali terjadi infeksi')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak', 'NA' => 'NA'])
+                                        ->default('Ya')->required(),
+                                    Forms\Components\Select::make('perawatan_5_aliran_steril_tertutup')
+                                        ->label('5. Sistem aliran urin dipertahankan steril dan tertutup')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak', 'NA' => 'NA'])
+                                        ->default('Ya')->required(),
+                                    Forms\Components\Select::make('perawatan_6_hubungan_kateter_tertutup')
+                                        ->label('6. Hubungan kateter dengan pipa drainase tidak dibuka kecuali atas indikasi')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak', 'NA' => 'NA'])
+                                        ->default('Ya')->required(),
+                                    Forms\Components\Select::make('perawatan_7_urine_bag_tidak_di_lantai')
+                                        ->label('7. Urine bag tidak diletakkan di lantai')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak', 'NA' => 'NA'])
+                                        ->default('Ya')->required(),
+                                    Forms\Components\Select::make('perawatan_8_selang_tidak_terlipat')
+                                        ->label('8. Selang tidak terlipat/tertekuk')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak', 'NA' => 'NA'])
+                                        ->default('Ya')->required(),
+                                    Forms\Components\Select::make('perawatan_10_segera_dilepas')
+                                        ->label('9. Kateter segera dilepas jika sudah tidak dibutuhkan')
+                                        ->options(['Ya' => 'Ya', 'Tidak' => 'Tidak', 'NA' => 'NA'])
+                                        ->default('Ya')->required(),
+                                ])->columns(2),
                         ])
                         ->action(function (array $data, KamarInap $record): void {
                             try {
@@ -591,13 +588,13 @@ class Ranap extends Page implements HasTable
                                 \App\Models\AuditBundleIsk::create($data);
                                 
                                 Notification::make()
-                                    ->title('Bundle ISK berhasil disimpan')
+                                    ->title('Bundle CAUTI berhasil disimpan')
                                     ->success()
                                     ->send();
                             } catch (\Exception $e) {
                                 Notification::make()
                                     ->title('Error')
-                                    ->body('Gagal menyimpan bundle ISK: ' . $e->getMessage())
+                                    ->body('Gagal menyimpan bundle CAUTI: ' . $e->getMessage())
                                     ->danger()
                                     ->send();
                             }

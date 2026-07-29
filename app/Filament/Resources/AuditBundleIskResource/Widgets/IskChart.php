@@ -19,7 +19,7 @@ class IskChart extends ApexChartWidget
      *
      * @var string|null
      */
-    protected static ?string $heading = 'Audit Bundle ISK Chart';
+    protected static ?string $heading = 'Audit Bundle CAUTI Chart';
 
     /**
      * Chart options (series, labels, types, size, animations...)
