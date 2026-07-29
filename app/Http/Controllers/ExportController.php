@@ -33,7 +33,15 @@ class ExportController extends Controller
         $pdf = Pdf::loadView('filament.pages.pdf.analisa-rekomendasi', $data)
                   ->setPaper('a4', 'portrait');
 
-        $filename = 'analisa-rekomendasi-' . $record->tanggal_mulai->format('Y-m-d') . '-' . $record->tanggal_selesai->format('Y-m-d') . '.pdf';
+        // Dapatkan nama ruangan asli
+        $namaRuangan = $record->ruangan === 'all' 
+            ? 'semua-ruangan' 
+            : (\App\Models\Bangsal::where('kd_bangsal', $record->ruangan)->value('nm_bangsal') ?? $record->ruangan);
+        
+        // Buat format nama file yang rapi (hilangkan spasi atau ganti dengan strip)
+        $namaRuanganFormatted = \Illuminate\Support\Str::slug($namaRuangan);
+
+        $filename = 'analisa-rekomendasi-' . $namaRuanganFormatted . '-' . $record->tanggal_mulai->format('Y-m-d') . '-sd-' . $record->tanggal_selesai->format('Y-m-d') . '.pdf';
 
         // Menggunakan array ['Attachment' => false] agar file dirender inline di browser (tab baru)
         return $pdf->stream($filename, ['Attachment' => false]);
