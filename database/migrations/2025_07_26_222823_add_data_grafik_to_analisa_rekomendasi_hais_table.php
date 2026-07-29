@@ -12,13 +12,27 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('analisa_rekomendasi_hais', function (Blueprint $table) {
-            $table->json('data_hap')->nullable()->after('rekomendasi');
-            $table->json('data_iad')->nullable()->after('data_hap');
-            $table->json('data_ilo')->nullable()->after('data_iad');
-            $table->json('data_isk')->nullable()->after('data_ilo');
-            $table->json('data_plebitis')->nullable()->after('data_isk');
-            $table->json('data_vap')->nullable()->after('data_plebitis');
-            $table->json('summary_laju')->nullable()->after('data_vap');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'data_hap')) {
+                $table->json('data_hap')->nullable()->after('rekomendasi');
+            }
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'data_iad')) {
+                $table->json('data_iad')->nullable()->after('data_hap');
+            }
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'data_ilo')) {
+                $table->json('data_ilo')->nullable()->after('data_iad');
+            }
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'data_isk')) {
+                $table->json('data_isk')->nullable()->after('data_ilo');
+            }
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'data_plebitis')) {
+                $table->json('data_plebitis')->nullable()->after('data_isk');
+            }
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'data_vap')) {
+                $table->json('data_vap')->nullable()->after('data_plebitis');
+            }
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'summary_laju')) {
+                $table->json('summary_laju')->nullable()->after('data_vap');
+            }
         });
     }
 
