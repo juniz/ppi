@@ -13,34 +13,34 @@ return new class extends Migration
     {
         Schema::table('analisa_rekomendasi_hais', function (Blueprint $table) {
             // Summary fields untuk HAP
-            $table->integer('total_hap_kasus')->default(0)->after('summary_laju');
-            $table->integer('total_hap_hari_rawat')->default(0)->after('total_hap_kasus');
-            $table->decimal('rata_hap_laju', 8, 2)->default(0)->after('total_hap_hari_rawat');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'total_hap_kasus')) $table->integer('total_hap_kasus')->default(0)->after('summary_laju');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'total_hap_hari_rawat')) $table->integer('total_hap_hari_rawat')->default(0)->after('total_hap_kasus');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'rata_hap_laju')) $table->decimal('rata_hap_laju', 8, 2)->default(0)->after('total_hap_hari_rawat');
             
             // Summary fields untuk IAD
-            $table->integer('total_iad_kasus')->default(0)->after('rata_hap_laju');
-            $table->integer('total_iad_hari_terpasang')->default(0)->after('total_iad_kasus');
-            $table->decimal('rata_iad_laju', 8, 2)->default(0)->after('total_iad_hari_terpasang');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'total_iad_kasus')) $table->integer('total_iad_kasus')->default(0)->after('rata_hap_laju');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'total_iad_hari_terpasang')) $table->integer('total_iad_hari_terpasang')->default(0)->after('total_iad_kasus');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'rata_iad_laju')) $table->decimal('rata_iad_laju', 8, 2)->default(0)->after('total_iad_hari_terpasang');
             
             // Summary fields untuk ILO
-            $table->integer('total_ilo_kasus')->default(0)->after('rata_iad_laju');
-            $table->integer('total_ilo_hari_operasi')->default(0)->after('total_ilo_kasus');
-            $table->decimal('rata_ilo_laju', 8, 2)->default(0)->after('total_ilo_hari_operasi');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'total_ilo_kasus')) $table->integer('total_ilo_kasus')->default(0)->after('rata_iad_laju');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'total_ilo_hari_operasi')) $table->integer('total_ilo_hari_operasi')->default(0)->after('total_ilo_kasus');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'rata_ilo_laju')) $table->decimal('rata_ilo_laju', 8, 2)->default(0)->after('total_ilo_hari_operasi');
             
             // Summary fields untuk ISK
-            $table->integer('total_isk_kasus')->default(0)->after('rata_ilo_laju');
-            $table->integer('total_isk_hari_kateter')->default(0)->after('total_isk_kasus');
-            $table->decimal('rata_isk_laju', 8, 2)->default(0)->after('total_isk_hari_kateter');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'total_isk_kasus')) $table->integer('total_isk_kasus')->default(0)->after('rata_ilo_laju');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'total_isk_hari_kateter')) $table->integer('total_isk_hari_kateter')->default(0)->after('total_isk_kasus');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'rata_isk_laju')) $table->decimal('rata_isk_laju', 8, 2)->default(0)->after('total_isk_hari_kateter');
             
             // Summary fields untuk Plebitis
-            $table->integer('total_plebitis_kasus')->default(0)->after('rata_isk_laju');
-            $table->integer('total_plebitis_hari_infus')->default(0)->after('total_plebitis_kasus');
-            $table->decimal('rata_plebitis_laju', 8, 2)->default(0)->after('total_plebitis_hari_infus');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'total_plebitis_kasus')) $table->integer('total_plebitis_kasus')->default(0)->after('rata_isk_laju');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'total_plebitis_hari_infus')) $table->integer('total_plebitis_hari_infus')->default(0)->after('total_plebitis_kasus');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'rata_plebitis_laju')) $table->decimal('rata_plebitis_laju', 8, 2)->default(0)->after('total_plebitis_hari_infus');
             
             // Summary fields untuk VAP
-            $table->integer('total_vap_kasus')->default(0)->after('rata_plebitis_laju');
-            $table->integer('total_vap_hari_ventilator')->default(0)->after('total_vap_kasus');
-            $table->decimal('rata_vap_laju', 8, 2)->default(0)->after('total_vap_hari_ventilator');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'total_vap_kasus')) $table->integer('total_vap_kasus')->default(0)->after('rata_plebitis_laju');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'total_vap_hari_ventilator')) $table->integer('total_vap_hari_ventilator')->default(0)->after('total_vap_kasus');
+            if (!Schema::hasColumn('analisa_rekomendasi_hais', 'rata_vap_laju')) $table->decimal('rata_vap_laju', 8, 2)->default(0)->after('total_vap_hari_ventilator');
         });
     }
 
