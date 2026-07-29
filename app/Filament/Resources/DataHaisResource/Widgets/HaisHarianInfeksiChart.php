@@ -6,37 +6,43 @@ use App\Models\DataHais;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 use Illuminate\Support\Carbon;
 
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
+
 class HaisHarianInfeksiChart extends ApexChartWidget
 {
+    use InteractsWithPageFilters;
     protected static ?string $heading = 'Grafik Infeksi HAIs';
-    protected int | string | array $columnSpan = 'full';
-    
-    public ?string $filter = 'today';
-
-    protected function getFilters(): ?array
-    {
-        return [
-            'today' => 'Hari Ini',
-            'week' => 'Minggu Ini',
-            'month' => 'Bulan Ini',
-            'year' => 'Tahun Ini',
-        ];
-    }
-
+    protected int | string | array $columnSpan = ['md' => 1, 'xl' => 1];
     protected function getOptions(): array
     {
-        $dateRange = match ($this->filter) {
-            'today' => Carbon::today()->format('d M Y'),
-            'week' => Carbon::now()->startOfWeek()->format('d M Y') . ' - ' . Carbon::now()->endOfWeek()->format('d M Y'),
-            'month' => Carbon::now()->startOfMonth()->format('d M Y') . ' - ' . Carbon::now()->endOfMonth()->format('d M Y'),
-            'year' => Carbon::now()->startOfYear()->format('d M Y') . ' - ' . Carbon::now()->endOfYear()->format('d M Y'),
-        };
+        
+        $dari = $this->filters['dari_tanggal'] ?? null;
+        $sampai = $this->filters['sampai_tanggal'] ?? null;
+        $bangsal = $this->filters['kd_bangsal'] ?? null;
+        $search = $this->filters['search'] ?? null;
+        
+        $dateRange = '';
+        if ($dari && $sampai) {
+            $dateRange = Carbon::parse($dari)->format('d M Y') . ' - ' . Carbon::parse($sampai)->format('d M Y');
+        } elseif ($dari) {
+            $dateRange = 'Sejak ' . Carbon::parse($dari)->format('d M Y');
+        } elseif ($sampai) {
+            $dateRange = 'Hingga ' . Carbon::parse($sampai)->format('d M Y');
+        } else {
+            $dateRange = 'Semua Waktu';
+        }
 
         $data = DataHais::query()
-            ->when($this->filter === 'today', fn($q) => $q->whereDate('tanggal', Carbon::today()))
-            ->when($this->filter === 'week', fn($q) => $q->whereBetween('tanggal', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]))
-            ->when($this->filter === 'month', fn($q) => $q->whereMonth('tanggal', Carbon::now()->month))
-            ->when($this->filter === 'year', fn($q) => $q->whereYear('tanggal', Carbon::now()->year))
+            ->when($dari, fn($q) => $q->whereDate('data_HAIs.tanggal', '>=', $dari))
+            ->when($sampai, fn($q) => $q->whereDate('data_HAIs.tanggal', '<=', $sampai))
+            ->when($bangsal, fn($q) => $q->whereHas('kamar', fn($k) => $k->where('kd_bangsal', $bangsal)))
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($query) use ($search) {
+                    $query->whereHas('regPeriksa.pasien', fn($p) => $p->where('nm_pasien', 'like', "%{$search}%"))
+                          ->orWhere('data_HAIs.no_rawat', 'like', "%{$search}%")
+                          ->orWhereHas('kamar', fn($k) => $k->where('kd_kamar', 'like', "%{$search}%"));
+                });
+            })
             ->selectRaw('
                 SUM(VAP) as vap,
                 SUM(IAD) as iad,

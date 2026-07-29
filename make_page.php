@@ -1,4 +1,6 @@
 <?php
+$content = <<<'PHP'
+<?php
 
 namespace App\Filament\Pages;
 
@@ -25,7 +27,6 @@ class HaisPerPasien extends Page implements HasTable
     protected static ?string $slug = 'hais-per-pasien';
     protected static ?string $navigationGroup = 'Laporan HAIs';
     protected static ?int $navigationSort = 3;
-    protected static string $view = 'filament.pages.hais-per-pasien';
 
     protected function getHeaderWidgets(): array
     {
@@ -119,3 +120,7 @@ class HaisPerPasien extends Page implements HasTable
             ->striped();
     }
 }
+PHP;
+
+file_put_contents('/Users/saifulumam/Developer/sihais/app/Filament/Pages/HaisPerPasien.php', $content);
+echo "Page updated.\n";
