@@ -29,6 +29,7 @@ class SettingInstitusi extends Page implements HasForms
     public function mount(): void
     {
         $setting = Setting::first();
+        
         if ($setting) {
             $this->form->fill($setting->toArray());
         } else {
@@ -64,6 +65,7 @@ class SettingInstitusi extends Page implements HasForms
         $data = $this->form->getState();
 
         $setting = Setting::first();
+        
         if ($setting) {
             $setting->update($data);
         } else {

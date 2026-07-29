@@ -13,6 +13,14 @@
         font-size: 0.925rem !important;
     }
     
+    /* Force smaller gaps between outer group containers in Filament v3 */
+    .fi-sidebar-nav-groups {
+        gap: 0.5rem !important;
+    }
+    .fi-sidebar-group {
+        margin-top: 0 !important;
+    }
+    
     /* Group headings - stronger and more distinct with modern background */
     .fi-sidebar-group-label {
         background-color: rgba(var(--primary-500), 0.08) !important;
@@ -21,8 +29,9 @@
         font-size: 0.75rem !important;
         letter-spacing: 0.05em;
         text-transform: uppercase;
-        margin-top: 1rem !important;
-        padding: 0.5rem 0.75rem !important;
+        margin-top: 0 !important;
+        margin-bottom: 0.15rem !important;
+        padding: 0.35rem 0.5rem !important;
         border-radius: 0.5rem !important;
         border-left: 3px solid rgba(var(--primary-500), 0.6) !important;
     }

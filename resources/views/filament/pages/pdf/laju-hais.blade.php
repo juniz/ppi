@@ -76,7 +76,21 @@
     </style>
 </head>
 <body>
+    @php
+        $setting = \App\Models\Setting::first();
+    @endphp
     <div class="header">
+        @if($setting && $setting->nama_instansi)
+            <h1 style="margin: 0; color: #0f172a; font-size: 22px;">{{ strtoupper($setting->nama_instansi) }}</h1>
+            <p style="margin: 4px 0 15px 0; font-size: 11px; color: #475569;">
+                {{ $setting->alamat_instansi ?? '' }} 
+                @if($setting->kabupaten) - {{ $setting->kabupaten }} @endif
+                @if($setting->propinsi) - {{ $setting->propinsi }} @endif
+                <br>
+                @if($setting->kontak) Telp: {{ $setting->kontak }} @endif
+                @if($setting->email) | Email: {{ $setting->email }} @endif
+            </p>
+        @endif
         <h2>Laporan Analisa Laju HAIs</h2>
     </div>
 
