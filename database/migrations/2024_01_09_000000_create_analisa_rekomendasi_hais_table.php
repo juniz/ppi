@@ -8,15 +8,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('analisa_rekomendasi_hais', function (Blueprint $table) {
-            $table->id();
-            $table->date('tanggal_mulai');
-            $table->date('tanggal_selesai');
-            $table->string('ruangan')->nullable();
-            $table->text('analisa')->nullable();
-            $table->text('rekomendasi')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('analisa_rekomendasi_hais')) {
+            Schema::create('analisa_rekomendasi_hais', function (Blueprint $table) {
+                $table->id();
+                $table->date('tanggal_mulai');
+                $table->date('tanggal_selesai');
+                $table->string('ruangan')->nullable();
+                $table->text('analisa')->nullable();
+                $table->text('rekomendasi')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void
