@@ -111,11 +111,11 @@ class AnalisaLajuHAIs extends Page implements HasForms, HasTable
         $this->dataHAP = (clone $baseQuery)
             ->select([
                 'bangsal.nm_bangsal',
-                DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.HAP != 0 THEN data_HAIs.no_rawat END) as numerator'),
-                DB::raw('SUM(data_HAIs.HAP) as hari_rawat'),
+                DB::raw('COUNT(DISTINCT data_HAIs.no_rawat) as numerator'),
+                DB::raw('COUNT(data_HAIs.no_rawat) as hari_rawat'),
                 DB::raw('COUNT(CASE WHEN data_HAIs.HAP > 0 THEN 1 END) as denumerator'),
-                DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.HAP > 0 THEN 1 END)/NULLIF(SUM(data_HAIs.HAP),0))*1000), ' ‰') as laju"),
-                DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.HAP > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.HAP != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
+                DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.HAP > 0 THEN 1 END)/NULLIF(COUNT(data_HAIs.no_rawat),0))*1000), ' ‰') as laju"),
+                DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.HAP > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT data_HAIs.no_rawat),0))*100, 2), " %") as persentase')
             ])
             ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
             ->get();
