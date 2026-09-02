@@ -99,11 +99,11 @@ class LajuHAIs extends Page implements HasForms
         $this->dataIAD = (clone $baseQuery)
             ->select([
                 'bangsal.nm_bangsal',
-                DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.IAD != 0 THEN data_HAIs.no_rawat END) as numerator'),
-                DB::raw('SUM(data_HAIs.IAD) as hari_terpasang'),
+                DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.CVL != 0 THEN data_HAIs.no_rawat END) as numerator'),
+                DB::raw('SUM(data_HAIs.CVL) as hari_terpasang'),
                 DB::raw('COUNT(CASE WHEN data_HAIs.IAD > 0 THEN 1 END) as denumerator'),
-                DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.IAD > 0 THEN 1 END)/NULLIF(SUM(data_HAIs.IAD),0))*1000), ' ‰') as laju"),
-                DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.IAD > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.IAD != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
+                DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.IAD > 0 THEN 1 END)/NULLIF(SUM(data_HAIs.CVL),0))*1000), ' ‰') as laju"),
+                DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.IAD > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.CVL != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
             ])
             ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
             ->get();
@@ -125,11 +125,11 @@ class LajuHAIs extends Page implements HasForms
         $this->dataISK = (clone $baseQuery)
             ->select([
                 'bangsal.nm_bangsal',
-                DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.ISK != 0 THEN data_HAIs.no_rawat END) as numerator'),
-                DB::raw('SUM(data_HAIs.ISK) as hari_kateter'),
+                DB::raw('COUNT(DISTINCT CASE WHEN data_HAIs.UC != 0 THEN data_HAIs.no_rawat END) as numerator'),
+                DB::raw('SUM(data_HAIs.UC) as hari_kateter'),
                 DB::raw('COUNT(CASE WHEN data_HAIs.ISK > 0 THEN 1 END) as denumerator'),
-                DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.ISK > 0 THEN 1 END)/NULLIF(SUM(data_HAIs.ISK),0))*1000), ' ‰') as laju"),
-                DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.ISK > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.ISK != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
+                DB::raw("CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.ISK > 0 THEN 1 END)/NULLIF(SUM(data_HAIs.UC),0))*1000), ' ‰') as laju"),
+                DB::raw('CONCAT(ROUND((COUNT(CASE WHEN data_HAIs.ISK > 0 THEN 1 END)/NULLIF(COUNT(DISTINCT CASE WHEN data_HAIs.UC != 0 THEN data_HAIs.no_rawat END),0))*100, 2), " %") as persentase')
             ])
             ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')
             ->get();
