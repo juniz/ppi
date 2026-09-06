@@ -55,7 +55,9 @@ class HaisHarian extends Page implements HasTable, HasForms
                         Grid::make(['md' => 5, 'default' => 1])
                             ->schema([
                                 TextInput::make('search')->label('Cari Data (Nama/No.Rawat)')->placeholder('Ketik pencarian...')->columnSpan(1),
-                                Select::make('kd_bangsal')->label('Bangsal')->options(\App\Models\Bangsal::pluck('nm_bangsal', 'kd_bangsal'))->searchable()->columnSpan(1),
+                                Select::make('kd_bangsal')->label('Bangsal')->options(fn () => \Illuminate\Support\Facades\Cache::remember(
+                                    'bangsal_options', 300, fn () => \App\Models\Bangsal::pluck('nm_bangsal', 'kd_bangsal')
+                                ))->searchable()->columnSpan(1),
                                 DatePicker::make('dari_tanggal')->label('Dari Tanggal')->native(false)->required()->columnSpan(1),
                                 DatePicker::make('sampai_tanggal')->label('Sampai Tanggal')->native(false)->required()->columnSpan(1),
                                 Actions::make([

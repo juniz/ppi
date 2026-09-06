@@ -6,7 +6,8 @@ use App\Models\Bangsal;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class StatusInputHaisTable extends BaseWidget
 {
@@ -32,11 +33,11 @@ class StatusInputHaisTable extends BaseWidget
                         END as persentase
                     ')
                     ->leftJoin('kamar', 'bangsal.kd_bangsal', '=', 'kamar.kd_bangsal')
-                    ->leftJoin('kamar_inap', function($join) {
+                    ->leftJoin('kamar_inap', function ($join) {
                         $join->on('kamar.kd_kamar', '=', 'kamar_inap.kd_kamar')
                             ->where('kamar_inap.stts_pulang', '=', '-');
                     })
-                    ->leftJoin('data_HAIs', function($join) {
+                    ->leftJoin('data_HAIs', function ($join) {
                         $join->on('kamar_inap.no_rawat', '=', 'data_HAIs.no_rawat')
                             ->whereDate('data_HAIs.tanggal', now());
                     })
@@ -91,7 +92,7 @@ class StatusInputHaisTable extends BaseWidget
             ->searchable()
             ->paginated([20, 50, 100, 'all'])
             ->defaultPaginationPageOption(20)
-            ->poll('10s');
+            ->poll('60s'); // Naik dari 10s → 60s, query ini berat (4-table JOIN + COUNT)
     }
 
     public function getTableRecordKey(mixed $record): string

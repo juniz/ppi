@@ -78,7 +78,7 @@ class DataHaisResource extends Resource
         return $table
             ->query(
                 DataHais::query()
-                    ->with('regPeriksa')
+                    ->with('regPeriksa.pasien') // fix N+1: pasien ikut di-eager load
             )
             ->columns([
                 Tables\Columns\TextColumn::make('no_rawat')

@@ -65,7 +65,9 @@ class LajuHAIs extends Page implements HasForms
                     ->required(),
                 Select::make('ruangan')
                     ->label('Ruangan')
-                    ->options(Bangsal::pluck('nm_bangsal', 'kd_bangsal'))
+                    ->options(fn () => \Illuminate\Support\Facades\Cache::remember(
+                        'bangsal_options', 300, fn () => Bangsal::pluck('nm_bangsal', 'kd_bangsal')
+                    ))
                     ->placeholder('Semua Ruangan')
             ])
             ->columns(3);

@@ -7,40 +7,38 @@ use App\Models\RegPeriksa;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class StatsOverview extends BaseWidget
 {
     protected function getStats(): array
     {
         $today = Carbon::now()->format('Y-m-d');
-        
-        // Query untuk Pasien Rawat Inap yang masih dirawat (stts_pulang = '-')
-        $rawatInap = KamarInap::where('stts_pulang', '-')
-            ->count();
 
-        // Query untuk Pasien Pulang hari ini
-        $pasienPulang = KamarInap::whereDate('tgl_keluar', $today)
-            ->where('stts_pulang', '!=', '-')
-            ->count();
-
-        // Query untuk Pasien Masuk hari ini
-        $pasienMasuk = KamarInap::whereDate('tgl_masuk', $today)
-            ->count();
+        // Cache stats selama 60 detik — mengurangi 3 query per 10 detik polling
+        $stats = Cache::remember('dashboard_stats_overview', 60, function () use ($today) {
+            return [
+                'rawatInap'   => KamarInap::where('stts_pulang', '-')->count(),
+                'pasienPulang'=> KamarInap::whereDate('tgl_keluar', $today)
+                    ->where('stts_pulang', '!=', '-')->count(),
+                'pasienMasuk' => KamarInap::whereDate('tgl_masuk', $today)->count(),
+            ];
+        });
 
         return [
-            Stat::make('Pasien Rawat Inap', $rawatInap)
+            Stat::make('Pasien Rawat Inap', $stats['rawatInap'])
                 ->description('Total pasien dirawat saat ini')
                 ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->chart([7, 2, 10, 3, 15, 4, 17])
                 ->color('info'),
-            Stat::make('Pasien Pulang', $pasienPulang)
+            Stat::make('Pasien Pulang', $stats['pasienPulang'])
                 ->description('Pasien pulang hari ini')
                 ->descriptionIcon('heroicon-m-arrow-trending-down')
                 ->chart([7, 2, 10, 3, 15, 4, 17])
                 ->color('warning'),
-            Stat::make('Pasien Masuk', $pasienMasuk)
+            Stat::make('Pasien Masuk', $stats['pasienMasuk'])
                 ->description('Pasien masuk hari ini')
-                ->descriptionIcon('heroicon-m-arrow-trending-up') 
+                ->descriptionIcon('heroicon-m-arrow-trending-up')
                 ->chart([7, 2, 10, 3, 15, 4, 17])
                 ->color('success'),
         ];
@@ -56,7 +54,7 @@ class StatsOverview extends BaseWidget
         '2xl' => 6,
     ];
 
-    public static function refresh(): string 
+    public static function refresh(): string
     {
         return '10s';
     }

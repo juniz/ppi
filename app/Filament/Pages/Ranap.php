@@ -71,6 +71,13 @@ class Ranap extends Page implements HasTable
                         'kamar_inap.stts_pulang',
                         'bangsal.nm_bangsal',
                     ])
+                    // Optimasi N+1: Hitung status HAIs hari ini via subquery, bukan query per baris
+                    ->selectSub(function ($query) {
+                        $query->selectRaw('COUNT(*)')
+                            ->from('data_HAIs')
+                            ->whereColumn('data_HAIs.no_rawat', 'reg_periksa.no_rawat')
+                            ->whereDate('data_HAIs.tanggal', now()->format('Y-m-d'));
+                    }, 'hais_today_count')
                     ->orderBy('kamar_inap.tgl_masuk', 'desc')
             )
             ->filters([
@@ -141,12 +148,7 @@ class Ranap extends Page implements HasTable
                     ->alignCenter()
                     ->tooltip('Status pengisian HAIs hari ini')
                     ->boolean()
-                    ->getStateUsing(function ($record): bool {
-                        return \App\Models\DataHais::query()
-                            ->where('no_rawat', $record->no_rawat)
-                            ->whereDate('tanggal', now()->format('Y-m-d'))
-                            ->exists();
-                    })
+                    ->getStateUsing(fn ($record): bool => (int) ($record->hais_today_count ?? 0) > 0)
                     ->trueIcon('heroicon-o-check-circle')
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
@@ -309,39 +311,36 @@ class Ranap extends Page implements HasTable
                                         Placeholder::make('status_hais')
                                             ->content(function (KamarInap $record): HtmlString {
                                                 $tglMasuk = Carbon::parse($record->tgl_masuk);
-                                                $tglKeluar = $record->tgl_keluar && $record->tgl_keluar != '0000-00-00' 
+                                                $tglKeluar = $record->tgl_keluar && $record->tgl_keluar != '0000-00-00'
                                                     ? Carbon::parse($record->tgl_keluar)
                                                     : Carbon::today();
-                                                
+
+                                                // Satu batch query — tidak loop query per hari
+                                                $existingDates = \App\Models\DataHais::query()
+                                                    ->where('no_rawat', $record->no_rawat)
+                                                    ->whereBetween('tanggal', [
+                                                        $tglMasuk->format('Y-m-d'),
+                                                        $tglKeluar->format('Y-m-d'),
+                                                    ])
+                                                    ->pluck('tanggal')
+                                                    ->map(fn ($t) => Carbon::parse($t)->format('Y-m-d'))
+                                                    ->flip()
+                                                    ->all();
+
+                                                $iconCheck = '<svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" style="color:#10b981"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>';
+                                                $iconX     = '<svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" style="color:#ef4444"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>';
+
                                                 $html = '<div class="space-y-2">';
-                                                
-                                                // Loop dari tgl_masuk sampai tgl_keluar atau hari ini
                                                 for ($date = clone $tglMasuk; $date->lte($tglKeluar); $date->addDay()) {
-                                                    $isDataExist = \App\Models\DataHais::query()
-                                                        ->where('no_rawat', $record->no_rawat)
-                                                        ->whereDate('tanggal', $date->format('Y-m-d'))
-                                                        ->exists();
-                                                    
-                                                    if ($isDataExist) {
-                                                        $icon = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" style="color: #10b981;">
-                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                                        </svg>';
-                                                        $textColor = 'text-success-600';
-                                                    } else {
-                                                        $icon = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" style="color: #ef4444;">
-                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                                                        </svg>';
-                                                        $textColor = 'text-danger-600';
-                                                    }
-                                                    
-                                                    $html .= '<div class="flex items-center gap-2">
-                                                        ' . $icon . '
-                                                        <span class="' . $textColor . '">' . $date->format('d/m/Y') . '</span>
-                                                    </div>';
+                                                    $key    = $date->format('Y-m-d');
+                                                    $exists = array_key_exists($key, $existingDates);
+                                                    $html  .= '<div class="flex items-center gap-2">'
+                                                        . ($exists ? $iconCheck : $iconX)
+                                                        . '<span class="' . ($exists ? 'text-success-600' : 'text-danger-600') . '">'
+                                                        . $date->format('d/m/Y') . '</span></div>';
                                                 }
-                                                
                                                 $html .= '</div>';
-                                                
+
                                                 return new HtmlString($html);
                                             }),
                                     ])
@@ -909,39 +908,36 @@ class Ranap extends Page implements HasTable
                                         Placeholder::make('status_hais')
                                             ->content(function (KamarInap $record): HtmlString {
                                                 $tglMasuk = Carbon::parse($record->tgl_masuk);
-                                                $tglKeluar = $record->tgl_keluar && $record->tgl_keluar != '0000-00-00' 
+                                                $tglKeluar = $record->tgl_keluar && $record->tgl_keluar != '0000-00-00'
                                                     ? Carbon::parse($record->tgl_keluar)
                                                     : Carbon::today();
-                                                
+
+                                                // Satu batch query — tidak loop query per hari
+                                                $existingDates = \App\Models\DataHais::query()
+                                                    ->where('no_rawat', $record->no_rawat)
+                                                    ->whereBetween('tanggal', [
+                                                        $tglMasuk->format('Y-m-d'),
+                                                        $tglKeluar->format('Y-m-d'),
+                                                    ])
+                                                    ->pluck('tanggal')
+                                                    ->map(fn ($t) => Carbon::parse($t)->format('Y-m-d'))
+                                                    ->flip()
+                                                    ->all();
+
+                                                $iconCheck = '<svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" style="color:#10b981"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>';
+                                                $iconX     = '<svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" style="color:#ef4444"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>';
+
                                                 $html = '<div class="space-y-2">';
-                                                
-                                                // Loop dari tgl_masuk sampai tgl_keluar atau hari ini
                                                 for ($date = clone $tglMasuk; $date->lte($tglKeluar); $date->addDay()) {
-                                                    $isDataExist = \App\Models\DataHais::query()
-                                                        ->where('no_rawat', $record->no_rawat)
-                                                        ->whereDate('tanggal', $date->format('Y-m-d'))
-                                                        ->exists();
-                                                    
-                                                    if ($isDataExist) {
-                                                        $icon = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" style="color: #10b981;">
-                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                                        </svg>';
-                                                        $textColor = 'text-success-600';
-                                                    } else {
-                                                        $icon = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" style="color: #ef4444;">
-                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                                                        </svg>';
-                                                        $textColor = 'text-danger-600';
-                                                    }
-                                                    
-                                                    $html .= '<div class="flex items-center gap-2">
-                                                        ' . $icon . '
-                                                        <span class="' . $textColor . '">' . $date->format('d/m/Y') . '</span>
-                                                    </div>';
+                                                    $key    = $date->format('Y-m-d');
+                                                    $exists = array_key_exists($key, $existingDates);
+                                                    $html  .= '<div class="flex items-center gap-2">'
+                                                        . ($exists ? $iconCheck : $iconX)
+                                                        . '<span class="' . ($exists ? 'text-success-600' : 'text-danger-600') . '">'
+                                                        . $date->format('d/m/Y') . '</span></div>';
                                                 }
-                                                
                                                 $html .= '</div>';
-                                                
+
                                                 return new HtmlString($html);
                                             }),
                                     ])

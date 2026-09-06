@@ -122,7 +122,7 @@ class LajuISK extends Page implements HasTable
                 'xl' => 6,
             ])
             ->paginated([25, 50, 100])
-            ->poll('10s')
+            ->poll('60s')
             ->defaultSort('nm_bangsal', 'asc');
     }
 
