@@ -33,17 +33,16 @@ class HaisPerPasienChart extends ApexChartWidget
         $query = DataHais::query();
 
         if ($activeFilter === 'today') {
-            $query->whereDate('tanggal', Carbon::today());
+            $query->where('tanggal', Carbon::today()->toDateString());
         } elseif ($activeFilter === 'week') {
-            $query->whereBetween('tanggal', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]);
+            $query->whereBetween('tanggal', [Carbon::now()->startOfWeek()->toDateString(), Carbon::now()->endOfWeek()->toDateString()]);
         } elseif ($activeFilter === 'month') {
-            $query->whereMonth('tanggal', Carbon::now()->month)
-                  ->whereYear('tanggal', Carbon::now()->year);
+            $query->whereBetween('tanggal', [Carbon::now()->startOfMonth()->toDateString(), Carbon::now()->endOfMonth()->toDateString()]);
         } elseif ($activeFilter === 'year') {
-            $query->whereYear('tanggal', Carbon::now()->year);
+            $query->whereBetween('tanggal', [Carbon::now()->startOfYear()->toDateString(), Carbon::now()->endOfYear()->toDateString()]);
         } else {
             // Default to today
-            $query->whereDate('tanggal', Carbon::today());
+            $query->where('tanggal', Carbon::today()->toDateString());
         }
 
         $data = $query->selectRaw('

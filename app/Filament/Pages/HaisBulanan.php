@@ -190,11 +190,12 @@ class HaisBulanan extends Page implements HasTable, HasForms
         return $table
             ->query(
                 DataHais::query()
-                    ->join('kamar', 'data_HAIs.kd_kamar', '=', 'kamar.kd_kamar')
-                    ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
-                    ->when(!empty($this->filters['dari_tanggal']), fn($q) => $q->whereDate('data_HAIs.tanggal', '>=', $this->filters['dari_tanggal']))
-                    ->when(!empty($this->filters['sampai_tanggal']), fn($q) => $q->whereDate('data_HAIs.tanggal', '<=', $this->filters['sampai_tanggal']))
-                    ->when(!empty($this->filters['kd_bangsal']), fn($q) => $q->where('kamar.kd_bangsal', $this->filters['kd_bangsal']))
+                    ->when(!empty($this->filters['kd_bangsal']), function ($q) {
+                        $q->join('kamar', 'data_HAIs.kd_kamar', '=', 'kamar.kd_kamar')
+                          ->where('kamar.kd_bangsal', $this->filters['kd_bangsal']);
+                    })
+                    ->when(!empty($this->filters['dari_tanggal']), fn($q) => $q->where('data_HAIs.tanggal', '>=', $this->filters['dari_tanggal']))
+                    ->when(!empty($this->filters['sampai_tanggal']), fn($q) => $q->where('data_HAIs.tanggal', '<=', $this->filters['sampai_tanggal']))
                     ->groupBy('data_HAIs.tanggal')
                     ->orderBy('data_HAIs.tanggal', 'desc')
                     ->selectRaw('data_HAIs.tanggal,

@@ -61,9 +61,12 @@ class ExportController extends Controller
 
         $query = DataHais::query()
             ->with(['regPeriksa.pasien', 'kamar.bangsal'])
-            ->when(!empty($dariTanggal), fn($q) => $q->whereDate('tanggal', '>=', $dariTanggal))
-            ->when(!empty($sampaiTanggal), fn($q) => $q->whereDate('tanggal', '<=', $sampaiTanggal))
-            ->when(!empty($kdBangsal), fn($q) => $q->whereHas('kamar', fn($k) => $k->where('kd_bangsal', $kdBangsal)))
+            ->when(!empty($dariTanggal), fn($q) => $q->where('tanggal', '>=', $dariTanggal))
+            ->when(!empty($sampaiTanggal), fn($q) => $q->where('tanggal', '<=', $sampaiTanggal))
+            ->when(!empty($kdBangsal), function ($q) use ($kdBangsal) {
+                $kamarList = Kamar::where('kd_bangsal', $kdBangsal)->pluck('kd_kamar');
+                $q->whereIn('kd_kamar', $kamarList);
+            })
             ->when(!empty(trim($search ?? '')), function ($q) use ($search) {
                 $search = trim($search);
                 $q->where(function ($query) use ($search) {
@@ -123,10 +126,12 @@ class ExportController extends Controller
         $kdBangsal = $request->input('kd_bangsal');
 
         $query = DataHais::query()
-            ->join('kamar', 'data_HAIs.kd_kamar', '=', 'kamar.kd_kamar')
-            ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
-            ->when(!empty($dariTanggal), fn($q) => $q->whereDate('data_HAIs.tanggal', '>=', $dariTanggal))
-            ->when(!empty($sampaiTanggal), fn($q) => $q->whereDate('data_HAIs.tanggal', '<=', $sampaiTanggal))
+            ->when(!empty($kdBangsal), function ($q) use ($kdBangsal) {
+                $q->join('kamar', 'data_HAIs.kd_kamar', '=', 'kamar.kd_kamar')
+                  ->where('kamar.kd_bangsal', $kdBangsal);
+            })
+            ->when(!empty($dariTanggal), fn($q) => $q->where('data_HAIs.tanggal', '>=', $dariTanggal))
+            ->when(!empty($sampaiTanggal), fn($q) => $q->where('data_HAIs.tanggal', '<=', $sampaiTanggal))
             ->when(!empty($kdBangsal), fn($q) => $q->where('kamar.kd_bangsal', $kdBangsal))
             ->groupBy('data_HAIs.tanggal')
             ->orderBy('data_HAIs.tanggal', 'asc')

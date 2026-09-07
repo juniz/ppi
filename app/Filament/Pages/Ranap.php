@@ -76,7 +76,7 @@ class Ranap extends Page implements HasTable
                         $query->selectRaw('COUNT(*)')
                             ->from('data_HAIs')
                             ->whereColumn('data_HAIs.no_rawat', 'reg_periksa.no_rawat')
-                            ->whereDate('data_HAIs.tanggal', now()->format('Y-m-d'));
+                            ->where('data_HAIs.tanggal', '=', now()->toDateString());
                     }, 'hais_today_count')
                     ->orderBy('kamar_inap.tgl_masuk', 'desc')
             )

@@ -195,9 +195,15 @@ class HaisHarian extends Page implements HasTable, HasForms
                 \App\Models\DataHais::query()
                     ->with('regPeriksa.pasien')
                     ->with('kamar.bangsal')
-                    ->when(!empty($this->filters['dari_tanggal']), fn($q) => $q->whereDate('tanggal', '>=', $this->filters['dari_tanggal']))
-                    ->when(!empty($this->filters['sampai_tanggal']), fn($q) => $q->whereDate('tanggal', '<=', $this->filters['sampai_tanggal']))
-                    ->when(!empty($this->filters['kd_bangsal']), fn($q) => $q->whereHas('kamar', fn($k) => $k->where('kd_bangsal', $this->filters['kd_bangsal'])))
+                    ->when(!empty($this->filters['dari_tanggal']), fn($q) => $q->where('tanggal', '>=', $this->filters['dari_tanggal']))
+                    ->when(!empty($this->filters['sampai_tanggal']), fn($q) => $q->where('tanggal', '<=', $this->filters['sampai_tanggal']))
+                    ->when(!empty($this->filters['kd_bangsal']), function ($q) {
+                        $kamarList = \Illuminate\Support\Facades\Cache::remember(
+                            'kamar_bangsal_' . $this->filters['kd_bangsal'], 300,
+                            fn () => \App\Models\Kamar::where('kd_bangsal', $this->filters['kd_bangsal'])->pluck('kd_kamar')
+                        );
+                        $q->whereIn('kd_kamar', $kamarList);
+                    })
                     ->when(!empty(trim($this->filters['search'] ?? '')), function ($q) {
                         $search = trim($this->filters['search']);
                         $q->where(function ($query) use ($search) {

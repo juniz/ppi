@@ -203,11 +203,11 @@ class AuditKepatuhanApdResource extends Resource
                         return $query
                             ->when(
                                 $data['start'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '>=', $date),
+                                fn(Builder $query, $date): Builder => $query->where('tanggal', '>=', $date),
                             )
                             ->when(
                                 $data['end'],
-                                fn(Builder $query, $date): Builder => $query->whereDate('tanggal', '<=', $date),
+                                fn(Builder $query, $date): Builder => $query->where('tanggal', '<=', $date),
                             );
                     })
             ])

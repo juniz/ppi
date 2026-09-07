@@ -29,19 +29,21 @@ class AlatTerpasangChart extends ChartWidget
     {
         $today = Carbon::now()->format('Y-m-d');
         
-        $data = DataHais::query()
-            ->join('kamar', 'data_HAIs.kd_kamar', '=', 'kamar.kd_kamar')
-            ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
-            ->whereDate('tanggal', $today)
-            ->select(
-                'bangsal.nm_bangsal',
-                DB::raw('SUM(ETT) as total_ett'),
-                DB::raw('SUM(CVL) as total_cvl'),
-                DB::raw('SUM(IVL) as total_ivl'),
-                DB::raw('SUM(UC) as total_uc')
-            )
-            ->groupBy('bangsal.nm_bangsal')
-            ->get();
+        $data = \Illuminate\Support\Facades\Cache::remember('alat_terpasang_chart_' . $today, 120, function () use ($today) {
+            return DataHais::query()
+                ->join('kamar', 'data_HAIs.kd_kamar', '=', 'kamar.kd_kamar')
+                ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
+                ->where('tanggal', $today)
+                ->select(
+                    'bangsal.nm_bangsal',
+                    DB::raw('SUM(ETT) as total_ett'),
+                    DB::raw('SUM(CVL) as total_cvl'),
+                    DB::raw('SUM(IVL) as total_ivl'),
+                    DB::raw('SUM(UC) as total_uc')
+                )
+                ->groupBy('bangsal.nm_bangsal')
+                ->get();
+        });
 
         return [
             'datasets' => [

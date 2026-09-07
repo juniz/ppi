@@ -30,15 +30,17 @@ class BundleAuditChart extends ChartWidget
     {
         $today = Carbon::now()->format('Y-m-d');
         
-        $data = DataHais::whereDate('tanggal', $today)
-            ->select(
-                DB::raw('SUM(IAD) as total_iad'),
-                DB::raw('SUM(PLEB) as total_pleb'),
-                DB::raw('SUM(ISK) as total_isk'),
-                DB::raw('SUM(ILO) as total_ilo'),
-                DB::raw('SUM(HAP) as total_hap')
-            )
-            ->first();
+        $data = \Illuminate\Support\Facades\Cache::remember('bundle_audit_chart_' . $today, 120, function () use ($today) {
+            return DataHais::where('tanggal', $today)
+                ->select(
+                    DB::raw('SUM(IAD) as total_iad'),
+                    DB::raw('SUM(PLEB) as total_pleb'),
+                    DB::raw('SUM(ISK) as total_isk'),
+                    DB::raw('SUM(ILO) as total_ilo'),
+                    DB::raw('SUM(HAP) as total_hap')
+                )
+                ->first();
+        });
 
         return [
             'datasets' => [

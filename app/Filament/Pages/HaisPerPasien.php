@@ -107,11 +107,11 @@ class HaisPerPasien extends Page implements HasTable
                         return $query
                             ->when(
                                 $data['dari_tanggal'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('tanggal', '>=', $date),
+                                fn (Builder $query, $date): Builder => $query->where('tanggal', '>=', $date),
                             )
                             ->when(
                                 $data['sampai_tanggal'],
-                                fn (Builder $query, $date): Builder => $query->whereDate('tanggal', '<=', $date),
+                                fn (Builder $query, $date): Builder => $query->where('tanggal', '<=', $date),
                             );
                     })
             ])
