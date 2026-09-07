@@ -86,6 +86,7 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarFullyCollapsibleOnDesktop()
             ->brandName(env('APP_NAME', 'SI-HAIs'))
             ->darkMode(false)
+            ->font('Inter', provider: \Filament\FontProviders\LocalFontProvider::class)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->pages([
                 Dashboard::class,
