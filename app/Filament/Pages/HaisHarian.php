@@ -221,28 +221,28 @@ class HaisHarian extends Page implements HasTable, HasForms
                             ->badge(fn ($state): bool => (int)$state > 0)
                             ->color('info')
                             ->formatStateUsing(fn ($state): string => (int)$state > 0 ? (string)$state : '—')
-                            ->summarize([Sum::make()->label('')]),
+                            ->summarize([Sum::make()->label('')->extraAttributes(['style' => 'color: #000000 !important; font-weight: 800 !important; font-size: 13px !important;'])]),
                         Tables\Columns\TextColumn::make('CVL')
                             ->label('CVL')
                             ->alignCenter()
                             ->badge(fn ($state): bool => (int)$state > 0)
                             ->color('info')
                             ->formatStateUsing(fn ($state): string => (int)$state > 0 ? (string)$state : '—')
-                            ->summarize([Sum::make()->label('')]),
+                            ->summarize([Sum::make()->label('')->extraAttributes(['style' => 'color: #000000 !important; font-weight: 800 !important; font-size: 13px !important;'])]),
                         Tables\Columns\TextColumn::make('IVL')
                             ->label('IVL')
                             ->alignCenter()
                             ->badge(fn ($state): bool => (int)$state > 0)
                             ->color('info')
                             ->formatStateUsing(fn ($state): string => (int)$state > 0 ? (string)$state : '—')
-                            ->summarize([Sum::make()->label('')]),
+                            ->summarize([Sum::make()->label('')->extraAttributes(['style' => 'color: #000000 !important; font-weight: 800 !important; font-size: 13px !important;'])]),
                         Tables\Columns\TextColumn::make('UC')
                             ->label('UC')
                             ->alignCenter()
                             ->badge(fn ($state): bool => (int)$state > 0)
                             ->color('info')
                             ->formatStateUsing(fn ($state): string => (int)$state > 0 ? (string)$state : '—')
-                            ->summarize([Sum::make()->label('')]),
+                            ->summarize([Sum::make()->label('')->extraAttributes(['style' => 'color: #000000 !important; font-weight: 800 !important; font-size: 13px !important;'])]),
                     ]
                 )
                     ->alignment(\Filament\Support\Enums\Alignment::Center)
@@ -263,56 +263,56 @@ class HaisHarian extends Page implements HasTable, HasForms
                             ->badge(fn ($state): bool => (int)$state > 0)
                             ->color('danger')
                             ->formatStateUsing(fn ($state): string => (int)$state > 0 ? (string)$state : '—')
-                            ->summarize([Sum::make()->label('')]),
+                            ->summarize([Sum::make()->label('')->extraAttributes(['style' => 'color: #000000 !important; font-weight: 800 !important; font-size: 13px !important;'])]),
                         Tables\Columns\TextColumn::make('IAD')
                             ->label('IAD')
                             ->alignCenter()
                             ->badge(fn ($state): bool => (int)$state > 0)
                             ->color('danger')
                             ->formatStateUsing(fn ($state): string => (int)$state > 0 ? (string)$state : '—')
-                            ->summarize([Sum::make()->label('')]),
+                            ->summarize([Sum::make()->label('')->extraAttributes(['style' => 'color: #000000 !important; font-weight: 800 !important; font-size: 13px !important;'])]),
                         Tables\Columns\TextColumn::make('PLEB')
                             ->label('PLEB')
                             ->alignCenter()
                             ->badge(fn ($state): bool => (int)$state > 0)
                             ->color('danger')
                             ->formatStateUsing(fn ($state): string => (int)$state > 0 ? (string)$state : '—')
-                            ->summarize([Sum::make()->label('')]),
+                            ->summarize([Sum::make()->label('')->extraAttributes(['style' => 'color: #000000 !important; font-weight: 800 !important; font-size: 13px !important;'])]),
                         Tables\Columns\TextColumn::make('ISK')
                             ->label('ISK/CAUTI')
                             ->alignCenter()
                             ->badge(fn ($state): bool => (int)$state > 0)
                             ->color('danger')
                             ->formatStateUsing(fn ($state): string => (int)$state > 0 ? (string)$state : '—')
-                            ->summarize([Sum::make()->label('')]),
+                            ->summarize([Sum::make()->label('')->extraAttributes(['style' => 'color: #000000 !important; font-weight: 800 !important; font-size: 13px !important;'])]),
                         Tables\Columns\TextColumn::make('ILO')
                             ->label('ILO')
                             ->alignCenter()
                             ->badge(fn ($state): bool => (int)$state > 0)
                             ->color('danger')
                             ->formatStateUsing(fn ($state): string => (int)$state > 0 ? (string)$state : '—')
-                            ->summarize([Sum::make()->label('')]),
+                            ->summarize([Sum::make()->label('')->extraAttributes(['style' => 'color: #000000 !important; font-weight: 800 !important; font-size: 13px !important;'])]),
                         Tables\Columns\TextColumn::make('HAP')
                             ->label('HAP')
                             ->alignCenter()
                             ->badge(fn ($state): bool => (int)$state > 0)
                             ->color('danger')
                             ->formatStateUsing(fn ($state): string => (int)$state > 0 ? (string)$state : '—')
-                            ->summarize([Sum::make()->label('')]),
+                            ->summarize([Sum::make()->label('')->extraAttributes(['style' => 'color: #000000 !important; font-weight: 800 !important; font-size: 13px !important;'])]),
                         Tables\Columns\TextColumn::make('Tinea')
                             ->label('Tinea')
                             ->alignCenter()
                             ->badge(fn ($state): bool => (int)$state > 0)
                             ->color('danger')
                             ->formatStateUsing(fn ($state): string => (int)$state > 0 ? (string)$state : '—')
-                            ->summarize([Sum::make()->label('')]),
+                            ->summarize([Sum::make()->label('')->extraAttributes(['style' => 'color: #000000 !important; font-weight: 800 !important; font-size: 13px !important;'])]),
                         Tables\Columns\TextColumn::make('Scabies')
                             ->label('Scabies')
                             ->alignCenter()
                             ->badge(fn ($state): bool => (int)$state > 0)
                             ->color('danger')
                             ->formatStateUsing(fn ($state): string => (int)$state > 0 ? (string)$state : '—')
-                            ->summarize([Sum::make()->label('')]),
+                            ->summarize([Sum::make()->label('')->extraAttributes(['style' => 'color: #000000 !important; font-weight: 800 !important; font-size: 13px !important;'])]),
                     ]
                 )
                     ->alignment(\Filament\Support\Enums\Alignment::Center)
