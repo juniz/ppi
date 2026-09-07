@@ -13,6 +13,12 @@ class HaisHarianInfeksiChart extends ApexChartWidget
     use InteractsWithPageFilters;
     protected static ?string $heading = 'Grafik Infeksi HAIs';
     protected int | string | array $columnSpan = ['md' => 1, 'xl' => 1];
+
+    public function updatedFilters(): void
+    {
+        $this->updateOptions();
+    }
+
     protected function getOptions(): array
     {
         
@@ -39,6 +45,7 @@ class HaisHarianInfeksiChart extends ApexChartWidget
             ->when($search, function ($q) use ($search) {
                 $q->where(function ($query) use ($search) {
                     $query->whereHas('regPeriksa.pasien', fn($p) => $p->where('nm_pasien', 'like', "%{$search}%"))
+                          ->orWhereHas('regPeriksa', fn($r) => $r->where('no_rkm_medis', 'like', "%{$search}%"))
                           ->orWhere('data_HAIs.no_rawat', 'like', "%{$search}%")
                           ->orWhereHas('kamar', fn($k) => $k->where('kd_kamar', 'like', "%{$search}%"));
                 });

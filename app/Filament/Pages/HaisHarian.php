@@ -40,48 +40,115 @@ class HaisHarian extends Page implements HasTable, HasForms
 
     public function mount(): void
     {
-        $this->form->fill([
-            'dari_tanggal' => Carbon::now()->startOfMonth()->toDateString(),
-            'sampai_tanggal' => Carbon::now()->endOfMonth()->toDateString(),
-        ]);
+        $this->filters = [
+            'dari_tanggal' => Carbon::today()->toDateString(),
+            'sampai_tanggal' => Carbon::today()->toDateString(),
+            'kd_bangsal' => null,
+            'search' => null,
+        ];
+        $this->form->fill($this->filters);
     }
 
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Section::make()
+                Section::make('Filter & Pencarian Laporan')
+                    ->description('Saring data surveilans HAIs harian berdasarkan periode tanggal, ruangan, atau nama/rekam medis pasien.')
+                    ->icon('heroicon-o-funnel')
+                    ->collapsible()
                     ->schema([
-                        Grid::make(['md' => 5, 'default' => 1])
+                        Grid::make(['default' => 1, 'sm' => 2, 'lg' => 4])
                             ->schema([
-                                TextInput::make('search')->label('Cari Data (Nama/No.Rawat)')->placeholder('Ketik pencarian...')->columnSpan(1),
-                                Select::make('kd_bangsal')->label('Bangsal')->options(fn () => \Illuminate\Support\Facades\Cache::remember(
-                                    'bangsal_options', 300, fn () => \App\Models\Bangsal::pluck('nm_bangsal', 'kd_bangsal')
-                                ))->searchable()->columnSpan(1),
-                                DatePicker::make('dari_tanggal')->label('Dari Tanggal')->native(false)->required()->columnSpan(1),
-                                DatePicker::make('sampai_tanggal')->label('Sampai Tanggal')->native(false)->required()->columnSpan(1),
-                                Actions::make([
-                                    Action::make('cari')
-                                        ->label('Cari')
-                                        ->submit('applyFilters')
-                                        ->icon('heroicon-m-magnifying-glass')
-                                ])->columnSpan(1)
-                            ])
-                            ->extraAttributes(['class' => 'items-end'])
+                                DatePicker::make('dari_tanggal')
+                                    ->label('Dari Tanggal')
+                                    ->prefixIcon('heroicon-m-calendar')
+                                    ->native(false)
+                                    ->displayFormat('d/m/Y')
+                                    ->closeOnDateSelection()
+                                    ->required(),
+                                DatePicker::make('sampai_tanggal')
+                                    ->label('Sampai Tanggal')
+                                    ->prefixIcon('heroicon-m-calendar')
+                                    ->native(false)
+                                    ->displayFormat('d/m/Y')
+                                    ->closeOnDateSelection()
+                                    ->required(),
+                                Select::make('kd_bangsal')
+                                    ->label('Ruang / Bangsal')
+                                    ->placeholder('Semua Bangsal')
+                                    ->prefixIcon('heroicon-m-building-office-2')
+                                    ->options(fn () => \Illuminate\Support\Facades\Cache::remember(
+                                        'bangsal_options', 300, fn () => \App\Models\Bangsal::pluck('nm_bangsal', 'kd_bangsal')
+                                    ))
+                                    ->searchable()
+                                    ->preload(),
+                                TextInput::make('search')
+                                    ->label('Pencarian Pasien')
+                                    ->placeholder('Nama / No.RM / No.Rawat...')
+                                    ->prefixIcon('heroicon-m-magnifying-glass'),
+                            ]),
                     ])
-                    ->compact()
+                    ->footerActions([
+                        Action::make('hari_ini')
+                            ->label('Hari Ini')
+                            ->color('gray')
+                            ->icon('heroicon-m-calendar-days')
+                            ->action('setFilterToday'),
+                        Action::make('bulan_ini')
+                            ->label('Bulan Ini')
+                            ->color('gray')
+                            ->icon('heroicon-m-calendar')
+                            ->action('setFilterThisMonth'),
+                        Action::make('reset')
+                            ->label('Reset')
+                            ->color('gray')
+                            ->icon('heroicon-m-arrow-path')
+                            ->action('resetFilters'),
+                        Action::make('cari')
+                            ->label('Terapkan Filter')
+                            ->color('primary')
+                            ->icon('heroicon-m-magnifying-glass')
+                            ->action('applyFilters'),
+                    ])
             ])
             ->statePath('filters');
     }
 
     public function applyFilters(): void
     {
-        // This method acts as the form submit trigger.
-        // It causes the Livewire component to re-render.
-        
-        // Since we are using Filament widgets (which are separate Livewire components)
-        // we need to dispatch an event to them so they update their data.
-        $this->dispatch('updateWidgets');
+        $this->filters = $this->form->getState();
+        $this->resetPage();
+        $this->dispatch('updateWidgets', filters: $this->filters);
+    }
+
+    public function resetFilters(): void
+    {
+        $this->filters = [
+            'dari_tanggal' => Carbon::today()->toDateString(),
+            'sampai_tanggal' => Carbon::today()->toDateString(),
+            'kd_bangsal' => null,
+            'search' => null,
+        ];
+        $this->form->fill($this->filters);
+        $this->resetPage();
+        $this->dispatch('updateWidgets', filters: $this->filters);
+    }
+
+    public function setFilterToday(): void
+    {
+        $this->filters['dari_tanggal'] = Carbon::today()->toDateString();
+        $this->filters['sampai_tanggal'] = Carbon::today()->toDateString();
+        $this->form->fill($this->filters);
+        $this->applyFilters();
+    }
+
+    public function setFilterThisMonth(): void
+    {
+        $this->filters['dari_tanggal'] = Carbon::now()->startOfMonth()->toDateString();
+        $this->filters['sampai_tanggal'] = Carbon::now()->endOfMonth()->toDateString();
+        $this->form->fill($this->filters);
+        $this->applyFilters();
     }
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
@@ -91,31 +158,10 @@ class HaisHarian extends Page implements HasTable, HasForms
 
     protected static string $view = 'filament.pages.hais-harian';
 
-    public function getSubheading(): \Illuminate\Contracts\Support\Htmlable|string|null
-    {
-        return view('filament.pages.partials.hais-harian-filter');
-    }
-
-    protected function getHeaderWidgets(): array
-    {
-        return [
-            HaisHarianInfeksiChart::class,
-            HaisHarianAlatChart::class,
-        ];
-    }
-
-    public function getWidgetData(): array
-    {
-        return [
-            'filters' => $this->filters,
-        ];
-    }
-
     public function table(Table $table): Table
     {
-        \Illuminate\Support\Facades\Log::info('Filters in table:', $this->filters ?? []);
         return $table
-            ->query(
+            ->query(fn (): Builder =>
                 \App\Models\DataHais::query()
                     ->with('regPeriksa.pasien')
                     ->with('kamar.bangsal')
@@ -126,6 +172,7 @@ class HaisHarian extends Page implements HasTable, HasForms
                         $search = trim($this->filters['search']);
                         $q->where(function ($query) use ($search) {
                             $query->whereHas('regPeriksa.pasien', fn($p) => $p->where('nm_pasien', 'like', "%{$search}%"))
+                                  ->orWhereHas('regPeriksa', fn($r) => $r->where('no_rkm_medis', 'like', "%{$search}%"))
                                   ->orWhere('no_rawat', 'like', "%{$search}%")
                                   ->orWhereHas('kamar', fn($k) => $k->where('kd_kamar', 'like', "%{$search}%"));
                         });
@@ -151,7 +198,7 @@ class HaisHarian extends Page implements HasTable, HasForms
                 Tables\Columns\TextColumn::make('VAP')->label('VAP')->summarize([Sum::make()]),
                 Tables\Columns\TextColumn::make('IAD')->label('IAD')->summarize([Sum::make()]),
                 Tables\Columns\TextColumn::make('PLEB')->label('PLEB')->summarize([Sum::make()]),
-                Tables\Columns\TextColumn::make('ISK')->label('CAUTI')->summarize([Sum::make()]),
+                Tables\Columns\TextColumn::make('ISK')->label('ISK / CAUTI')->summarize([Sum::make()]),
                 Tables\Columns\TextColumn::make('ILO')->label('ILO')->summarize([Sum::make()]),
                 Tables\Columns\TextColumn::make('HAP')->label('HAP')->summarize([Sum::make()]),
                 Tables\Columns\TextColumn::make('Tinea')->label('Tinea')->summarize([Sum::make()]),
