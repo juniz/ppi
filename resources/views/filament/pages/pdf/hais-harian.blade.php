@@ -417,14 +417,23 @@
     <!-- TANDA TANGAN -->
     <table class="signature-table">
         <tr>
-            <td style="width: 65%;">
-                <div style="font-size: 7.5pt; color: #64748b;">
-                    <em>Catatan: Laporan ini digenerate secara otomatis oleh SI-HAIs (Sistem Informasi HAIs).</em>
+            <td style="width: 40%; text-align: center;">
+                <div>Mengetahui / Melaporkan,</div>
+                <div style="font-weight: bold; margin-top: 3px;">IPCLN (Perawat Penghubung PPI)</div>
+                <div style="color: #64748b; font-size: 7.5pt;">{{ $namaBangsal !== 'Semua Ruangan / Bangsal' ? $namaBangsal : 'Ruangan / Bangsal Perawatan' }}</div>
+                <div style="height: 50px;"></div>
+                <div style="font-weight: bold; text-decoration: underline;">( .................................................... )</div>
+                <div style="color: #64748b; font-size: 7pt; margin-top: 2px;">NIP. ....................................................</div>
+            </td>
+            <td style="width: 20%; text-align: center; vertical-align: bottom;">
+                <div style="font-size: 7pt; color: #94a3b8; padding-bottom: 8px;">
+                    <em>Dokumen surveilans resmi<br>SI-HAIs Rumah Sakit</em>
                 </div>
             </td>
-            <td style="width: 35%; text-align: center;">
-                <div>{{ $setting->kabupaten ?? 'Tempat' }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</div>
+            <td style="width: 40%; text-align: center;">
+                <div>{{ $setting->kabupaten ?? 'Madiun' }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</div>
                 <div style="font-weight: bold; margin-top: 3px;">Petugas Surveilans IPCN / PPI</div>
+                <div style="color: #64748b; font-size: 7.5pt;">Komite Pencegahan & Pengendalian Infeksi</div>
                 <div style="height: 50px;"></div>
                 <div style="font-weight: bold; text-decoration: underline;">( .................................................... )</div>
                 <div style="color: #64748b; font-size: 7pt; margin-top: 2px;">NIP. ....................................................</div>
