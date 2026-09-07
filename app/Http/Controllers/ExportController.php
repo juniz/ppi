@@ -115,4 +115,83 @@ class ExportController extends Controller
 
         return $pdf->stream($filename, ['Attachment' => false]);
     }
+
+    public function exportPdfHaisBulanan(Request $request)
+    {
+        $dariTanggal = $request->input('dari_tanggal') ?: Carbon::now()->startOfMonth()->toDateString();
+        $sampaiTanggal = $request->input('sampai_tanggal') ?: Carbon::now()->endOfMonth()->toDateString();
+        $kdBangsal = $request->input('kd_bangsal');
+
+        $query = DataHais::query()
+            ->join('kamar', 'data_HAIs.kd_kamar', '=', 'kamar.kd_kamar')
+            ->join('bangsal', 'kamar.kd_bangsal', '=', 'bangsal.kd_bangsal')
+            ->when(!empty($dariTanggal), fn($q) => $q->whereDate('data_HAIs.tanggal', '>=', $dariTanggal))
+            ->when(!empty($sampaiTanggal), fn($q) => $q->whereDate('data_HAIs.tanggal', '<=', $sampaiTanggal))
+            ->when(!empty($kdBangsal), fn($q) => $q->where('kamar.kd_bangsal', $kdBangsal))
+            ->groupBy('data_HAIs.tanggal')
+            ->orderBy('data_HAIs.tanggal', 'asc')
+            ->selectRaw('data_HAIs.tanggal,
+                COUNT(data_HAIs.no_rawat) AS jml,
+                SUM(data_HAIs.ETT) AS ETT,
+                SUM(data_HAIs.CVL) AS CVL,
+                SUM(data_HAIs.IVL) AS IVL,
+                SUM(data_HAIs.UC) AS UC,
+                SUM(data_HAIs.VAP) AS VAP,
+                SUM(data_HAIs.IAD) AS IAD,
+                SUM(data_HAIs.PLEB) AS PLEB,
+                SUM(data_HAIs.ISK) AS ISK,
+                SUM(data_HAIs.ILO) AS ILO,
+                SUM(data_HAIs.HAP) AS HAP,
+                SUM(data_HAIs.Tinea) AS Tinea,
+                SUM(data_HAIs.Scabies) AS Scabies,
+                SUM(data_HAIs.DEKU = "IYA") AS DEKU,
+                SUM(data_HAIs.SPUTUM <> "") AS SPUTUM,
+                SUM(data_HAIs.DARAH <> "") AS DARAH,
+                SUM(data_HAIs.URINE <> "") AS URINE,
+                SUM(data_HAIs.ANTIBIOTIK <> "") AS ANTIBIOTIK');
+
+        $records = $query->get();
+
+        $setting = Setting::first();
+        $namaBangsal = $kdBangsal ? (Bangsal::where('kd_bangsal', $kdBangsal)->value('nm_bangsal') ?? $kdBangsal) : 'Semua Ruangan / Bangsal';
+
+        $totals = [
+            'jml' => (int) $records->sum('jml'),
+            'ETT' => (int) $records->sum('ETT'),
+            'CVL' => (int) $records->sum('CVL'),
+            'IVL' => (int) $records->sum('IVL'),
+            'UC' => (int) $records->sum('UC'),
+            'VAP' => (int) $records->sum('VAP'),
+            'IAD' => (int) $records->sum('IAD'),
+            'PLEB' => (int) $records->sum('PLEB'),
+            'ISK' => (int) $records->sum('ISK'),
+            'ILO' => (int) $records->sum('ILO'),
+            'HAP' => (int) $records->sum('HAP'),
+            'Tinea' => (int) $records->sum('Tinea'),
+            'Scabies' => (int) $records->sum('Scabies'),
+            'DEKU' => (int) $records->sum('DEKU'),
+            'SPUTUM' => (int) $records->sum('SPUTUM'),
+            'DARAH' => (int) $records->sum('DARAH'),
+            'URINE' => (int) $records->sum('URINE'),
+            'ANTIBIOTIK' => (int) $records->sum('ANTIBIOTIK'),
+        ];
+
+        $data = [
+            'records' => $records,
+            'setting' => $setting,
+            'dariTanggal' => $dariTanggal,
+            'sampaiTanggal' => $sampaiTanggal,
+            'namaBangsal' => $namaBangsal,
+            'totals' => $totals,
+            'tanggalCetak' => Carbon::now()->translatedFormat('d F Y H:i'),
+        ];
+
+        $pdf = Pdf::loadView('filament.pages.pdf.hais-bulanan', $data)
+            ->setPaper('a4', 'landscape');
+
+        $bangsalSlug = Str::slug($namaBangsal);
+        $filename = 'Laporan-HAIs-Bulanan-' . $bangsalSlug . '-' . Carbon::parse($dariTanggal)->format('Ymd') . '-sd-' . Carbon::parse($sampaiTanggal)->format('Ymd') . '.pdf';
+
+        return $pdf->stream($filename, ['Attachment' => false]);
+    }
 }
