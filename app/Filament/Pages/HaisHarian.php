@@ -110,9 +110,39 @@ class HaisHarian extends Page implements HasTable, HasForms
                             ->color('primary')
                             ->icon('heroicon-m-magnifying-glass')
                             ->action('applyFilters'),
+                        Action::make('cetak_pdf')
+                            ->label('Cetak PDF')
+                            ->color('success')
+                            ->icon('heroicon-m-printer')
+                            ->action('printPdf'),
                     ])
             ])
             ->statePath('filters');
+    }
+
+    public function printPdf(): void
+    {
+        $filters = $this->form->getState();
+        $query = http_build_query(array_filter([
+            'dari_tanggal' => $filters['dari_tanggal'] ?? $this->filters['dari_tanggal'] ?? null,
+            'sampai_tanggal' => $filters['sampai_tanggal'] ?? $this->filters['sampai_tanggal'] ?? null,
+            'kd_bangsal' => $filters['kd_bangsal'] ?? $this->filters['kd_bangsal'] ?? null,
+            'search' => $filters['search'] ?? $this->filters['search'] ?? null,
+        ]));
+
+        $url = route('export.hais-harian.pdf') . ($query ? '?' . $query : '');
+        $this->js("window.open('{$url}', '_blank')");
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            \Filament\Actions\Action::make('cetak_pdf_header')
+                ->label('Cetak PDF (A4)')
+                ->color('success')
+                ->icon('heroicon-o-printer')
+                ->action('printPdf'),
+        ];
     }
 
     public function applyFilters(): void

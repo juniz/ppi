@@ -25,3 +25,4 @@ Route::post('/chart/save-image', [ChartController::class, 'saveChartImage'])->na
 
 // Export routes
 Route::get('/export/analisa-rekomendasi/{id}/pdf', [ExportController::class, 'exportPdfAnalisaRekomendasi'])->name('export.analisa-rekomendasi.pdf');
+Route::get('/export/hais-harian/pdf', [ExportController::class, 'exportPdfHaisHarian'])->name('export.hais-harian.pdf');
