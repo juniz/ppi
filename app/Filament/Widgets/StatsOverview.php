@@ -15,13 +15,13 @@ class StatsOverview extends BaseWidget
     {
         $today = Carbon::now()->format('Y-m-d');
 
-        // Cache stats selama 60 detik — mengurangi 3 query per 10 detik polling
-        $stats = Cache::remember('dashboard_stats_overview', 60, function () use ($today) {
+        // Cache stats selama 120 detik — menghindari query berulang ke kamar_inap
+        $stats = Cache::remember('dashboard_stats_overview_' . $today, 120, function () use ($today) {
             return [
                 'rawatInap'   => KamarInap::where('stts_pulang', '-')->count(),
-                'pasienPulang'=> KamarInap::whereDate('tgl_keluar', $today)
+                'pasienPulang'=> KamarInap::where('tgl_keluar', $today)
                     ->where('stts_pulang', '!=', '-')->count(),
-                'pasienMasuk' => KamarInap::whereDate('tgl_masuk', $today)->count(),
+                'pasienMasuk' => KamarInap::where('tgl_masuk', $today)->count(),
             ];
         });
 
@@ -56,6 +56,6 @@ class StatsOverview extends BaseWidget
 
     public static function refresh(): string
     {
-        return '10s';
+        return '60s';
     }
 }

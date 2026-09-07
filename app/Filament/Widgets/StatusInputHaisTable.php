@@ -39,7 +39,7 @@ class StatusInputHaisTable extends BaseWidget
                     })
                     ->leftJoin('data_HAIs', function ($join) {
                         $join->on('kamar_inap.no_rawat', '=', 'data_HAIs.no_rawat')
-                            ->whereDate('data_HAIs.tanggal', now());
+                            ->where('data_HAIs.tanggal', '=', now()->toDateString());
                     })
                     ->where('bangsal.status', '=', '1')
                     ->groupBy('bangsal.kd_bangsal', 'bangsal.nm_bangsal')

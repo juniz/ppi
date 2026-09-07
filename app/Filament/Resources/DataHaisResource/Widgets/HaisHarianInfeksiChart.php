@@ -7,6 +7,7 @@ use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 use Illuminate\Support\Carbon;
 
 use Filament\Widgets\Concerns\InteractsWithPageFilters;
+use Illuminate\Support\Facades\Cache;
 
 class HaisHarianInfeksiChart extends ApexChartWidget
 {
@@ -21,44 +22,37 @@ class HaisHarianInfeksiChart extends ApexChartWidget
 
     protected function getOptions(): array
     {
-        
-        $dari = $this->filters['dari_tanggal'] ?? null;
-        $sampai = $this->filters['sampai_tanggal'] ?? null;
+        $dari = $this->filters['dari_tanggal'] ?? Carbon::now()->startOfMonth()->toDateString();
+        $sampai = $this->filters['sampai_tanggal'] ?? Carbon::now()->toDateString();
         $bangsal = $this->filters['kd_bangsal'] ?? null;
         $search = $this->filters['search'] ?? null;
         
-        $dateRange = '';
-        if ($dari && $sampai) {
-            $dateRange = Carbon::parse($dari)->format('d M Y') . ' - ' . Carbon::parse($sampai)->format('d M Y');
-        } elseif ($dari) {
-            $dateRange = 'Sejak ' . Carbon::parse($dari)->format('d M Y');
-        } elseif ($sampai) {
-            $dateRange = 'Hingga ' . Carbon::parse($sampai)->format('d M Y');
-        } else {
-            $dateRange = 'Semua Waktu';
-        }
+        $dateRange = Carbon::parse($dari)->format('d M Y') . ' - ' . Carbon::parse($sampai)->format('d M Y');
 
-        $data = DataHais::query()
-            ->when($dari, fn($q) => $q->whereDate('data_HAIs.tanggal', '>=', $dari))
-            ->when($sampai, fn($q) => $q->whereDate('data_HAIs.tanggal', '<=', $sampai))
-            ->when($bangsal, fn($q) => $q->whereHas('kamar', fn($k) => $k->where('kd_bangsal', $bangsal)))
-            ->when($search, function ($q) use ($search) {
-                $q->where(function ($query) use ($search) {
-                    $query->whereHas('regPeriksa.pasien', fn($p) => $p->where('nm_pasien', 'like', "%{$search}%"))
-                          ->orWhereHas('regPeriksa', fn($r) => $r->where('no_rkm_medis', 'like', "%{$search}%"))
-                          ->orWhere('data_HAIs.no_rawat', 'like', "%{$search}%")
-                          ->orWhereHas('kamar', fn($k) => $k->where('kd_kamar', 'like', "%{$search}%"));
-                });
-            })
-            ->selectRaw('
-                SUM(VAP) as vap,
-                SUM(IAD) as iad,
-                SUM(PLEB) as pleb,
-                SUM(ISK) as isk,
-                SUM(ILO) as ilo,
-                SUM(HAP) as hap
-            ')
-            ->first();
+        $cacheKey = 'hais_infeksi_chart_' . md5(json_encode([$dari, $sampai, $bangsal, $search]));
+        $data = Cache::remember($cacheKey, 60, function () use ($dari, $sampai, $bangsal, $search) {
+            return DataHais::query()
+                ->when($dari, fn($q) => $q->where('data_HAIs.tanggal', '>=', $dari))
+                ->when($sampai, fn($q) => $q->where('data_HAIs.tanggal', '<=', $sampai))
+                ->when($bangsal, fn($q) => $q->whereHas('kamar', fn($k) => $k->where('kd_bangsal', $bangsal)))
+                ->when($search, function ($q) use ($search) {
+                    $q->where(function ($query) use ($search) {
+                        $query->whereHas('regPeriksa.pasien', fn($p) => $p->where('nm_pasien', 'like', "%{$search}%"))
+                              ->orWhereHas('regPeriksa', fn($r) => $r->where('no_rkm_medis', 'like', "%{$search}%"))
+                              ->orWhere('data_HAIs.no_rawat', 'like', "%{$search}%")
+                              ->orWhereHas('kamar', fn($k) => $k->where('kd_kamar', 'like', "%{$search}%"));
+                    });
+                })
+                ->selectRaw('
+                    SUM(VAP) as vap,
+                    SUM(IAD) as iad,
+                    SUM(PLEB) as pleb,
+                    SUM(ISK) as isk,
+                    SUM(ILO) as ilo,
+                    SUM(HAP) as hap
+                ')
+                ->first();
+        });
 
         return [
             'chart' => [

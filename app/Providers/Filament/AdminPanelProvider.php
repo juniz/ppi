@@ -84,21 +84,12 @@ class AdminPanelProvider extends PanelProvider
                 'Master Data'
             ])
             ->sidebarFullyCollapsibleOnDesktop()
-            ->brandName(env('APP_NAME', 'SI-HAIs'))
+            ->brandName(config('app.name', 'SI-HAIs'))
             ->darkMode(false)
             ->font('Inter', provider: \Filament\FontProviders\LocalFontProvider::class)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->pages([
                 Dashboard::class,
-                LajuHAIs::class,
-                AnalisaLajuHAIs::class,
-                LajuIAD::class,
-                HaisPerPasien::class,
-                LajuPLEB::class,
-                LajuISK::class,
-                LajuILO::class,
-                LajuHAP::class,
-                SettingInstitusi::class,
             ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
