@@ -25,8 +25,7 @@ class ViewAnalisaRekomendasi extends ViewRecord
                 ->color('success')
                 ->url(fn () => route('export.analisa-rekomendasi.pdf', $this->getRecord()->id))
                 ->openUrlInNewTab(),
-            Actions\EditAction::make()
-                ->visible(false), // Disable edit untuk read-only
+            Actions\EditAction::make(),
         ];
     }
 

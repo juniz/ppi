@@ -46,12 +46,10 @@ class AnalisaRekomendasiResource extends Resource
                     ->disabled(),
                 Forms\Components\Textarea::make('analisa')
                     ->label('Analisa')
-                    ->rows(4)
-                    ->disabled(),
+                    ->rows(4),
                 Forms\Components\Textarea::make('rekomendasi')
                     ->label('Rekomendasi')
-                    ->rows(4)
-                    ->disabled(),
+                    ->rows(4),
             ]);
     }
 
@@ -136,8 +134,7 @@ class AnalisaRekomendasiResource extends Resource
                 Tables\Actions\ViewAction::make()
                     ->label('Lihat Detail'),
                 Tables\Actions\EditAction::make()
-                    ->label('Edit')
-                    ->visible(false), // Disable edit untuk read-only
+                    ->label('Edit'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
