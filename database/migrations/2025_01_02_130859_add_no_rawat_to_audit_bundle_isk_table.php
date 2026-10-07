@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (! Schema::hasTable('audit_bundle_isk') || Schema::hasColumn('audit_bundle_isk', 'no_rawat')) {
+            return;
+        }
+
         Schema::table('audit_bundle_isk', function (Blueprint $table) {
-            $table->string('no_rawat', 20)->nullable()->after('urinebag_menggantung_tidak_menyentuh_lantai')->charset('latin1')->collation('latin1_swedish_ci');
+            $table->string('no_rawat', 20)->nullable()->after('urinebag_menggantikan_tidak_menyentuh_lantai')->charset('latin1')->collation('latin1_swedish_ci');
         });
     }
 
@@ -21,6 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (! Schema::hasTable('audit_bundle_isk') || ! Schema::hasColumn('audit_bundle_isk', 'no_rawat')) {
+            return;
+        }
+
         Schema::table('audit_bundle_isk', function (Blueprint $table) {
             $table->dropColumn('no_rawat');
         });

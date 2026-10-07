@@ -50,6 +50,56 @@ class Ranap extends Page implements HasTable
 
     protected static string $view = 'filament.pages.ranap';
 
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\Action::make('tarik_pasien_simrs')
+                ->label('Tarik Pasien dari SIMRS')
+                ->icon('heroicon-o-cloud-arrow-down')
+                ->color('info')
+                ->requiresConfirmation()
+                ->modalHeading('Tarik Data Pasien Rawat Inap dari SIMRS')
+                ->modalDescription('Data pasien rawat inap aktif akan diambil dari SIMRS dan disimpan ke SiHAI\'s. Petugas tidak perlu input pasien manual.')
+                ->modalSubmitActionLabel('Ya, Tarik Sekarang')
+                ->action(function (): void {
+                    $setting = \App\Models\BridgingSetting::current();
+
+                    if (! $setting->is_active || empty($setting->base_url)) {
+                        Notification::make()
+                            ->warning()
+                            ->title('Bridging tidak aktif')
+                            ->body('Aktifkan Bridging SIMRS dan isi Base URL pada menu Pengaturan Bridging terlebih dahulu.')
+                            ->send();
+
+                        return;
+                    }
+
+                    try {
+                        $service = new \App\Services\SimrsBridgeService($setting);
+                        $aktif = $service->syncPasienRanapAktif();
+                        $pulang = $service->syncPasienPulang([
+                            'tanggal_awal' => now()->subDays(7)->toDateString(),
+                            'tanggal_akhir' => now()->toDateString(),
+                        ]);
+
+                        Notification::make()
+                            ->success()
+                            ->title('Data pasien SIMRS berhasil ditarik')
+                            ->body("Ranap aktif: {$aktif['imported']} baru, {$aktif['updated']} diperbarui. Pasien pulang: {$pulang['updated']} diperbarui.")
+                            ->duration(8000)
+                            ->send();
+                    } catch (\Throwable $e) {
+                        Notification::make()
+                            ->danger()
+                            ->title('Gagal menarik data pasien')
+                            ->body($e->getMessage())
+                            ->duration(10000)
+                            ->send();
+                    }
+                }),
+        ];
+    }
+
     public function table(Table $table): Table
     {
         return $table

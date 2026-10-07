@@ -1,4 +1,51 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SiHAI's - Sistem Surveilans PPI
+
+Aplikasi surveilans Pencegahan & Pengendalian Infeksi (PPI) dengan integrasi
+bridging ke SIMRS eksternal.
+
+## ⚠️ Penting: Migrasi Database
+
+Database SiHAI's memuat dua kategori tabel:
+
+1. **Tabel SiHAI's** (users, analisa_rekomendasi_hais, bridging, dll) — dibuat oleh migrasi Laravel.
+2. **Tabel SIMRS/Khanza** (`data_HAIs`, `kamar_inap`, `reg_periksa`, `pasien`, `kamar`,
+   `bangsal`, `audit_bundle_*`) — idealnya berasal dari **dump database SIMRS asli**.
+
+Migrasi `2024_01_01_000000_create_simrs_minimum_schema_tables` menyediakan struktur
+minimum tabel SIMRS untuk lingkungan pengembangan. Migrasi ini **aman** karena
+memakai guard `hasTable()` sehingga **tidak menimpa** tabel yang sudah ada.
+
+### Aturan aman sebelum migrasi
+
+```bash
+# 1. SELALU backup dulu sebelum migrate di database yang sudah ada datanya
+php artisan db:backup
+
+# 2. Jalankan migrasi biasa (aman, tabel yang ada akan di-skip)
+php artisan migrate
+```
+
+### ⛔ DILARANG di database produksi (berisi data pasien)
+
+- `php artisan migrate:fresh` — menghapus **semua** tabel & data
+- `php artisan migrate:rollback` — `down()` migrasi SiHAI's dapat menghapus tabel
+
+Backup otomatis disimpan di `storage/app/backups/` (14 file terbaru, terjadwal
+harian pukul 02:00). Jalankan manual dengan:
+
+```bash
+php artisan db:backup --keep=30
+```
+
+## Integrasi Bridging SIMRS
+
+- Dokumentasi API publik: `/bridging/docs`
+- Katalog & pengaturan: menu **Bridging SIMRS** di panel admin
+- Sync master ruangan: `php artisan simrs:sync-ruangan`
+- Sync data pasien ranap: `php artisan simrs:sync-pasien`
+
+---
+
 
 <p align="center">
 <a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>

@@ -11,36 +11,70 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('audit_bundle_isk', function (Blueprint $table) {
-            // Drop old columns
-            $table->dropColumn([
-                'pemasangan_sesuai_indikasi',
-                'hand_hygiene',
-                'menggunakan_apd_yang_tepat',
-                'pemasangan_menggunakan_alat_steril',
-                'segera_dilepas_setelah_tidak_diperlukan',
-                'pengisian_balon_sesuai_petunjuk',
-                'fiksasi_kateter_dengan_plester',
-                'urinebag_menggantung_tidak_menyentuh_lantai',
-            ]);
+        if (! Schema::hasTable('audit_bundle_isk')) {
+            return;
+        }
 
-            // Add Pemasangan columns
-            $table->enum('pemasangan_1_indikasi', ['Ya', 'Tidak', 'NA'])->default('Ya');
-            $table->enum('pemasangan_2_hand_hygiene', ['Ya', 'Tidak', 'NA'])->default('Ya');
-            $table->enum('pemasangan_3_teknik_aseptik', ['Ya', 'Tidak', 'NA'])->default('Ya');
-            $table->enum('pemasangan_4_alat_steril', ['Ya', 'Tidak', 'NA'])->default('Ya');
+        $oldColumns = [
+            'pemasangan_sesuai_indikasi',
+            'hand_hygiene',
+            'menggunakan_apd_yang_tepat',
+            'pemasangan_menggunakan_alat_steril',
+            'segera_dilepas_setelah_tidak_diperlukan',
+            'pengisian_balon_sesuai_petunjuk',
+            'fiksasi_kateter_dengan_plester',
+            'urinebag_menggantung_tidak_menyentuh_lantai',
+        ];
 
-            // Add Perawatan columns
-            $table->enum('perawatan_1_hand_hygiene', ['Ya', 'Tidak', 'NA'])->default('Ya');
-            $table->enum('perawatan_2_genitalia_dibersihkan', ['Ya', 'Tidak', 'NA'])->default('Ya');
-            $table->enum('perawatan_3_fiksasi_kateter', ['Ya', 'Tidak', 'NA'])->default('Ya');
-            $table->enum('perawatan_4_tidak_diganti_rutin', ['Ya', 'Tidak', 'NA'])->default('Ya');
-            $table->enum('perawatan_5_aliran_steril_tertutup', ['Ya', 'Tidak', 'NA'])->default('Ya');
-            $table->enum('perawatan_6_hubungan_kateter_tertutup', ['Ya', 'Tidak', 'NA'])->default('Ya');
-            $table->enum('perawatan_7_urine_bag_tidak_di_lantai', ['Ya', 'Tidak', 'NA'])->default('Ya');
-            $table->enum('perawatan_8_selang_tidak_terlipat', ['Ya', 'Tidak', 'NA'])->default('Ya');
-            $table->enum('perawatan_9_drainase_tertutup', ['Ya', 'Tidak', 'NA'])->default('Ya');
-            $table->enum('perawatan_10_segera_dilepas', ['Ya', 'Tidak', 'NA'])->default('Ya');
+        $newColumns = [
+            'pemasangan_1_indikasi',
+            'pemasangan_2_hand_hygiene',
+            'pemasangan_3_teknik_aseptik',
+            'pemasangan_4_alat_steril',
+            'perawatan_1_hand_hygiene',
+            'perawatan_2_genitalia_dibersihkan',
+            'perawatan_3_fiksasi_kateter',
+            'perawatan_4_tidak_diganti_rutin',
+            'perawatan_5_aliran_steril_tertutup',
+            'perawatan_6_hubungan_kateter_tertutup',
+            'perawatan_7_urine_bag_tidak_di_lantai',
+            'perawatan_8_selang_tidak_terlipat',
+            'perawatan_9_drainase_tertutup',
+            'perawatan_10_segera_dilepas',
+        ];
+
+        // Drop kolom lama yang benar-benar ada.
+        $existingOld = array_filter($oldColumns, fn ($c) => Schema::hasColumn('audit_bundle_isk', $c));
+        if (! empty($existingOld)) {
+            Schema::table('audit_bundle_isk', function (Blueprint $table) use ($existingOld) {
+                $table->dropColumn(array_values($existingOld));
+            });
+        }
+
+        // Tambah kolom baru yang belum ada.
+        Schema::table('audit_bundle_isk', function (Blueprint $table) use ($newColumns) {
+            $map = [
+                'pemasangan_1_indikasi' => 'pemasangan_1_indikasi',
+                'pemasangan_2_hand_hygiene' => 'pemasangan_2_hand_hygiene',
+                'pemasangan_3_teknik_aseptik' => 'pemasangan_3_teknik_aseptik',
+                'pemasangan_4_alat_steril' => 'pemasangan_4_alat_steril',
+                'perawatan_1_hand_hygiene' => 'perawatan_1_hand_hygiene',
+                'perawatan_2_genitalia_dibersihkan' => 'perawatan_2_genitalia_dibersihkan',
+                'perawatan_3_fiksasi_kateter' => 'perawatan_3_fiksasi_kateter',
+                'perawatan_4_tidak_diganti_rutin' => 'perawatan_4_tidak_diganti_rutin',
+                'perawatan_5_aliran_steril_tertutup' => 'perawatan_5_aliran_steril_tertutup',
+                'perawatan_6_hubungan_kateter_tertutup' => 'perawatan_6_hubungan_kateter_tertutup',
+                'perawatan_7_urine_bag_tidak_di_lantai' => 'perawatan_7_urine_bag_tidak_di_lantai',
+                'perawatan_8_selang_tidak_terlipat' => 'perawatan_8_selang_tidak_terlipat',
+                'perawatan_9_drainase_tertutup' => 'perawatan_9_drainase_tertutup',
+                'perawatan_10_segera_dilepas' => 'perawatan_10_segera_dilepas',
+            ];
+
+            foreach ($map as $column) {
+                if (! Schema::hasColumn('audit_bundle_isk', $column)) {
+                    $table->enum($column, ['Ya', 'Tidak', 'NA'])->default('Ya');
+                }
+            }
         });
     }
 
@@ -49,6 +83,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (! Schema::hasTable('audit_bundle_isk')) {
+            return;
+        }
+
         Schema::table('audit_bundle_isk', function (Blueprint $table) {
             // Drop new columns
             $table->dropColumn([

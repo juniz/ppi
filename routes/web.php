@@ -3,6 +3,7 @@
 use App\Http\Controllers\SocialiteController;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\BridgingDocsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/auth/{provider}/redirect', [SocialiteController::class, 'redirect'])
@@ -27,3 +28,6 @@ Route::post('/chart/save-image', [ChartController::class, 'saveChartImage'])->na
 Route::get('/export/analisa-rekomendasi/{id}/pdf', [ExportController::class, 'exportPdfAnalisaRekomendasi'])->name('export.analisa-rekomendasi.pdf');
 Route::get('/export/hais-harian/pdf', [ExportController::class, 'exportPdfHaisHarian'])->name('export.hais-harian.pdf');
 Route::get('/export/hais-bulanan/pdf', [ExportController::class, 'exportPdfHaisBulanan'])->name('export.hais-bulanan.pdf');
+
+// Bridging Documentation route (dapat diakses oleh pengembang SIMRS)
+Route::get('/bridging/docs', [BridgingDocsController::class, 'index'])->name('bridging.docs');

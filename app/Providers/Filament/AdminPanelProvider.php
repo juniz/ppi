@@ -34,6 +34,8 @@ use App\Filament\Pages\LajuHAP;
 use App\Filament\Pages\LajuHAIs;
 use App\Filament\Pages\AnalisaLajuHAIs;
 use App\Filament\Pages\SettingInstitusi;
+use App\Filament\Pages\BridgingSettingPage;
+use App\Filament\Pages\BridgingKatalogPage;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -80,8 +82,8 @@ class AdminPanelProvider extends PanelProvider
                 'Laporan HAIs',
                 'Audit',
                 'Laporan Bundle',
-                'Pengaturan',
-                'Master Data'
+                'Master Data',
+                'Bridging SIMRS',
             ])
             ->sidebarFullyCollapsibleOnDesktop()
             ->brandName(config('app.name', 'SI-HAIs'))
@@ -90,6 +92,8 @@ class AdminPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->pages([
                 Dashboard::class,
+                BridgingSettingPage::class,
+                BridgingKatalogPage::class,
             ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')

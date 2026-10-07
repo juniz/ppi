@@ -12,7 +12,18 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        $schedule->command('simrs:sync-ruangan')
+            ->everyMinute()
+            ->withoutOverlapping();
+
+        $schedule->command('simrs:sync-pasien')
+            ->everyFiveMinutes()
+            ->withoutOverlapping();
+
+        // Backup database harian dini hari, simpan 14 file terbaru.
+        $schedule->command('db:backup')
+            ->dailyAt('02:00')
+            ->withoutOverlapping();
     }
 
     /**

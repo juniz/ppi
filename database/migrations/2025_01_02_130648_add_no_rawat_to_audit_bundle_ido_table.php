@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (! Schema::hasTable('audit_bundle_ido') || Schema::hasColumn('audit_bundle_ido', 'no_rawat')) {
+            return;
+        }
+
         Schema::table('audit_bundle_ido', function (Blueprint $table) {
             $table->string('no_rawat', 20)->nullable()->after('sugar')->charset('latin1')->collation('latin1_swedish_ci');
         });
@@ -21,6 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (! Schema::hasTable('audit_bundle_ido') || ! Schema::hasColumn('audit_bundle_ido', 'no_rawat')) {
+            return;
+        }
+
         Schema::table('audit_bundle_ido', function (Blueprint $table) {
             $table->dropColumn('no_rawat');
         });

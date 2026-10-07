@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (! Schema::hasTable('audit_bundle_isk') || ! Schema::hasColumn('audit_bundle_isk', 'perawatan_9_drainase_tertutup')) {
+            return;
+        }
+
         Schema::table('audit_bundle_isk', function (Blueprint $table) {
             $table->dropColumn('perawatan_9_drainase_tertutup');
         });
@@ -21,6 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (! Schema::hasTable('audit_bundle_isk') || Schema::hasColumn('audit_bundle_isk', 'perawatan_9_drainase_tertutup')) {
+            return;
+        }
+
         Schema::table('audit_bundle_isk', function (Blueprint $table) {
             $table->enum('perawatan_9_drainase_tertutup', ['Ya', 'Tidak', 'NA'])->default('Ya');
         });
