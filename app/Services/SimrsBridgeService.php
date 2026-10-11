@@ -5,9 +5,12 @@ namespace App\Services;
 use App\Models\Bangsal;
 use App\Models\BridgingMapping;
 use App\Models\BridgingSetting;
+use App\Models\Dokter;
 use App\Models\Kamar;
 use App\Models\KamarInap;
 use App\Models\Pasien;
+use App\Models\Penjab;
+use App\Models\Poliklinik;
 use App\Models\RegPeriksa;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\DB;
@@ -280,16 +283,59 @@ class SimrsBridgeService
                 }
 
                 // 1) Upsert identitas pasien.
+                $pasienAttributes = [
+                    'nm_pasien' => $item['nama_pasien'] ?? $item['nm_pasien'] ?? '-',
+                    'jk' => $this->normalizeJenisKelamin($item['jenis_kelamin'] ?? $item['jk'] ?? null) ?? 'L',
+                    'tgl_lahir' => $item['tanggal_lahir'] ?? $item['tgl_lahir'] ?? null,
+                    'no_ktp' => $item['nik'] ?? $item['no_ktp'] ?? null,
+                    'alamat' => $item['alamat'] ?? null,
+                    'umur' => $item['umur'] ?? null,
+                ];
+
+                $defaultKdPj = Schema::hasTable('penjab') ? (Penjab::query()->value('kd_pj') ?? '-') : '-';
+                $defaultKdPoli = Schema::hasTable('poliklinik') ? (Poliklinik::query()->value('kd_poli') ?? '-') : '-';
+                $defaultKdDokter = Schema::hasTable('dokter') ? (Dokter::query()->value('kd_dokter') ?? '-') : '-';
+
+                $defaultKdProp = Schema::hasTable('propinsi') ? (DB::table('propinsi')->value('kd_prop') ?? 1) : 0;
+                $defaultKdKab = Schema::hasTable('kabupaten') ? (DB::table('kabupaten')->value('kd_kab') ?? 1) : 0;
+                $defaultKdKec = Schema::hasTable('kecamatan') ? (DB::table('kecamatan')->value('kd_kec') ?? 0) : 0;
+                $defaultKdKel = Schema::hasTable('kelurahan') ? (DB::table('kelurahan')->value('kd_kel') ?? 1) : 0;
+                $defaultSuku = Schema::hasTable('suku_bangsa') ? (DB::table('suku_bangsa')->value('id') ?? 1) : 0;
+                $defaultBahasa = Schema::hasTable('bahasa_pasien') ? (DB::table('bahasa_pasien')->value('id') ?? 1) : 0;
+                $defaultCacat = Schema::hasTable('cacat_fisik') ? (DB::table('cacat_fisik')->value('id') ?? 1) : 0;
+                $defaultPerusahaan = Schema::hasTable('perusahaan_pasien') ? (DB::table('perusahaan_pasien')->value('kode_perusahaan') ?? '-') : '-';
+
+                $extraPasienDefaults = [
+                    'nm_ibu' => '-',
+                    'pnd' => '-',
+                    'namakeluarga' => '-',
+                    'kd_pj' => $defaultKdPj,
+                    'kd_kel' => $defaultKdKel,
+                    'kd_kec' => $defaultKdKec,
+                    'kd_kab' => $defaultKdKab,
+                    'pekerjaanpj' => '-',
+                    'alamatpj' => '-',
+                    'kelurahanpj' => '-',
+                    'kecamatanpj' => '-',
+                    'kabupatenpj' => '-',
+                    'perusahaan_pasien' => $defaultPerusahaan,
+                    'suku_bangsa' => $defaultSuku,
+                    'bahasa_pasien' => $defaultBahasa,
+                    'cacat_fisik' => $defaultCacat,
+                    'email' => '-',
+                    'nip' => '-',
+                    'kd_prop' => $defaultKdProp,
+                    'propinsipj' => '-',
+                ];
+                foreach ($extraPasienDefaults as $col => $defVal) {
+                    if (Schema::hasColumn('pasien', $col)) {
+                        $pasienAttributes[$col] = $item[$col] ?? $defVal;
+                    }
+                }
+
                 Pasien::query()->updateOrCreate(
                     ['no_rkm_medis' => $noRm],
-                    [
-                        'nm_pasien' => $item['nama_pasien'] ?? $item['nm_pasien'] ?? '-',
-                        'jk' => $this->normalizeJenisKelamin($item['jenis_kelamin'] ?? $item['jk'] ?? null),
-                        'tgl_lahir' => $item['tanggal_lahir'] ?? $item['tgl_lahir'] ?? null,
-                        'no_ktp' => $item['nik'] ?? $item['no_ktp'] ?? null,
-                        'alamat' => $item['alamat'] ?? null,
-                        'umur' => $item['umur'] ?? null,
-                    ],
+                    $pasienAttributes,
                 );
 
                 // 2) Tentukan kode kamar lokal dari mapping ruangan.
@@ -304,15 +350,36 @@ class SimrsBridgeService
 
                 // 3) Pastikan reg_periksa ada.
                 $tglMasuk = $this->normalizeDateTime($item['tanggal_masuk'] ?? $item['tgl_masuk'] ?? null);
+                $regAttributes = [
+                    'no_rkm_medis' => $noRm,
+                    'tgl_registrasi' => $tglMasuk ? $tglMasuk->toDateString() : now()->toDateString(),
+                    'jam_reg' => $tglMasuk ? $tglMasuk->format('H:i:s') : now()->format('H:i:s'),
+                    'status_lanjut' => 'Ranap',
+                    'stts' => 'Sudah',
+                ];
+
+                if (Schema::hasColumn('reg_periksa', 'kd_pj')) {
+                    $regAttributes['kd_pj'] = $defaultKdPj;
+                }
+                if (Schema::hasColumn('reg_periksa', 'kd_poli')) {
+                    $regAttributes['kd_poli'] = $defaultKdPoli;
+                }
+                if (Schema::hasColumn('reg_periksa', 'kd_dokter')) {
+                    $regAttributes['kd_dokter'] = $defaultKdDokter;
+                }
+                if (Schema::hasColumn('reg_periksa', 'stts_daftar')) {
+                    $regAttributes['stts_daftar'] = 'Lama';
+                }
+                if (Schema::hasColumn('reg_periksa', 'status_bayar')) {
+                    $regAttributes['status_bayar'] = 'Belum Bayar';
+                }
+                if (Schema::hasColumn('reg_periksa', 'status_poli')) {
+                    $regAttributes['status_poli'] = 'Lama';
+                }
+
                 RegPeriksa::query()->updateOrCreate(
                     ['no_rawat' => $noRawat],
-                    [
-                        'no_rkm_medis' => $noRm,
-                        'tgl_registrasi' => $tglMasuk ? $tglMasuk->toDateString() : now()->toDateString(),
-                        'jam_reg' => $tglMasuk ? $tglMasuk->format('H:i:s') : now()->format('H:i:s'),
-                        'status_lanjut' => 'Ranap',
-                        'stts' => 'Sudah',
-                    ],
+                    $regAttributes,
                 );
 
                 // 4) Upsert kamar_inap (hanya untuk pasien yang masih aktif).

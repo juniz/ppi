@@ -225,9 +225,42 @@ class BridgingSettingPage extends Page implements HasForms
         }
     }
 
+    public function useMockSimrs(): void
+    {
+        $mockUrl = rtrim(config('app.url') ?: url('/'), '/').'/api/mock-simrs';
+
+        $this->settingRecord->update([
+            'is_active' => true,
+            'simrs_name' => 'Mock SIMRS Simulator (Internal)',
+            'base_url' => $mockUrl,
+            'auth_type' => 'bearer',
+            'api_token' => 'mock-token-simrs-secret',
+            'timeout' => 30,
+        ]);
+
+        $this->mount();
+
+        Notification::make()
+            ->success()
+            ->title('Mock SIMRS Simulator Aktif!')
+            ->body('Konfigurasi otomatis diarahkan ke simulator internal ('.$mockUrl.'). Silakan klik "Test Koneksi API" untuk menguji.')
+            ->duration(10000)
+            ->send();
+    }
+
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('use_mock_simrs')
+                ->label('Gunakan Mock Simulator')
+                ->icon('heroicon-o-beaker')
+                ->color('success')
+                ->requiresConfirmation()
+                ->modalHeading('Gunakan Mock SIMRS Simulator')
+                ->modalDescription('Konfigurasi bridging akan otomatis diisi dengan simulator API internal SI-HAIs untuk keperluan testing data ruangan & pasien.')
+                ->modalSubmitActionLabel('Ya, Aktifkan Simulator')
+                ->action('useMockSimrs'),
+
             Action::make('mapping_data')
                 ->label('Mapping Data')
                 ->icon('heroicon-o-arrows-right-left')
