@@ -31,5 +31,7 @@ Route::prefix('mock-simrs')->group(function () {
     Route::get('/pasien-ranap/aktif', [\App\Http\Controllers\MockSimrsApiController::class, 'pasienRanapAktif'])->name('mock.simrs.pasien-ranap.aktif');
     Route::get('/pasien-ranap/pulang', [\App\Http\Controllers\MockSimrsApiController::class, 'pasienRanapPulang'])->name('mock.simrs.pasien-ranap.pulang');
     Route::get('/pasien/search', [\App\Http\Controllers\MockSimrsApiController::class, 'searchPasien'])->name('mock.simrs.pasien.search');
-    Route::get('/pasien/{no_rawat}/alat-invasif', [\App\Http\Controllers\MockSimrsApiController::class, 'alatInvasif'])->name('mock.simrs.pasien.alat-invasif');
+    Route::get('/pasien/{no_rawat}/alat-invasif', [\App\Http\Controllers\MockSimrsApiController::class, 'alatInvasif'])
+        ->where('no_rawat', '.*')
+        ->name('mock.simrs.pasien.alat-invasif');
 });

@@ -273,6 +273,12 @@ class BridgingSettingPage extends Page implements HasForms
                 ->color('info')
                 ->url(fn () => BridgingKatalogPage::getUrl()),
 
+            Action::make('buka_tester')
+                ->label('Tester API (Playground)')
+                ->icon('heroicon-o-command-line')
+                ->color('primary')
+                ->url(fn () => BridgingTesterPage::getUrl()),
+
             Action::make('test_koneksi')
                 ->label('Test Koneksi API')
                 ->icon('heroicon-o-signal')

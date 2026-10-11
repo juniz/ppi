@@ -54,6 +54,12 @@ class BridgingKatalogPage extends Page
                 ->color('gray')
                 ->url(fn () => BridgingSettingPage::getUrl()),
 
+            Action::make('buka_tester')
+                ->label('Tester API (Playground)')
+                ->icon('heroicon-o-command-line')
+                ->color('warning')
+                ->url(fn () => BridgingTesterPage::getUrl()),
+
             Action::make('buka_publik')
                 ->label('Buka Halaman Publik')
                 ->icon('heroicon-o-arrow-top-right-on-square')
