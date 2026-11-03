@@ -114,6 +114,23 @@
             border-top: 1px solid #e2e8f0;
             padding-top: 10px;
         }
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+            border: none;
+        }
+        .signature-table td {
+            border: none !important;
+            padding: 0 !important;
+            vertical-align: top;
+            text-align: center;
+            font-size: 11px;
+            background: transparent !important;
+            line-height: 1.5;
+        }
         .chart-container {
             width: 100%;
             margin-top: 10px;
@@ -392,6 +409,25 @@
             {!! nl2br(e($record->rekomendasi)) !!}
         </div>
     </div>
+
+    <!-- Tanda Tangan -->
+    <table class="signature-table">
+        <tr>
+            <td style="width: 45%; text-align: center;">
+                <div>Mengetahui,</div>
+                <div style="font-weight: bold; margin-top: 3px;">Ketua Komite PPI</div>
+                <div style="height: 60px;"></div>
+                <div style="font-weight: bold; text-decoration: underline;">drg. Yoanita Dwiaidina, SpKG.</div>
+            </td>
+            <td style="width: 10%;"></td>
+            <td style="width: 45%; text-align: center;">
+                <div>{{ $setting->kabupaten ?? 'Madiun' }}, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</div>
+                <div style="font-weight: bold; margin-top: 3px;">IPCN</div>
+                <div style="height: 60px;"></div>
+                <div style="font-weight: bold; text-decoration: underline;">Aine Artalia,S.Kep., Ns., MARS.</div>
+            </td>
+        </tr>
+    </table>
 
     <div class="footer">
         <p>Laporan ini dibuat secara otomatis oleh Sistem Informasi HAIs</p>
