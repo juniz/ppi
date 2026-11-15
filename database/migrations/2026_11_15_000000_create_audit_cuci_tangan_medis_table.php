@@ -13,13 +13,16 @@ return new class extends Migration
         }
 
         Schema::create('audit_cuci_tangan_medis', function (Blueprint $table): void {
+            $table->charset = 'latin1';
+            $table->collation = 'latin1_swedish_ci';
+
             $table->dateTime('tanggal');
             $table->string('nik', 20);
-            $table->string('sebelum_menyentuh_pasien', 5)->nullable();
-            $table->string('sebelum_tehnik_aseptik', 5)->nullable();
-            $table->string('setelah_terpapar_cairan_tubuh_pasien', 5)->nullable();
-            $table->string('setelah_kontak_dengan_pasien', 5)->nullable();
-            $table->string('setelah_kontak_dengan_lingkungan_pasien', 5)->nullable();
+            $table->enum('sebelum_menyentuh_pasien', ['Ya', 'Tidak'])->nullable();
+            $table->enum('sebelum_tehnik_aseptik', ['Ya', 'Tidak'])->nullable();
+            $table->enum('setelah_terpapar_cairan_tubuh_pasien', ['Ya', 'Tidak'])->nullable();
+            $table->enum('setelah_kontak_dengan_pasien', ['Ya', 'Tidak'])->nullable();
+            $table->enum('setelah_kontak_dengan_lingkungan_pasien', ['Ya', 'Tidak'])->nullable();
 
             $table->primary(['tanggal', 'nik']);
             $table->foreign('nik')
