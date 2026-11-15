@@ -3,7 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\AuditCuciTanganMedisResource\Pages;
-use App\Filament\Resources\AuditCuciTanganMedisResource\Widgets;
+use App\Filament\Resources\AuditCuciTanganMedisResource\Widgets\AuditCuciTanganStats;
 use App\Models\AuditCuciTanganMedis;
 use App\Models\Pegawai;
 use Filament\Forms;
@@ -163,12 +163,12 @@ class AuditCuciTanganMedisResource extends Resource
             ->query(
                 AuditCuciTanganMedis::query()
                     ->with('pegawai')
-                    ->orderBy('tanggal', 'desc')
                     ->select(
                         'audit_cuci_tangan_medis.*',
-                        DB::raw('ROUND(((sebelum_menyentuh_pasien = "Ya") + (sebelum_tehnik_aseptik = "Ya") + (setelah_terpapar_cairan_tubuh_pasien = "Ya") + (setelah_kontak_dengan_pasien = "Ya") + (setelah_kontak_dengan_lingkungan_pasien = "Ya")) / 5 * 100, 1) as ttl')
+                        DB::raw("ROUND(((CASE WHEN sebelum_menyentuh_pasien = 'Ya' THEN 1 ELSE 0 END) + (CASE WHEN sebelum_tehnik_aseptik = 'Ya' THEN 1 ELSE 0 END) + (CASE WHEN setelah_terpapar_cairan_tubuh_pasien = 'Ya' THEN 1 ELSE 0 END) + (CASE WHEN setelah_kontak_dengan_pasien = 'Ya' THEN 1 ELSE 0 END) + (CASE WHEN setelah_kontak_dengan_lingkungan_pasien = 'Ya' THEN 1 ELSE 0 END)) / 5 * 100, 1) as ttl")
                     )
             )
+            ->defaultSort('tanggal', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('tanggal')
                     ->label('Waktu Observasi')
@@ -188,11 +188,11 @@ class AuditCuciTanganMedisResource extends Resource
                     Tables\Columns\IconColumn::make('sebelum_menyentuh_pasien')
                         ->label('Momen 1')
                         ->tooltip('1. Sebelum Menyentuh Pasien')
-                        ->color(fn (string $state): string => match ($state) {
+                        ->color(fn (?string $state): string => match ($state) {
                             'Ya' => 'success',
                             default => 'danger',
                         })
-                        ->icon(fn (string $state): string => match ($state) {
+                        ->icon(fn (?string $state): string => match ($state) {
                             'Ya' => 'heroicon-s-check-circle',
                             default => 'heroicon-s-x-circle',
                         })
@@ -202,11 +202,11 @@ class AuditCuciTanganMedisResource extends Resource
                     Tables\Columns\IconColumn::make('sebelum_tehnik_aseptik')
                         ->label('Momen 2')
                         ->tooltip('2. Sebelum Melakukan Prosedur Bersih / Aseptik')
-                        ->color(fn (string $state): string => match ($state) {
+                        ->color(fn (?string $state): string => match ($state) {
                             'Ya' => 'success',
                             default => 'danger',
                         })
-                        ->icon(fn (string $state): string => match ($state) {
+                        ->icon(fn (?string $state): string => match ($state) {
                             'Ya' => 'heroicon-s-check-circle',
                             default => 'heroicon-s-x-circle',
                         })
@@ -216,11 +216,11 @@ class AuditCuciTanganMedisResource extends Resource
                     Tables\Columns\IconColumn::make('setelah_terpapar_cairan_tubuh_pasien')
                         ->label('Momen 3')
                         ->tooltip('3. Setelah Risiko Terpapar Cairan Tubuh Pasien')
-                        ->color(fn (string $state): string => match ($state) {
+                        ->color(fn (?string $state): string => match ($state) {
                             'Ya' => 'success',
                             default => 'danger',
                         })
-                        ->icon(fn (string $state): string => match ($state) {
+                        ->icon(fn (?string $state): string => match ($state) {
                             'Ya' => 'heroicon-s-check-circle',
                             default => 'heroicon-s-x-circle',
                         })
@@ -230,11 +230,11 @@ class AuditCuciTanganMedisResource extends Resource
                     Tables\Columns\IconColumn::make('setelah_kontak_dengan_pasien')
                         ->label('Momen 4')
                         ->tooltip('4. Setelah Kontak dengan Pasien')
-                        ->color(fn (string $state): string => match ($state) {
+                        ->color(fn (?string $state): string => match ($state) {
                             'Ya' => 'success',
                             default => 'danger',
                         })
-                        ->icon(fn (string $state): string => match ($state) {
+                        ->icon(fn (?string $state): string => match ($state) {
                             'Ya' => 'heroicon-s-check-circle',
                             default => 'heroicon-s-x-circle',
                         })
@@ -244,11 +244,11 @@ class AuditCuciTanganMedisResource extends Resource
                     Tables\Columns\IconColumn::make('setelah_kontak_dengan_lingkungan_pasien')
                         ->label('Momen 5')
                         ->tooltip('5. Setelah Kontak dengan Lingkungan Pasien')
-                        ->color(fn (string $state): string => match ($state) {
+                        ->color(fn (?string $state): string => match ($state) {
                             'Ya' => 'success',
                             default => 'danger',
                         })
-                        ->icon(fn (string $state): string => match ($state) {
+                        ->icon(fn (?string $state): string => match ($state) {
                             'Ya' => 'heroicon-s-check-circle',
                             default => 'heroicon-s-x-circle',
                         })
@@ -260,17 +260,18 @@ class AuditCuciTanganMedisResource extends Resource
                     ->label('Kepatuhan')
                     ->badge()
                     ->formatStateUsing(function ($state, $record): string {
-                        if ($state === null) return '-';
-                        $ya = ($record->sebelum_menyentuh_pasien === 'Ya' ? 1 : 0)
-                            + ($record->sebelum_tehnik_aseptik === 'Ya' ? 1 : 0)
-                            + ($record->setelah_terpapar_cairan_tubuh_pasien === 'Ya' ? 1 : 0)
-                            + ($record->setelah_kontak_dengan_pasien === 'Ya' ? 1 : 0)
-                            + ($record->setelah_kontak_dengan_lingkungan_pasien === 'Ya' ? 1 : 0);
-                        return "{$ya}/5 ({$state}%)";
+                        if (! $record) return '-';
+                        $ya = (($record->sebelum_menyentuh_pasien ?? '') === 'Ya' ? 1 : 0)
+                            + (($record->sebelum_tehnik_aseptik ?? '') === 'Ya' ? 1 : 0)
+                            + (($record->setelah_terpapar_cairan_tubuh_pasien ?? '') === 'Ya' ? 1 : 0)
+                            + (($record->setelah_kontak_dengan_pasien ?? '') === 'Ya' ? 1 : 0)
+                            + (($record->setelah_kontak_dengan_lingkungan_pasien ?? '') === 'Ya' ? 1 : 0);
+                        $pct = round(($ya / 5) * 100, 1);
+                        return "{$ya}/5 ({$pct}%)";
                     })
                     ->color(fn ($state): string => match (true) {
-                        (float) $state >= 85 => 'success',
-                        (float) $state >= 75 => 'warning',
+                        (float) ($state ?? 0) >= 85 => 'success',
+                        (float) ($state ?? 0) >= 75 => 'warning',
                         default => 'danger',
                     })
                     ->alignCenter()
@@ -332,14 +333,15 @@ class AuditCuciTanganMedisResource extends Resource
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         $val = $data['value'] ?? null;
+                        $formula = "((CASE WHEN sebelum_menyentuh_pasien = 'Ya' THEN 1 ELSE 0 END) + (CASE WHEN sebelum_tehnik_aseptik = 'Ya' THEN 1 ELSE 0 END) + (CASE WHEN setelah_terpapar_cairan_tubuh_pasien = 'Ya' THEN 1 ELSE 0 END) + (CASE WHEN setelah_kontak_dengan_pasien = 'Ya' THEN 1 ELSE 0 END) + (CASE WHEN setelah_kontak_dengan_lingkungan_pasien = 'Ya' THEN 1 ELSE 0 END))";
                         if ($val === '100') {
-                            return $query->whereRaw('((sebelum_menyentuh_pasien = "Ya") + (sebelum_tehnik_aseptik = "Ya") + (setelah_terpapar_cairan_tubuh_pasien = "Ya") + (setelah_kontak_dengan_pasien = "Ya") + (setelah_kontak_dengan_lingkungan_pasien = "Ya")) = 5');
+                            return $query->whereRaw("{$formula} = 5");
                         }
                         if ($val === 'target') {
-                            return $query->whereRaw('ROUND(((sebelum_menyentuh_pasien = "Ya") + (sebelum_tehnik_aseptik = "Ya") + (setelah_terpapar_cairan_tubuh_pasien = "Ya") + (setelah_kontak_dengan_pasien = "Ya") + (setelah_kontak_dengan_lingkungan_pasien = "Ya")) / 5 * 100, 1) >= 85');
+                            return $query->whereRaw("ROUND({$formula} / 5 * 100, 1) >= 85");
                         }
                         if ($val === 'kurang') {
-                            return $query->whereRaw('ROUND(((sebelum_menyentuh_pasien = "Ya") + (sebelum_tehnik_aseptik = "Ya") + (setelah_terpapar_cairan_tubuh_pasien = "Ya") + (setelah_kontak_dengan_pasien = "Ya") + (setelah_kontak_dengan_lingkungan_pasien = "Ya")) / 5 * 100, 1) < 85');
+                            return $query->whereRaw("ROUND({$formula} / 5 * 100, 1) < 85");
                         }
                         return $query;
                     })
@@ -366,7 +368,7 @@ class AuditCuciTanganMedisResource extends Resource
     public static function getWidgets(): array
     {
         return [
-            Widgets\AuditCuciTanganStats::class,
+            AuditCuciTanganStats::class,
         ];
     }
 
