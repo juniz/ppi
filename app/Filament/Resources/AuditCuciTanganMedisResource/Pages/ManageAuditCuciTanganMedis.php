@@ -19,7 +19,7 @@ class ManageAuditCuciTanganMedis extends ManageRecords
                 ->label('Catat Audit Baru')
                 ->icon('heroicon-m-plus')
                 ->modalHeading('Audit Cuci Tangan Medis')
-                ->modalWidth(MaxWidth::Medium),
+                ->modalWidth(MaxWidth::ExtraLarge),
         ];
     }
 
