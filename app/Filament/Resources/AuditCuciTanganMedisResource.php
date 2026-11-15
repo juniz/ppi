@@ -14,6 +14,7 @@ use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Columns\ColumnGroup;
 use Filament\Tables\Columns\IconColumn\IconColumnSize;
+use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -280,11 +281,19 @@ class AuditCuciTanganMedisResource extends Resource
                     ->form([
                         Forms\Components\DatePicker::make('dari_tanggal')
                             ->label('Dari Tanggal')
-                            ->native(false),
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
+                            ->placeholder('Pilih tanggal awal')
+                            ->closeOnDateSelection(),
                         Forms\Components\DatePicker::make('sampai_tanggal')
                             ->label('Sampai Tanggal')
-                            ->native(false),
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
+                            ->placeholder('Pilih tanggal akhir')
+                            ->closeOnDateSelection(),
                     ])
+                    ->columns(2)
+                    ->columnSpanFull()
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
                             ->when(
@@ -295,14 +304,50 @@ class AuditCuciTanganMedisResource extends Resource
                                 $data['sampai_tanggal'],
                                 fn (Builder $query, $date): Builder => $query->whereDate('tanggal', '<=', $date),
                             );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['dari_tanggal'] ?? null) {
+                            $indicators['dari_tanggal'] = 'Dari: ' . Carbon::parse($data['dari_tanggal'])->translatedFormat('d M Y');
+                        }
+                        if ($data['sampai_tanggal'] ?? null) {
+                            $indicators['sampai_tanggal'] = 'Sampai: ' . Carbon::parse($data['sampai_tanggal'])->translatedFormat('d M Y');
+                        }
+                        return $indicators;
                     }),
 
                 Tables\Filters\SelectFilter::make('nik')
                     ->label('Petugas Medis')
                     ->relationship('pegawai', 'nama')
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->indicator('Petugas'),
+
+                Tables\Filters\SelectFilter::make('kepatuhan')
+                    ->label('Tingkat Kepatuhan (PPI)')
+                    ->options([
+                        '100' => 'Patuh Sempurna (100%)',
+                        'target' => 'Sesuai Standar Mutu (≥ 85%)',
+                        'kurang' => 'Perlu Pembinaan (< 85%)',
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        $val = $data['value'] ?? null;
+                        if ($val === '100') {
+                            return $query->whereRaw('((sebelum_menyentuh_pasien = "Ya") + (sebelum_tehnik_aseptik = "Ya") + (setelah_terpapar_cairan_tubuh_pasien = "Ya") + (setelah_kontak_dengan_pasien = "Ya") + (setelah_kontak_dengan_lingkungan_pasien = "Ya")) = 5');
+                        }
+                        if ($val === 'target') {
+                            return $query->whereRaw('ROUND(((sebelum_menyentuh_pasien = "Ya") + (sebelum_tehnik_aseptik = "Ya") + (setelah_terpapar_cairan_tubuh_pasien = "Ya") + (setelah_kontak_dengan_pasien = "Ya") + (setelah_kontak_dengan_lingkungan_pasien = "Ya")) / 5 * 100, 1) >= 85');
+                        }
+                        if ($val === 'kurang') {
+                            return $query->whereRaw('ROUND(((sebelum_menyentuh_pasien = "Ya") + (sebelum_tehnik_aseptik = "Ya") + (setelah_terpapar_cairan_tubuh_pasien = "Ya") + (setelah_kontak_dengan_pasien = "Ya") + (setelah_kontak_dengan_lingkungan_pasien = "Ya")) / 5 * 100, 1) < 85');
+                        }
+                        return $query;
+                    })
+                    ->indicator('Kepatuhan'),
             ])
+            ->filtersLayout(FiltersLayout::Dropdown)
+            ->filtersFormWidth(MaxWidth::TwoExtraLarge)
+            ->filtersFormColumns(2)
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->icon('heroicon-m-pencil-square')
