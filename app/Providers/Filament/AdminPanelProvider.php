@@ -25,6 +25,7 @@ use App\Filament\Pages\HaisPerBangsal;
 use App\Filament\Pages\LajuVAP;
 use Filament\Navigation\NavigationItem;
 use App\Filament\Pages\Dashboard;
+use App\Filament\Resources\AuditCuciTanganMedisResource\Widgets\AuditCuciTanganStats;
 use App\Filament\Pages\HaisPerPasien;
 use App\Filament\Pages\LajuIAD;
 use App\Filament\Pages\LajuPLEB;
@@ -96,6 +97,9 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
+            ])
+            ->livewireComponents([
+                AuditCuciTanganStats::class,
             ])
             ->middleware([
                 EncryptCookies::class,
