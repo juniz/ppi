@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\AuditCuciTanganMedisResource\Pages;
 
 use App\Filament\Resources\AuditCuciTanganMedisResource;
+use App\Filament\Resources\AuditCuciTanganMedisResource\Widgets\AuditCuciTanganStats;
 use Filament\Actions;
 use Filament\Resources\Pages\ManageRecords;
+use Filament\Support\Enums\MaxWidth;
 
 class ManageAuditCuciTanganMedis extends ManageRecords
 {
@@ -13,7 +15,18 @@ class ManageAuditCuciTanganMedis extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Catat Audit Baru')
+                ->icon('heroicon-m-plus')
+                ->modalHeading('Audit Cuci Tangan Medis')
+                ->modalWidth(MaxWidth::Medium),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AuditCuciTanganStats::class,
         ];
     }
 }
